@@ -108,6 +108,12 @@ def import_ecm_results(path, verbose = True):
     rtn.loc[rtn.fuel_type.isin(['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Non-Electric']), "direct_fuel"] = "Direct"
     rtn.loc[rtn.fuel_type.isin(['Electric']), "direct_fuel"] = "Indirect"
 
+    # fuel_type2
+    rtn.loc[rtn.fuel_type.isin(['Natural Gas', 'Propane']), "fuel_type2"] = "Gas"
+    rtn.loc[rtn.fuel_type.isin(['Distillate/Other']), "fuel_type2"] = "Oil"
+    rtn.loc[rtn.fuel_type.isin(['Biomass']), "fuel_type2"] = "Biomass solids"
+    rtn.loc[rtn.fuel_type.isin(['Electric']), "fuel_type2"] =  "Electricity"
+
     # Simplified End use columns
     # TODO: Where should "Ventilation" be placed?
     # TODO: Where should "Heating (Env.)" and "Cooling (Env.)" be placed?
@@ -124,7 +130,6 @@ def import_ecm_results(path, verbose = True):
     #rtn["heating"]        = rtn.end_use.isin(['Heating (Equip.)'])
     #rtn["lighting"]       = rtn.end_use.isin(['Lighting'])
     #rtn["other"]          = rtn.end_use.isin(['Computers and Electronics', "Other"])
-
 
     if verbose:
         print(path + "\n  imported and coerced to a DataFrame in\n  " +\
