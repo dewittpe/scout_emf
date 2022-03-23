@@ -82,6 +82,50 @@ def import_ecm_results(path, verbose = True):
     rtn = pd.concat([pd.DataFrame.from_dict(d) for d in cms3])
     rtn.reset_index(inplace = True, drop = True)
 
+    # Base EMF String -- only return the rows with a base sting
+    idx = rtn.variable == "Avoided CO\u2082 Emissions (MMTons)"
+    rtn.loc[idx, "emf_string"] = rtn.region[idx] + "*Emissions|CO2|Energy|Demand|Buildings"
+    idx = rtn.variable == "Energy Savings (MMBtu)"
+    rtn.loc[idx, "emf_string"] = rtn.region[idx] + "*Final Energy|Buildings"
+    rtn = rtn[rtn.emf_string.notna()]
+
+    # add helpful columns
+    rtn["cms"] = CMS
+
+    # residential or commercial?  split the existing building_class into two columns
+    rtn.loc[rtn.building_class.isin(['Commercial (Existing)', 'Residential (Existing)']), "building_construction"] = "Existing"
+    rtn.loc[rtn.building_class.isin(['Commercial (New)', 'Residential (New)']), "building_construction"] = "New"
+
+    rtn.loc[rtn.building_class.isin(['Commercial (Existing)', 'Commercial (New)']), "building_class"] = "Commercial"
+    rtn.loc[rtn.building_class.isin(['Residential (Existing)', 'Residential (New)']), "building_class"] = "Residential"
+
+    # add column for direct fuel status.
+    if not set(rtn.fuel_type).issubset(['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']):
+        # TODO: Improve error handling
+        print("Unexpected fuel type")
+        #exit(1)
+
+    rtn.loc[rtn.fuel_type.isin(['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Non-Electric']), "direct_fuel"] = "Direct"
+    rtn.loc[rtn.fuel_type.isin(['Electric']), "direct_fuel"] = "Indirect"
+
+    # Simplified End use columns
+    # TODO: Where should "Ventilation" be placed?
+    # TODO: Where should "Heating (Env.)" and "Cooling (Env.)" be placed?
+
+    rtn.loc[rtn.end_use.isin(['Cooking', 'Water Heating', 'Refrigeration']), "end_use2"] = "Appliances"
+    rtn.loc[rtn.end_use.isin(['Cooling (Equip.)']), "end_use2"] = "Cooling"
+    rtn.loc[rtn.end_use.isin(['Heating (Equip.)']), "end_use2"] = "Heating"
+    rtn.loc[rtn.end_use.isin(['Lighting']), "end_use2"] =  "Lighting"
+    rtn.loc[rtn.end_use.isin(['Computers and Electronics', "Other"]), "end_use2"] =  "Other"
+
+    #rtn["appliances"]     = rtn.end_use.isin(['Cooking', 'Water Heating', 'Refrigeration'])
+    #rtn["appliances_gas"] = rtn.end_use.isin(['Cooking', 'Water Heating'])
+    #rtn["cooling"]        = rtn.end_use.isin(['Cooling (Equip.)'])
+    #rtn["heating"]        = rtn.end_use.isin(['Heating (Equip.)'])
+    #rtn["lighting"]       = rtn.end_use.isin(['Lighting'])
+    #rtn["other"]          = rtn.end_use.isin(['Computers and Electronics', "Other"])
+
+
     if verbose:
         print(path + "\n  imported and coerced to a DataFrame in\n  " +\
                 str(time.time() - tic) + " seconds.")
@@ -136,6 +180,8 @@ def import_ecm_results_v1(path, verbose = True):
             ]
 
     cms = pd.DataFrame.from_dict(cms)
+
+    cms["cms"] = CMS
 
     if verbose:
         print(path + "\n  imported and coerced to a DataFrame in\n  " +\
