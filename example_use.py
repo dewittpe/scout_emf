@@ -3,30 +3,14 @@ import pandas as pd
 import re
 import time
 from import_ecm_results import import_ecm_results
-from import_ecm_results import import_ecm_results_v1
 
-# because _all_ ecms in ecm_results_1-1.json have the fuel type keys _v1 of the
-# import function could be used.  This is done here only as an example to show
-# how much faster it is to have a consistent data structure than to have to
-# test for a possible fuel type.
-
-#ecm_1 = import_ecm_results_v1("./Results_Files_3/ecm_results_1-1.json")
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 #ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
 #ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 #ecm_4 = import_ecm_results("ecm_results_4.json")
 
-print(ecm_1)
-#print(ecm_2)
-#print(ecm_3)
-#print(ecm_4)
 
 
-# NOTE: There is no rows in the following.  In the original work there would be
-# output for this combination and the value set to 0.  In the current version of
-# what @dewittpe has built this row is omitted from the output becuase there is
-# no information to start with.
-ecm_1[(ecm_1.region == "TRE") & (ecm_1.building_class == "Residential") & (ecm_1.end_use2 == "Other") & (ecm_1.fuel_type2 == "Oil")]
 
 # To Reproduce ecm_results_1-1.csv we need only aggregate the data with four
 # different groupby calls.
@@ -95,14 +79,39 @@ a.reset_index(inplace = True)
 
 a
 
-a.loc[a.emf_string == "BASN*Emissions|CO2|Energy|Demand|Buildings", ["2025", "2030"]]
-a.loc[a.emf_string == "BASN*Final Energy|Buildings", ["2025", "2030"]]
 
-a.to_csv("a.csv")
+# original work
+d = pd.read_csv("ecm_results_1-1.csv")
+d.info()
+d.rename(columns = {"Unnamed: 0" :  "emf_string"}, inplace = True)
 
-#BASN*Emissions|CO2|Energy|Demand|Buildings                                 , -0.16753753268025123    , -0.46469413903669343    , -0.6913137196346189    , -0.5114296223466639     , -0.3993793859084158     , -0.4211963089474491
-#BASN*Final Energy|Buildings                                                , 0.004836432124608101    , 0.014637963363622889    , 0.027477157714066724   , 0.04329876010317799     , 0.06092553282306126     , 0.08277465283381506
+# compare my approach to original
+a = a[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
 
+b = a.merge(d, on = ["emf_string"], how = "outer")
+b["match"] = \
+        (abs(b["2025_x"] - b["2025_y"]) < 1e-8) &\
+        (abs(b["2030_x"] - b["2030_y"]) < 1e-8) &\
+        (abs(b["2035_x"] - b["2035_y"]) < 1e-8) &\
+        (abs(b["2040_x"] - b["2040_y"]) < 1e-8) &\
+        (abs(b["2045_x"] - b["2045_y"]) < 1e-8) &\
+        (abs(b["2050_x"] - b["2050_y"]) < 1e-8)
+
+# matching rows
+b[b.match]
+
+# non-matching rows
+b[~b.match]
+
+# it appears that there are aggregation "errors",
+# rows missing in the refactor work which exist in the original work and visa
+# versa
+#
+# FOR EXAMPLE: There is no rows in the following.  In the original work there would be
+# output for this combination and the value set to 0.  In the current version of
+# what @dewittpe has built this row is omitted from the output becuase there is
+# no information to start with.
+ecm_1[(ecm_1.region == "BASN") & (ecm_1.building_class == "Commercial") & (ecm_1.end_use2 == "Other") & (ecm_1.fuel_type2 == "Oil")]
 
 ################################################################################
 #                                 End of File                                  #
