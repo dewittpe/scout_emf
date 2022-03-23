@@ -42,3 +42,19 @@ results in:
 
 @dewittpe was provided with the initial files noted above and has started to
 refactor the project.
+
+## Development Environment
+
+The `environment.yml` file defines a conda environment with the needed modules
+and packages for working on scout and this possible emf extension.
+
+    # build the environment
+    conda env create -f environment.yml
+
+    # activate the environment
+    conda activate scout
+
+    # export an active environment (do this if you add or update packages)
+    # __NOTE:__  The following will include a `prefix:` line that should be
+    # manually removed from environment.yml
+    conda env export --from-history > environment.yml
