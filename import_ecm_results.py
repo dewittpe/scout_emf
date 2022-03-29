@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import re
 import time
+
 def import_ecm_results(path, verbose = True):
     """ Import ECM results
 
@@ -40,7 +41,7 @@ def import_ecm_results(path, verbose = True):
             for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg].keys())\
             for ftyv in   [ecm_results[ecm][CMS][ap][v][rg][bg][eu]]
             ]
-    
+
     # if the fuel_type is not present, the keys will be years
     regex = re.compile(r"\d{4}")
     cms3 = []
@@ -78,7 +79,7 @@ def import_ecm_results(path, verbose = True):
                     for value in  [cms[i]["ftyv"][ft][yr]]
                     ]
         cms3.append(cms2)
-    
+
     rtn = pd.concat([pd.DataFrame.from_dict(d) for d in cms3])
     rtn.reset_index(inplace = True, drop = True)
 
@@ -124,13 +125,6 @@ def import_ecm_results(path, verbose = True):
     rtn.loc[rtn.end_use.isin(['Lighting']), "end_use2"] =  "Lighting"
     rtn.loc[rtn.end_use.isin(['Computers and Electronics', "Other"]), "end_use2"] =  "Other"
 
-    #rtn["appliances"]     = rtn.end_use.isin(['Cooking', 'Water Heating', 'Refrigeration'])
-    #rtn["appliances_gas"] = rtn.end_use.isin(['Cooking', 'Water Heating'])
-    #rtn["cooling"]        = rtn.end_use.isin(['Cooling (Equip.)'])
-    #rtn["heating"]        = rtn.end_use.isin(['Heating (Equip.)'])
-    #rtn["lighting"]       = rtn.end_use.isin(['Lighting'])
-    #rtn["other"]          = rtn.end_use.isin(['Computers and Electronics', "Other"])
-
     if verbose:
         print(path + "\n  imported and coerced to a DataFrame in\n  " +\
                 str(time.time() - tic) + " seconds.")
@@ -138,7 +132,7 @@ def import_ecm_results(path, verbose = True):
     return rtn
 
 def import_ecm_results_v1(path, verbose = True):
-    """ Import ECM results  
+    """ Import ECM results
 
      THIS IS VERY FAST BUT REQUIRES A CONSISTENT JSON FORMAT.  SINCE FUEL TYPE
      MAY NOT ALWAYS EXIST THE LOGIC TO TO BUILD THE NEEDED DATAFRAME WILL SLOW
@@ -193,3 +187,100 @@ def import_ecm_results_v1(path, verbose = True):
                 str(time.time() - tic) + " seconds.")
 
     return cms
+
+
+def aggregate_emf(df) :
+    """ Aggregate results for EMF
+
+    Arguments:
+        df: a pandas DataFrame returned from import_ecm_results
+
+    Return:
+        a pandas DataFrame
+    """
+    a0 = df\
+            .groupby(['emf_string', 'year'])\
+            .agg(value=('value','sum'))
+
+    a1 = df\
+            .groupby(['emf_string', 'building_class', 'year'])\
+            .agg(value=('value','sum'))
+
+    a2 = df\
+            .groupby(['emf_string', 'building_class', 'end_use2', 'year'])\
+            .agg(value=('value','sum'))
+
+    a3_a0 = df[df.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
+            .groupby(['emf_string', 'building_class', 'end_use2', 'direct_fuel', 'year'])\
+            .agg(value=('value','sum'))
+
+    a3_a1 = df[df.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
+            .groupby(['emf_string', 'direct_fuel', 'year'])\
+            .agg(value=('value','sum'))
+
+    a3_a2 = df[df.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
+            .groupby(['emf_string', 'building_class', 'direct_fuel', 'year'])\
+            .agg(value=('value','sum'))
+
+
+    a3_e0 = df[df.variable == "Energy Savings (MMBtu)"]\
+            .groupby(['emf_string', 'building_class', 'end_use2', 'fuel_type2', 'year'])\
+            .agg(value=('value','sum'))
+
+    a3_e1 = df[df.variable == "Energy Savings (MMBtu)"]\
+            .groupby(['emf_string', 'building_class', 'fuel_type2', 'year'])\
+            .agg(value=('value','sum'))
+
+    a3_e2 = df[df.variable == "Energy Savings (MMBtu)"]\
+            .groupby(['emf_string', 'fuel_type2', 'year'])\
+            .agg(value=('value','sum'))
+
+    a0.reset_index(inplace = True)
+    a1.reset_index(inplace = True)
+    a2.reset_index(inplace = True)
+
+    a3_a0.reset_index(inplace = True)
+    a3_a1.reset_index(inplace = True)
+    a3_a2.reset_index(inplace = True)
+
+    a3_e0.reset_index(inplace = True)
+    a3_e1.reset_index(inplace = True)
+    a3_e2.reset_index(inplace = True)
+
+    # A multiplicative factor for energy savings
+    a3_e0.value *= 1.05505585262e-9
+    a3_e1.value *= 1.05505585262e-9
+    a3_e2.value *= 1.05505585262e-9
+
+    a1.emf_string = a1.emf_string + "|" + a1.building_class
+    a2.emf_string = a2.emf_string + "|" + a2.building_class + "|" + a2.end_use2
+
+    a3_a0.emf_string = a3_a0.emf_string + "|" + a3_a0.building_class + "|" + a3_a0.end_use2 + "|" + a3_a0.direct_fuel
+    a3_a1.emf_string = a3_a1.emf_string + "|" + a3_a1.direct_fuel
+    a3_a2.emf_string = a3_a2.emf_string + "|" + a3_a2.building_class + "|" + a3_a2.direct_fuel
+
+    a3_e0.emf_string = a3_e0.emf_string + "|" + a3_e0.building_class + "|" + a3_e0.end_use2 + "|" + a3_e0.fuel_type2
+    a3_e1.emf_string = a3_e1.emf_string + "|" + a3_e1.building_class + "|" + a3_e1.fuel_type2
+    a3_e2.emf_string = a3_e2.emf_string + "|" + a3_e2.fuel_type2
+
+    # one date frame
+    a = pd.concat([
+                a0[["emf_string", "year", "value"]],
+                a1[["emf_string", "year", "value"]],
+                a2[["emf_string", "year", "value"]],
+
+                a3_a0[["emf_string", "year", "value"]],
+                a3_a1[["emf_string", "year", "value"]],
+                a3_a2[["emf_string", "year", "value"]],
+
+                a3_e0[["emf_string", "year", "value"]],
+                a3_e1[["emf_string", "year", "value"]],
+                a3_e2[["emf_string", "year", "value"]]
+            ])
+    a = a.pivot(index = ["emf_string"], columns = ["year"], values = ["value"])
+    a.columns = a.columns.droplevel(0)
+    a.reset_index(inplace = True)
+
+    return a
+
+

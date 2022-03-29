@@ -3,115 +3,178 @@ import pandas as pd
 import re
 import time
 from import_ecm_results import import_ecm_results
+from import_ecm_results import aggregate_emf
 
+# Import the example result files
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-#ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
-#ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
-#ecm_4 = import_ecm_results("ecm_results_4.json")
+ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
+ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
+ecm_4 = import_ecm_results("ecm_results_4.json")
 
+# aggregate the results
+emf_1 = aggregate_emf(ecm_1)
+emf_2 = aggregate_emf(ecm_2)
+emf_3 = aggregate_emf(ecm_3)
+emf_4 = aggregate_emf(ecm_4)
 
+# import the original results
+emf_1_orig = pd.read_csv("ecm_results_1-1.csv")
+emf_2_orig = pd.read_csv("ecm_results_2.csv")
+emf_3_orig = pd.read_csv("ecm_results_3-1.csv")
 
+emf_1_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
+emf_2_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
+emf_3_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
 
-# To Reproduce ecm_results_1-1.csv we need only aggregate the data with four
-# different groupby calls.
-
-a0 = ecm_1\
-        .groupby(['emf_string', 'year'])\
-        .agg(value=('value','sum'))
-
-a1 = ecm_1\
-        .groupby(['emf_string', 'building_class', 'year'])\
-        .agg(value=('value','sum'))
-
-a2 = ecm_1\
-        .groupby(['emf_string', 'building_class', 'end_use2', 'year'])\
-        .agg(value=('value','sum'))
-
-a3_0 = ecm_1[ecm_1.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
-        .groupby(['emf_string', 'building_class', 'end_use2', 'direct_fuel', 'year'])\
-        .agg(value=('value','sum'))
-
-a3_1 = ecm_1[ecm_1.variable == "Energy Savings (MMBtu)"]\
-        .groupby(['emf_string', 'building_class', 'end_use2', 'fuel_type2', 'year'])\
-        .agg(value=('value','sum'))
-
-a3_2 = ecm_1[ecm_1.variable == "Energy Savings (MMBtu)"]\
-        .groupby(['emf_string', 'building_class', 'fuel_type2', 'year'])\
-        .agg(value=('value','sum'))
-
-a3_3 = ecm_1[ecm_1.variable == "Energy Savings (MMBtu)"]\
-        .groupby(['emf_string', 'fuel_type2', 'year'])\
-        .agg(value=('value','sum'))
-
-a0.reset_index(inplace = True)
-a1.reset_index(inplace = True)
-a2.reset_index(inplace = True)
-a3_0.reset_index(inplace = True)
-a3_1.reset_index(inplace = True)
-a3_2.reset_index(inplace = True)
-a3_3.reset_index(inplace = True)
-
-# A multiplicative factor for energy savings
-a3_1.value *= 1.05505585262e-9
-a3_2.value *= 1.05505585262e-9
-a3_3.value *= 1.05505585262e-9
-
-a1.emf_string = a1.emf_string + "|" + a1.building_class
-a2.emf_string = a2.emf_string + "|" + a2.building_class + "|" + a2.end_use2
-a3_0.emf_string = a3_0.emf_string + "|" + a3_0.building_class + "|" + a3_0.end_use2 + "|" + a3_0.direct_fuel
-a3_1.emf_string = a3_1.emf_string + "|" + a3_1.building_class + "|" + a3_1.end_use2 + "|" + a3_1.fuel_type2
-a3_2.emf_string = a3_2.emf_string + "|" + a3_2.building_class + "|" + a3_2.fuel_type2
-a3_3.emf_string = a3_3.emf_string + "|" + a3_3.fuel_type2
-
-# one date frame
-a = pd.concat([
-            a0[["emf_string", "year", "value"]],
-            a1[["emf_string", "year", "value"]],
-            a2[["emf_string", "year", "value"]],
-            a3_0[["emf_string", "year", "value"]],
-            a3_1[["emf_string", "year", "value"]],
-            a3_2[["emf_string", "year", "value"]],
-            a3_3[["emf_string", "year", "value"]]
-        ])
-a = a.pivot(index = ["emf_string"], columns = ["year"], values = ["value"])
-a.columns = a.columns.droplevel(0)
-a.reset_index(inplace = True)
-
-a
-
-
-# original work
-d = pd.read_csv("ecm_results_1-1.csv")
-d.info()
-d.rename(columns = {"Unnamed: 0" :  "emf_string"}, inplace = True)
+# compare the refactored work against the original work
+emf_1 = emf_1[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
+emf_2 = emf_2[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
+emf_3 = emf_3[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
 
 # compare my approach to original
-a = a[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
+emf_1 = emf_1.merge(emf_1_orig, on = ["emf_string"], how = "outer", suffixes = ("_refactor", "_orig"))
+emf_2 = emf_2.merge(emf_2_orig, on = ["emf_string"], how = "outer", suffixes = ('_refactor', "_orig"))
+emf_3 = emf_3.merge(emf_3_orig, on = ["emf_string"], how = "outer", suffixes = ('_refactor', "_orig"))
 
-b = a.merge(d, on = ["emf_string"], how = "outer")
-b["match"] = \
-        (abs(b["2025_x"] - b["2025_y"]) < 1e-8) &\
-        (abs(b["2030_x"] - b["2030_y"]) < 1e-8) &\
-        (abs(b["2035_x"] - b["2035_y"]) < 1e-8) &\
-        (abs(b["2040_x"] - b["2040_y"]) < 1e-8) &\
-        (abs(b["2045_x"] - b["2045_y"]) < 1e-8) &\
-        (abs(b["2050_x"] - b["2050_y"]) < 1e-8)
+emf_1["match"] = \
+        (abs(emf_1["2025_refactor"] - emf_1["2025_orig"]) < 1e-8) &\
+        (abs(emf_1["2030_refactor"] - emf_1["2030_orig"]) < 1e-8) &\
+        (abs(emf_1["2035_refactor"] - emf_1["2035_orig"]) < 1e-8) &\
+        (abs(emf_1["2040_refactor"] - emf_1["2040_orig"]) < 1e-8) &\
+        (abs(emf_1["2045_refactor"] - emf_1["2045_orig"]) < 1e-8) &\
+        (abs(emf_1["2050_refactor"] - emf_1["2050_orig"]) < 1e-8)
+
+emf_2["match"] = \
+        (abs(emf_2["2025_refactor"] - emf_2["2025_orig"]) < 1e-8) &\
+        (abs(emf_2["2030_refactor"] - emf_2["2030_orig"]) < 1e-8) &\
+        (abs(emf_2["2035_refactor"] - emf_2["2035_orig"]) < 1e-8) &\
+        (abs(emf_2["2040_refactor"] - emf_2["2040_orig"]) < 1e-8) &\
+        (abs(emf_2["2045_refactor"] - emf_2["2045_orig"]) < 1e-8) &\
+        (abs(emf_2["2050_refactor"] - emf_2["2050_orig"]) < 1e-8)
+
+emf_3["match"] = \
+        (abs(emf_3["2025_refactor"] - emf_3["2025_orig"]) < 1e-8) &\
+        (abs(emf_3["2030_refactor"] - emf_3["2030_orig"]) < 1e-8) &\
+        (abs(emf_3["2035_refactor"] - emf_3["2035_orig"]) < 1e-8) &\
+        (abs(emf_3["2040_refactor"] - emf_3["2040_orig"]) < 1e-8) &\
+        (abs(emf_3["2045_refactor"] - emf_3["2045_orig"]) < 1e-8) &\
+        (abs(emf_3["2050_refactor"] - emf_3["2050_orig"]) < 1e-8)
+
+################################################################################
+# View the matching and non-matching rows
+
+### EMF 1 ###
 
 # matching rows
-b[b.match]
+emf_1[emf_1.match]
 
-# non-matching rows
-b[~b.match]
+# missmatched rows
+emf_1[~emf_1.match]
 
-# it appears that there are aggregation "errors",
-# rows missing in the refactor work which exist in the original work and visa
-# versa
-#
-# FOR EXAMPLE: There is no rows in the following.  In the original work there would be
-# output for this combination and the value set to 0.  In the current version of
-# what @dewittpe has built this row is omitted from the output becuase there is
-# no information to start with.
-ecm_1[(ecm_1.region == "BASN") & (ecm_1.building_class == "Commercial") & (ecm_1.end_use2 == "Other") & (ecm_1.fuel_type2 == "Oil")]
+# in both refactor and original work but numerially different
+emf_1[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].notna()]
+
+# in the refactor but not in the original work
+emf_1[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].isna()]
+
+# in the original work, but not in the refactor
+emf_1[~emf_1.match & emf_1["2025_refactor"].isna() & emf_1["2025_orig"].notna()]
+
+### EMF 2 ###
+
+# matching rows
+emf_2[emf_2.match]
+
+# missmatched rows
+emf_2[~emf_2.match]
+
+# in both refactor and original work but numerially different
+emf_2[~emf_2.match & emf_2["2025_refactor"].notna() & emf_2["2025_orig"].notna()]
+
+# in the refactor but not in the original work
+emf_2[~emf_2.match & emf_2["2025_refactor"].notna() & emf_2["2025_orig"].isna()]
+
+# in the original work, but not in the refactor
+emf_2[~emf_2.match & emf_2["2025_refactor"].isna() & emf_2["2025_orig"].notna()]
+
+
+### EMF 3 ###
+
+# matching rows
+emf_3[emf_3.match]
+
+# missmatched rows
+emf_3[~emf_3.match]
+
+# in both refactor and original work but numerially different
+emf_3[~emf_3.match & emf_3["2025_refactor"].notna() & emf_3["2025_orig"].notna()]
+
+# in the refactor but not in the original work
+emf_3[~emf_3.match & emf_3["2025_refactor"].notna() & emf_3["2025_orig"].isna()]
+
+# in the original work, but not in the refactor
+emf_3[~emf_3.match & emf_3["2025_refactor"].isna() & emf_3["2025_orig"].notna()]
+
+################################################################################
+# ECM 1 Explore
+
+# example issue -- values are reported in the original work not in the refactor
+# In this case the original work reports a zero but the combination of
+# building_class == Commercial, end_use == Other, and fuel_type = Oil is not in
+# raw data.
+emf_1[emf_1.emf_string == "BASN*Final Energy|Buildings|Commercial|Other|Oil"]
+
+# not in the raw data the only end use is "Heating"
+set(
+    ecm_1[(ecm_1.variable == "Energy Savings (MMBtu)") &
+            (ecm_1.region == "BASN") &
+            (ecm_1.building_class == "Commercial") &
+            (ecm_1.fuel_type2 == "Oil")
+            ].end_use
+)
+
+# are all of the values zero?  -- This suggests that these were asked for and
+# set to zero when nothing was found in the raw data.
+all(emf_1[~emf_1.match & emf_1["2025_refactor"].isna() & emf_1["2025_orig"].notna()]["2025_orig"] == 0.0)
+all(emf_1[~emf_1.match & emf_1["2030_refactor"].isna() & emf_1["2030_orig"].notna()]["2030_orig"] == 0.0)
+all(emf_1[~emf_1.match & emf_1["2035_refactor"].isna() & emf_1["2035_orig"].notna()]["2035_orig"] == 0.0)
+all(emf_1[~emf_1.match & emf_1["2040_refactor"].isna() & emf_1["2040_orig"].notna()]["2040_orig"] == 0.0)
+all(emf_1[~emf_1.match & emf_1["2045_refactor"].isna() & emf_1["2045_orig"].notna()]["2045_orig"] == 0.0)
+all(emf_1[~emf_1.match & emf_1["2050_refactor"].isna() & emf_1["2050_orig"].notna()]["2050_orig"] == 0.0)
+
+# Some of the aggregations found in the refactor that are not in the original
+# work are arregations of
+#   emf_string, fuel_type2
+#   emf_string, building_class, end_use2
+# The non-zero values, and just the presence of these rows indicate that
+# suggest they were overlooked in the original work.  Further, the rows are
+# aggregated into higher levels which would account for the numeric differences
+# between the refactor and the original work.
+emf_1[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].isna()]
+
+################################################################################
+# ECM 2 Explore
+
+emf_2[~emf_2.match & emf_2["2025_refactor"].isna() & emf_2["2025_orig"].notna()]
+
+# WTF?  Okay, so in the original work there is a row for
+emf_2[emf_2.emf_string.str.contains("BASN*Final Energy|Buildings|Residential|Other", regex = False) &
+        (emf_2["2025_orig"] > 0)
+        ]
+emf_2[emf_2.emf_string.str.contains("BASN*Final Energy|Buildings|Residential|Other", regex = False) &
+        (emf_2["2025_orig"] > 0)
+        ].emf_string.tolist()
+
+# but the raw data has no fuel type
+ecm_2[(ecm_2.emf_string == "BASN*Final Energy|Buildings") &
+        (ecm_2.building_class == "Residential") &
+        (ecm_2.end_use2 == "Other")
+        ].fuel_type
+
+# The non-zero values in the original work suggest there should be data in the
+# raw json, but that does not seem to be the case.
+
+
 
 ################################################################################
 #                                 End of File                                  #
