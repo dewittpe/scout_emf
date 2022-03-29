@@ -50,6 +50,10 @@ refactor the project.
 The file `example_use.py` is a incremental development file showing how to use
 the refactored code.
 
+* Data
+  * The data set are gzip files in this repo.  You will need to decompress these
+      files before running `example_use.py`
+
 ## Development Environment
 
 The `environment.yml` file defines a conda environment with the needed modules
@@ -65,3 +69,5 @@ and packages for working on scout and this possible emf extension.
     # __NOTE:__  The following will include a `prefix:` line that should be
     # manually removed from environment.yml
     conda env export --from-history > environment.yml
+
+
