@@ -152,6 +152,19 @@ all(emf_1[~emf_1.match & emf_1["2050_refactor"].isna() & emf_1["2050_orig"].notn
 # between the refactor and the original work.
 emf_1[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].isna()]
 
+# Per request - by EMF string report the matches/missmatches by Region
+emf_1.loc[emf_1.match, "refactor_vs_original"] = "refactor == original"
+emf_1.loc[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].notna(), "refactor_vs_original"] = "refactor != original"
+emf_1.loc[~emf_1.match & emf_1["2025_refactor"].isna() & emf_1["2025_orig"].notna(), "refactor_vs_original"] = "not in refactor; in original"
+emf_1.loc[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].isna(), "refactor_vs_original"] = "in refactor; not in original"
+
+emf_1["ecm"] = emf_1.emf_string.str.split("*", expand = True)[0]
+emf_1["emf_string2"] = emf_1.emf_string.str.split("*", expand = True)[1]
+
+# save a csv and then create a useful xlsx
+emf_1.pivot(index = "emf_string2", columns = "ecm", values = "refactor_vs_original").to_csv('refactor_vs_original.csv')
+
+
 ################################################################################
 # ECM 2 Explore
 
