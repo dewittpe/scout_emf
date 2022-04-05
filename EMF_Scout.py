@@ -2,11 +2,14 @@
 import pandas as pd
 import numpy as np
 import json
+import time
 from collections import Counter
  
 
 
 # ================== 1) LOAD SCOUT RESULTS
+tic = time.time()
+print("Start LOAD SCOUT RESULTS")
 
 def get_json(json_name):
     with open(json_name, 'r') as f:
@@ -685,10 +688,14 @@ ecm_results_1_1 = concat_and_filter_years(list_final_dataframes)
 ecm_results_1_1.to_csv('ecm_results_1-1.csv')
 
 
+print("LOAD SCOUT RESULTS: Completed in " + str(time.time() - tic) + " seconds.")
 
 
 
 # ================== 2) LOAD BASELINE
+tic = time.time()
+print("Start LOAD BASELINE")
+
 def walk_baseline(json_dict, list_keys_baseline, key_list=[]):
     
     # Explore the data structure from the current location
@@ -1259,9 +1266,14 @@ ecm_results_2_final.to_csv('ecm_results_2_final.csv')
 ecm_results_3_1_final.to_csv('ecm_results_3_1_final.csv')
 ecm_results_1_1_final.to_csv('ecm_results_1_1_final.csv')
 
+print("Completed LOAD BASELINE in " + str(time.time() - tic) + " seconds.")
+
 
 
 # ================== 3) PLOT OUT EVERYTHING
+tic = time.time()
+print("Start PLOT OUT EVERYTHING")
+
 import matplotlib.pyplot as plt
 emms = ['CASO', 'ISNE', 'SRSE']
 for emm in emms:
@@ -1366,3 +1378,4 @@ prices_areas = pd.concat([prices, areas_df], axis=0)
 prices_areas.to_csv('price_areas.csv')
 
 
+print("Finished PLOT OUT EVERYTHING in " + str(time.time() - tic) + " seconds.")
