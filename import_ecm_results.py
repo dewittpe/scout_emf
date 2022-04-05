@@ -112,7 +112,7 @@ def import_ecm_results(path, verbose = True):
     # fuel_type2
     rtn.loc[rtn.fuel_type.isin(['Natural Gas', 'Propane']), "fuel_type2"] = "Gas"
     rtn.loc[rtn.fuel_type.isin(['Distillate/Other']), "fuel_type2"] = "Oil"
-    rtn.loc[rtn.fuel_type.isin(['Biomass']), "fuel_type2"] = "Biomass solids"
+    rtn.loc[rtn.fuel_type.isin(['Biomass']), "fuel_type2"] = "Biomass Solids"
     rtn.loc[rtn.fuel_type.isin(['Electric']), "fuel_type2"] =  "Electricity"
 
     # Simplified End use columns
