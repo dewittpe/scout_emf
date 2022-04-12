@@ -3,13 +3,87 @@ import pandas as pd
 import re
 import time
 from import_ecm_results import import_ecm_results
+from import_ecm_results import import_baseline_fuel_data
+from import_ecm_results import import_baseline_non_fuel_data
 from import_ecm_results import aggregate_emf
+
+fuel_b     = import_baseline_fuel_data("./mseg_res_com_emm.json")
+
+non_fuel_b = import_baseline_non_fuel_data("./mseg_res_com_emm.json")
+
+
+df = pd.DataFrame.from_dict(fuel_b)
+
+df[df["year"].notnull()]
+
+
+fuel_b[fuel_b["year"] == 2035]
+all(fuel_b['year'] == "2050")
+
+non_fuel_b
+
+
+df = pd.DataFrame.from_dict(b)
+df
+df[df["value"].isna()]
+
+df["leaf"].is()
+
+[v for v in df["leaf"]]
+
+
+
+[i for i in range(len(df)) if df[i]["leaf"] is None]
+[df[i]["leaf"] for i in range(len(df))]
+
 
 # Import the example result files
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
 ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 ecm_4 = import_ecm_results("ecm_results_4.json")
+
+
+
+for i in range(len(b)):
+    print(list(b[i]["leaf"]))
+
+
+# fuels
+["electricity", "natural gas", "distillate", "other fuel"]
+
+baseline = json.load(open("./mseg_res_com_emm_NEW.json", "r"))
+list(baseline)
+
+list(baseline["TRE"])
+list(baseline["TRE"]["single family home"])
+list(baseline["TRE"]["lodging"])
+list(baseline["TRE"]["food service"])
+
+list(baseline["TRE"]["single family home"]['total homes'])
+list(baseline["TRE"]["single family home"]['new homes'])
+list(baseline["TRE"]["single family home"]['total square footage'])
+
+
+
+
+list(baseline["TRE"]["single family home"]['electricity'])
+list(baseline["TRE"]["single family home"]['electricity']['heating'])
+list(baseline["TRE"]["single family home"]['electricity']['heating']['demand'])
+list(baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall'])
+baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall']['stock']
+baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall']['energy']
+baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall']['energy']['2018']
+
+
+
+for ecm in list(baseline):
+    print("\n\nECM: " + ecm)
+    for bd in list(baseline[ecm]): 
+        print("\nBuilding: " + bd)
+        print(list(baseline[ecm][bd]))
+
+
 
 # aggregate the results
 emf_1 = aggregate_emf(ecm_1)
