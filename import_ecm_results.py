@@ -113,8 +113,6 @@ def import_baseline(path, verbose = True):
                 }
 
         for leaf in list(fuels_2[i]["leaf"]):
-            print(i)
-            print(leaf)
             if leaf in ["stock", "energy"]:
                 d1["se"] = leaf
                 d1["leaf"] = fuels_2[i]["leaf"][leaf]
@@ -122,18 +120,42 @@ def import_baseline(path, verbose = True):
                 d1["year"] = leaf
                 d1["value"] = fuels_2[i]["leaf"][leaf]
             elif leaf in ["N", "A"]:
-                print(leaf)
-                d1["leaf"] = None
                 d1["value"] = None
             else:
                 d1["appliance"] = leaf
                 d1["leaf"] = fuels_2[i]["leaf"][leaf]
             fuels_3.append(d1)
 
-    return(fuels_3)
+    # Now, if the leaf is not None, then it could be year or energy/stock
+    fuels_4 = []
 
+    for i in range(len(fuels_3)):
+        d1 = {    "ecm"       : fuels_3[i]["ecm"]
+                , "bldg"      : fuels_3[i]["bldg"]
+                , "fuel"      : fuels_3[i]["fuel"]
+                , "enduse"    : fuels_3[i]["enduse"]
+                , "se"        : fuels_3[i]["se"]
+                , "ds"        : fuels_3[i]["ds"]
+                , "appliance" : fuels_3[i]["appliance"]
+                , "year"      : fuels_3[i]["year"]
+                , "leaf"      : fuels_3[i]["leaf"]
+                , "value"     : fuels_3[i]["value"]
+                }
 
+        if d1["leaf"] is not None:
+            for leaf in list(fuels_3[i]["leaf"]):
+                if leaf in ["stock", "energy"]:
+                    d1["se"] = leaf
+                    d1["leaf"] = fuels_3[i]["leaf"][leaf]
+                elif leaf in ["N", "A"]:
+                    d1["leaf"] = None
+                else:
+                    d1["year"] = leaf
+                    d1["value"] = fuels_3[i]["leaf"][leaf]
+                    d1["leaf"] = None
+                fuels_4.append(d1)
 
+    return(fuels_4)
 
 
 
