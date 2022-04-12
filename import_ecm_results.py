@@ -3,6 +3,155 @@ import pandas as pd
 import re
 import time
 
+def import_baseline(path, verbose = True):
+    """ Import baseline data
+
+    Arguments:
+        path: file path to json file (mseg_res_com_emm_NEW.json)
+        verbose: print time required to import the data
+    """
+    tic = time.time()
+
+    f = open(path, "r")
+    baseline = json.load(f)
+    f.close()
+
+    d = [{"ecm" : ecm, "bldg" : bd, "leaf": lf}\
+            for ecm in list(baseline)\
+            for bd  in list(baseline[ecm].keys())\
+            for lf  in     [baseline[ecm][bd]]
+            ]
+
+    # split the work into fuel and non-fuel dictionaries
+    fuels = []
+    non_fuels = []
+
+    for i in range(len(d)):
+        for l in list(d[i]["leaf"]):
+            if l in ["electricity", "natural gas", "distillate", "other fuel"]:
+                d1 = {"ecm" : d[i]["ecm"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
+                fuels.append(d1)
+            else:
+                d1 = {"ecm" : d[i]["ecm"], "bldg" : d[i]["bldg"], "variable" : l, "leaf" : d[i]["leaf"][l]}
+                non_fuels.append(d1)
+
+    # build a DataFrame for the non-fuels
+    non_fuels = [{
+                  "ecm"  : non_fuels[i]["ecm"]
+                , "bldg" : non_fuels[i]["bldg"]
+                , "variable" : non_fuels[i]["variable"]
+                , "year" : yr
+                , "value" : value
+                }\
+                        for i in range(len(non_fuels))\
+                        for yr in list(non_fuels[i]["leaf"])\
+                        for value in  [non_fuels[i]["leaf"][yr]]
+                        ]
+
+    non_fuels = pd.DataFrame.from_dict(non_fuels)
+
+    # build a dictionary for fuels....
+    # Well that mseg_res_com_emm_NEW.json has a unbelievable structure.  Divide
+    # and conquer.
+    fuels = [{"ecm" : fuels[i]["ecm"]
+        , "bldg": fuels[i]["bldg"]
+        , "fuel": fuels[i]["fuel"]
+        , "enduse": eu
+        , "leaf": leaf
+        }\
+                for i in range(len(fuels))\
+                for eu in list(fuels[i]["leaf"])\
+                for leaf in   [fuels[i]["leaf"][eu]]
+                ]
+
+    # Next, the leaf can have one of three general concepts for keys:
+    # 1. stock/energy
+    # 2. demand/supply
+    # 3. appliances (including lightbulbs)
+    fuels_2 = []
+
+    for i in range(len(fuels)):
+        d1 = {"ecm" : fuels[i]["ecm"]
+                , "bldg" : fuels[i]["bldg"]
+                , "fuel" : fuels[i]["fuel"]
+                , "enduse" : fuels[i]["enduse"]
+                , "se" : None
+                , "ds" : None
+                , "appliance" : None
+                , "leaf" : None
+                }
+        for leaf in list(fuels[i]["leaf"]):
+            if leaf in ["stock", "energy"]:
+                d1["se"] = leaf
+                d1["leaf"] = fuels[i]["leaf"][leaf]
+            elif leaf in ["demand", "supply"]:
+                d1["ds"] = leaf
+                d1["leaf"] = fuels[i]["leaf"][leaf]
+            else:
+                d1["appliance"] = leaf
+                d1["leaf"] = fuels[i]["leaf"][leaf]
+            fuels_2.append(d1)
+
+    # Next, the leafs could be one of three sets:
+    # 1. year
+    # 2. stock/energy
+    # 3. appliance
+    fuels_3 = []
+    regex = re.compile(r"\d{4}")
+
+    for i in range(len(fuels_2)):
+        d1 = {    "ecm"       : fuels_2[i]["ecm"]
+                , "bldg"      : fuels_2[i]["bldg"]
+                , "fuel"      : fuels_2[i]["fuel"]
+                , "enduse"    : fuels_2[i]["enduse"]
+                , "se"        : fuels_2[i]["se"]
+                , "ds"        : fuels_2[i]["ds"]
+                , "appliance" : fuels_2[i]["appliance"]
+                , "year"      : None
+                , "leaf"      : None
+                , "value"     : None
+                }
+
+        for leaf in list(fuels_2[i]["leaf"]):
+            print(i)
+            print(leaf)
+            if leaf in ["stock", "energy"]:
+                d1["se"] = leaf
+                d1["leaf"] = fuels_2[i]["leaf"][leaf]
+            elif regex.search(leaf):
+                d1["year"] = leaf
+                d1["value"] = fuels_2[i]["leaf"][leaf]
+            elif leaf in ["N", "A"]:
+                print(leaf)
+                d1["leaf"] = None
+                d1["value"] = None
+            else:
+                d1["appliance"] = leaf
+                d1["leaf"] = fuels_2[i]["leaf"][leaf]
+            fuels_3.append(d1)
+
+    return(fuels_3)
+
+
+
+
+
+
+    if verbose:
+        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
+                str(time.time() - tic) + " seconds.")
+
+    return rtn
+
+def extract_non_fuel_baseline(d):
+    """
+    sub routine for import_baseline
+    """
+
+
+
+
+
 def import_ecm_results(path, verbose = True):
     """ Import ECM results
 
