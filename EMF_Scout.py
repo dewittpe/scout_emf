@@ -1,9 +1,17 @@
+# (General) Imports
 import pandas as pd
 import numpy as np
 import json
 import time
 import matplotlib.pyplot as plt
 from collections import Counter
+
+# Imports for loading scout results
+from EMF_Scout_Functions import get_json
+from EMF_Scout_Functions import walk
+from EMF_Scout_Functions import loop_through_emms_emissions
+from EMF_Scout_Functions import loop_through_emms_energy
+from EMF_Scout_Functions import concat_and_filter_years
 
 # ================== 1) LOAD SCOUT RESULTS
 tic = time.time()
@@ -14,7 +22,7 @@ emm_regions = ['TRE', 'FRCC', 'MISW', 'MISC', 'MISE', 'MISS', 'ISNE', 'NYCW', 'N
                'CANO', 'CASO', 'NWPP', 'RMRG', 'BASN']
 
 # ecm_results_2
-#global list_keys
+global list_keys
 list_keys = []
 path = 'Results_Files_3/ecm_results_2.json'
 json_dict = get_json(path)
