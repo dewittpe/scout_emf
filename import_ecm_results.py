@@ -305,6 +305,12 @@ def import_ecm_results(path, verbose = True):
     rtn = pd.concat([pd.DataFrame.from_dict(d) for d in cms3])
     rtn.reset_index(inplace = True, drop = True)
 
+    if verbose:
+        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
+                str(time.time() - tic) + " seconds.")
+        tic2 = time.time()
+        print("Constructing additional columns now...")
+
     # Base EMF String -- only return the rows with a base sting
     idx = rtn.variable == "Avoided CO\u2082 Emissions (MMTons)"
     rtn.loc[idx, "emf_string"] = rtn.region[idx] + "*Emissions|CO2|Energy|Demand|Buildings"
@@ -348,7 +354,9 @@ def import_ecm_results(path, verbose = True):
     rtn.loc[rtn.end_use.isin(['Computers and Electronics', "Other"]), "end_use2"] =  "Other"
 
     if verbose:
-        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
+        print("Additonal columns built in " + str(time.time() - tic2) +\
+                " seconds.")
+        print(path + "\n  total time:\n  " +\
                 str(time.time() - tic) + " seconds.")
 
     return rtn
