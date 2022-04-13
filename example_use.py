@@ -7,83 +7,17 @@ from import_ecm_results import import_baseline_fuel_data
 from import_ecm_results import import_baseline_non_fuel_data
 from import_ecm_results import aggregate_emf
 
+################################################################################
+# Import baseline data
 fuel_b     = import_baseline_fuel_data("./mseg_res_com_emm.json")
-
 non_fuel_b = import_baseline_non_fuel_data("./mseg_res_com_emm.json")
 
-
-df = pd.DataFrame.from_dict(fuel_b)
-
-df[df["year"].notnull()]
-
-
-fuel_b[fuel_b["year"] == 2035]
-all(fuel_b['year'] == "2050")
-
-non_fuel_b
-
-
-df = pd.DataFrame.from_dict(b)
-df
-df[df["value"].isna()]
-
-df["leaf"].is()
-
-[v for v in df["leaf"]]
-
-
-
-[i for i in range(len(df)) if df[i]["leaf"] is None]
-[df[i]["leaf"] for i in range(len(df))]
-
-
+################################################################################
 # Import the example result files
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
 ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 ecm_4 = import_ecm_results("ecm_results_4.json")
-
-
-
-for i in range(len(b)):
-    print(list(b[i]["leaf"]))
-
-
-# fuels
-["electricity", "natural gas", "distillate", "other fuel"]
-
-baseline = json.load(open("./mseg_res_com_emm_NEW.json", "r"))
-list(baseline)
-
-list(baseline["TRE"])
-list(baseline["TRE"]["single family home"])
-list(baseline["TRE"]["lodging"])
-list(baseline["TRE"]["food service"])
-
-list(baseline["TRE"]["single family home"]['total homes'])
-list(baseline["TRE"]["single family home"]['new homes'])
-list(baseline["TRE"]["single family home"]['total square footage'])
-
-
-
-
-list(baseline["TRE"]["single family home"]['electricity'])
-list(baseline["TRE"]["single family home"]['electricity']['heating'])
-list(baseline["TRE"]["single family home"]['electricity']['heating']['demand'])
-list(baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall'])
-baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall']['stock']
-baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall']['energy']
-baseline["TRE"]["single family home"]['electricity']['heating']['demand']['wall']['energy']['2018']
-
-
-
-for ecm in list(baseline):
-    print("\n\nECM: " + ecm)
-    for bd in list(baseline[ecm]): 
-        print("\nBuilding: " + bd)
-        print(list(baseline[ecm][bd]))
-
-
 
 # aggregate the results
 emf_1 = aggregate_emf(ecm_1)
@@ -91,6 +25,7 @@ emf_2 = aggregate_emf(ecm_2)
 emf_3 = aggregate_emf(ecm_3)
 emf_4 = aggregate_emf(ecm_4)
 
+################################################################################
 # import the original results
 emf_1_orig = pd.read_csv("ecm_results_1-1.csv")
 emf_2_orig = pd.read_csv("ecm_results_2.csv")
@@ -100,15 +35,19 @@ emf_1_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
 emf_2_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
 emf_3_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
 
+################################################################################
 # compare the refactored work against the original work
 emf_1 = emf_1[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
 emf_2 = emf_2[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
 emf_3 = emf_3[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
 
-# compare my approach to original
-emf_1 = emf_1.merge(emf_1_orig, on = ["emf_string"], how = "outer", suffixes = ("_refactor", "_orig"))
-emf_2 = emf_2.merge(emf_2_orig, on = ["emf_string"], how = "outer", suffixes = ('_refactor', "_orig"))
-emf_3 = emf_3.merge(emf_3_orig, on = ["emf_string"], how = "outer", suffixes = ('_refactor', "_orig"))
+# compare refactor approach to original
+emf_1 = emf_1.merge(emf_1_orig, on = ["emf_string"], how = "outer",
+        suffixes = ("_refactor", "_orig"))
+emf_2 = emf_2.merge(emf_2_orig, on = ["emf_string"], how = "outer",
+        suffixes = ('_refactor', "_orig"))
+emf_3 = emf_3.merge(emf_3_orig, on = ["emf_string"], how = "outer",
+        suffixes = ('_refactor', "_orig"))
 
 emf_1["match"] = \
         (abs(emf_1["2025_refactor"] - emf_1["2025_orig"]) < 1e-8) &\
@@ -137,7 +76,9 @@ emf_3["match"] = \
 ################################################################################
 # View the matching and non-matching rows
 
-### EMF 1 ###
+###
+### EMF 1
+###
 
 # matching rows
 emf_1[emf_1.match]
@@ -154,7 +95,9 @@ emf_1[~emf_1.match & emf_1["2025_refactor"].notna() & emf_1["2025_orig"].isna()]
 # in the original work, but not in the refactor
 emf_1[~emf_1.match & emf_1["2025_refactor"].isna() & emf_1["2025_orig"].notna()]
 
-### EMF 2 ###
+###
+### EMF 2
+###
 
 # matching rows
 emf_2[emf_2.match]
@@ -171,8 +114,9 @@ emf_2[~emf_2.match & emf_2["2025_refactor"].notna() & emf_2["2025_orig"].isna()]
 # in the original work, but not in the refactor
 emf_2[~emf_2.match & emf_2["2025_refactor"].isna() & emf_2["2025_orig"].notna()]
 
-
-### EMF 3 ###
+###
+### EMF 3
+###
 
 # matching rows
 emf_3[emf_3.match]
@@ -236,7 +180,10 @@ emf_1["ecm"] = emf_1.emf_string.str.split("*", expand = True)[0]
 emf_1["emf_string2"] = emf_1.emf_string.str.split("*", expand = True)[1]
 
 # save a csv and then create a useful xlsx
-emf_1.pivot(index = "emf_string2", columns = "ecm", values = "refactor_vs_original").to_csv('refactor_vs_original.csv')
+emf_1.pivot(index = "emf_string2",
+        columns = "ecm",
+        values = "refactor_vs_original")\
+     .to_csv('refactor_vs_original.csv')
 
 
 ################################################################################
