@@ -1252,8 +1252,8 @@ final_df.loc['SUM'] = final_df.sum()/1.055
 
 df = pd.read_csv('mseg_res_com_emm+emissions.csv')
 df.index = df['Unnamed: 0']
-df_filter = df[df['Unnamed: 1']=='Final Energy|Buildings|Commercial|Other|Gas']
-df_filter = df_filter.drop(['Unnamed: 1', 'Unnamed: 0'], axis=1)
+df_filter = df[df['Unnamed: 0']=='Final Energy|Buildings|Commercial|Other|Gas']
+df_filter = df_filter.drop(['Unnamed: 0'], axis=1)
 df_filter.loc['SUM'] = df_filter.sum()/1.055
 
 
