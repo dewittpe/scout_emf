@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import json
-import matplotlib.pyplot as plt
 from collections import Counter
+ 
+
 
 # ================== 1) LOAD SCOUT RESULTS
 
@@ -12,7 +13,7 @@ def get_json(json_name):
     return file
 
 def walk(json_dict, list_keys, key_list=[]):
-
+    
     # Explore the data structure from the current location
     for key, item in json_dict.items():
         # If there are additional levels in the dict, call the function
@@ -24,13 +25,13 @@ def walk(json_dict, list_keys, key_list=[]):
         else:
             if key == '2022':    #<---- this is just to select firt set of keys, not the same set for all the years
                 list_keys.append(key_list)
-
+                
 def retrieve_values(list_args, json_dict):
     i = 0
     item = json_dict[list_args[i]]
     while (isinstance(item, dict)) and (i<len(list_args)-1):
         i += 1
-        item = item[list_args[i]]
+        item = item[list_args[i]] 
     return item
 
 def extract_sum(keywords, list_keys, name):
@@ -76,12 +77,12 @@ def get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_
     return (pd.concat(list_dfs, axis=1).sum(axis=1)*emission_factor).to_frame(name)
 
 def loop_through_emms_emissions(emm_regions, list_final_dataframes):
-
+    
     com = ['Commercial (Existing)', 'Commercial (New)']
     res = ['Residential (Existing)', 'Residential (New)']
 
     emissions = 'Avoided CO\u2082 Emissions (MMTons)'
-
+    
     direct_fuels = ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane']
     indirect_fuels = ['Electric']
     appliances = ['Cooking', 'Water Heating', 'Refrigeration']
@@ -90,18 +91,18 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
     heating = ['Heating (Equip.)']
     lighting = ['Lighting']
     other = ['Computers and Electronics', "Other"]
-
+    
     string_emissions_or_energy = 'Avoided CO\u2082 Emissions (MMTons)'
     emission_factor = 1
     emission_title_piece = 'Emissions|CO2|Energy|Demand|Buildings|'
-
-
+    
+    
     for emm in emm_regions:
-
+        
         print(emm)
         # COMMERCIAL
         buildings = com
-
+        
         name = emm + '*' + emission_title_piece + 'Commercial|Appliances|Direct'
         fuels = direct_fuels
         enduses = appliances_gas
@@ -113,7 +114,7 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         enduses = appliances
         df_co2_commercial_appliances_indirect = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         list_final_dataframes.append(df_co2_commercial_appliances_indirect)
-        #
+        # 
         name = emm + '*' + emission_title_piece + 'Commercial|Cooling|Direct'
         fuels = direct_fuels
         enduses = cooling
@@ -165,7 +166,7 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
 
         # RESIDENTIAL
         buildings = res
-
+        
         name = emm + '*' + emission_title_piece + 'Residential|Appliances|Direct'
         fuels = direct_fuels
         enduses = appliances_gas
@@ -177,7 +178,7 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         enduses = appliances
         df_co2_residential_appliances_indirect = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         list_final_dataframes.append(df_co2_residential_appliances_indirect)
-        #
+        # 
         name = emm + '*' + emission_title_piece + 'Residential|Cooling|Direct'
         fuels = direct_fuels
         enduses = cooling
@@ -225,11 +226,11 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         enduses = lighting
         df_co2_residential_lighting = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         list_final_dataframes.append(df_co2_residential_lighting)
-
+    
         #Combinations
         #Commercial
         # Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances
-        df_co2_commercial_appliances = pd.concat([df_co2_commercial_appliances_direct,
+        df_co2_commercial_appliances = pd.concat([df_co2_commercial_appliances_direct, 
                                                 df_co2_commercial_appliances_indirect], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Commercial|Appliances')
         list_final_dataframes.append(df_co2_commercial_appliances)
 
@@ -239,7 +240,7 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_co2_commercial_heating)
 
         # Emissions|CO2|Energy|Demand|Buildings|Commercial|Cooling
-        df_co2_commercial_cooling = pd.concat([df_co2_commercial_cooling_direct,
+        df_co2_commercial_cooling = pd.concat([df_co2_commercial_cooling_direct, 
                                             df_co2_commercial_cooling_indirect], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Commercial|Cooling')
         list_final_dataframes.append(df_co2_commercial_cooling)
 
@@ -259,19 +260,19 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_co2_commercial_indirect)
 
         # Emissions|CO2|Energy|Demand|Buildings|Commercial
-        df_co2_commercial = pd.concat([df_co2_commercial_indirect,
+        df_co2_commercial = pd.concat([df_co2_commercial_indirect, 
                                       df_co2_commercial_direct], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Commercial')
         list_final_dataframes.append(df_co2_commercial)
 
 
         # Emissions|CO2|Energy|Demand|Buildings|Commercial|Other
-        df_co2_commercial_other = pd.concat([df_co2_commercial_other_indirect,
+        df_co2_commercial_other = pd.concat([df_co2_commercial_other_indirect, 
                                             df_co2_commercial_other_direct], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Commercial|Other')
         list_final_dataframes.append(df_co2_commercial_other)
-
+        
 
         # Emissions|CO2|Energy|Demand|Buildings|Residential|Appliances
-        df_co2_residential_appliances = pd.concat([df_co2_residential_appliances_direct,
+        df_co2_residential_appliances = pd.concat([df_co2_residential_appliances_direct, 
                                                 df_co2_residential_appliances_indirect], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Residential|Appliances')
         list_final_dataframes.append(df_co2_residential_appliances)
 
@@ -281,7 +282,7 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_co2_residential_heating)
 
         # Emissions|CO2|Energy|Demand|Buildings|Residential|Cooling
-        df_co2_residential_cooling = pd.concat([df_co2_residential_cooling_direct,
+        df_co2_residential_cooling = pd.concat([df_co2_residential_cooling_direct, 
                                             df_co2_residential_cooling_indirect], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Residential|Cooling')
         list_final_dataframes.append(df_co2_residential_cooling)
 
@@ -301,19 +302,19 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_co2_residential_indirect)
 
         # Emissions|CO2|Energy|Demand|Buildings|Residential
-        df_co2_residential = pd.concat([df_co2_residential_direct,
+        df_co2_residential = pd.concat([df_co2_residential_direct, 
                                        df_co2_residential_indirect], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Residential')
         list_final_dataframes.append(df_co2_residential)
 
 
         # Emissions|CO2|Energy|Demand|Buildings|Residential|Other
-        df_co2_residential_other = pd.concat([df_co2_residential_other_indirect,
+        df_co2_residential_other = pd.concat([df_co2_residential_other_indirect, 
                                             df_co2_residential_other_direct], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Residential|Other')
         list_final_dataframes.append(df_co2_residential_other)
 
-
+        
         # Emissions|CO2|Energy|Demand|Buildings|Direct
-        df_co2_direct = pd.concat([df_co2_residential_direct,
+        df_co2_direct = pd.concat([df_co2_residential_direct, 
                                 df_co2_commercial_direct], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Direct')
         list_final_dataframes.append(df_co2_direct)
 
@@ -321,20 +322,20 @@ def loop_through_emms_emissions(emm_regions, list_final_dataframes):
         df_co2_indirect = pd.concat([df_co2_residential_indirect,
                                     df_co2_commercial_indirect], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Indirect')
         list_final_dataframes.append(df_co2_indirect)
-
+        
         #All
         # Emissions|CO2|Energy|Demand|Buildings
-        df_co2 = pd.concat([df_co2_residential,
+        df_co2 = pd.concat([df_co2_residential, 
                             df_co2_commercial], axis=1).sum(axis=1).to_frame(emm + '*Emissions|CO2|Energy|Demand|Buildings')
         list_final_dataframes.append(df_co2)
 
     return list_final_dataframes
 
 def loop_through_emms_energy(emm_regions, list_final_dataframes):
-
+    
     com = ['Commercial (Existing)', 'Commercial (New)']
     res = ['Residential (Existing)', 'Residential (New)']
-
+    
     gas = ['Natural Gas', 'Propane']
     oil = ['Distillate/Other']
     bio = ['Biomass']
@@ -345,17 +346,17 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
     heating = ['Heating (Equip.)']
     lighting = ['Lighting']
     other = ['Computers and Electronics', "Other"]
-
+    
     string_emissions_or_energy = 'Energy Savings (MMBtu)'
     emission_factor = 1.05505585262e-9
     emission_title_piece = 'Final Energy|Buildings|'
-
+    
     for emm in emm_regions:
         print(emm)
-
+        
         # COMMERCIAL
         buildings = com
-
+        
         name = emm + '*' + emission_title_piece + 'Commercial|Appliances|Gas'
         fuels = gas
         enduses = appliances_gas
@@ -367,7 +368,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         enduses = appliances
         df_energy_commercial_appliances_electricity = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         list_final_dataframes.append(df_energy_commercial_appliances_electricity)
-        #
+        # 
         name = emm + '*' + emission_title_piece + 'Commercial|Cooling|Gas'
         fuels = gas
         enduses = cooling
@@ -415,10 +416,10 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         enduses = lighting
         df_energy_commercial_lighting = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         #         list_final_dataframes.append(df_energy_commercial_lighting)
-
+        
         # RESIDENTIAL
         buildings = res
-
+        
         name = emm + '*' + emission_title_piece + 'Residential|Appliances|Gas'
         fuels = gas
         enduses = appliances_gas
@@ -430,7 +431,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         enduses = appliances
         df_energy_residential_appliances_electricity = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         list_final_dataframes.append(df_energy_residential_appliances_electricity)
-        #
+        # 
         name = emm + '*' + emission_title_piece + 'Residential|Cooling|Gas'
         fuels = gas
         enduses = cooling
@@ -478,11 +479,11 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         enduses = lighting
         df_energy_residential_lighting = get_specific_series(fuels, enduses, buildings, list_keys, emm, name, string_emissions_or_energy, emission_factor)
         #         list_final_dataframes.append(df_energy_residential_lighting)
-
-
-        #
+        
+        
+        # 
         # OIL and BIOMASS
-        #RESIDENTIAL
+        #RESIDENTIAL      
         #
         name = emm + '*' + emission_title_piece + 'Residential|Heating|Biomass solids'
         fuels = bio
@@ -515,7 +516,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_energy_residential_other_oil)
         #
 
-
+        
         # COMMERCIAL
         buildings = com
         #
@@ -550,9 +551,9 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_energy_commercial_other_oil)
         #
 
-
-
-
+  
+  
+        
         # ELECTRICITY
         # Final Energy|Buildings|Commercial|Electricity
         df_energy_commercial_electricity = pd.concat([df_energy_commercial_appliances_electricity,
@@ -568,8 +569,8 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
                                                 df_energy_residential_lighting_electricity,
                                                 df_energy_residential_other_electricity], axis=1).sum(axis=1).to_frame(emm + '*' + emission_title_piece + 'Residential|Electricity')
         list_final_dataframes.append(df_energy_residential_electricity)
-
-
+        
+         
         # GAS
         # Final Energy|Buildings|Commercial|Gas
         df_energy_commercial_gas = pd.concat([df_energy_commercial_appliances_gas,
@@ -585,7 +586,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_energy_residential_gas)
 
 
-
+    
         # OIL
         # Final Energy|Buildings|Commercial|Gas
         df_energy_commercial_oil = pd.concat([df_energy_commercial_appliances_oil,
@@ -599,7 +600,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         list_final_dataframes.append(df_energy_residential_oil)
 
 
-
+    
 
 
 
@@ -613,7 +614,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
         df_energy_electricity = pd.concat([df_energy_residential_electricity,
                                         df_energy_commercial_electricity], axis=1).sum(axis=1).to_frame(emm + '*' + 'Final Energy|Buildings|Electricity')
         list_final_dataframes.append(df_energy_electricity)
-
+        
         # Final Energy|Buildings|Oil
         df_energy_oil = pd.concat([df_energy_residential_oil,
                                         df_energy_commercial_oil], axis=1).sum(axis=1).to_frame(emm + '*' + 'Final Energy|Buildings|Oil')
@@ -625,7 +626,7 @@ def loop_through_emms_energy(emm_regions, list_final_dataframes):
                               df_energy_oil,
                               df_energy_residential_bio, df_energy_commercial_bio], axis=1).sum(axis=1).to_frame(emm + '*' + 'Final Energy|Buildings')
         list_final_dataframes.append(df_energy)
-
+        
 
     return list_final_dataframes
 
@@ -636,9 +637,59 @@ def concat_and_filter_years(list_final_dataframes):
     return final_df
 
 
+
+emm_regions = ['TRE', 'FRCC', 'MISW', 'MISC', 'MISE', 'MISS', 'ISNE', 'NYCW', 'NYUP', 'PJME', 
+               'PJMW', 'PJMC', 'PJMD', 'SRCA', 'SRSE', 'SRCE', 'SPPS', 'SPPC', 'SPPN', 'SRSG', 
+               'CANO', 'CASO', 'NWPP', 'RMRG', 'BASN']
+
+
+# ecm_results_2
+#global list_keys
+list_keys = []
+path = 'Results_Files_3/ecm_results_2.json'
+json_dict = get_json(path)
+walk(json_dict,list_keys)
+list_keys = [i for n, i in enumerate(list_keys) if i not in list_keys[:n]]
+list_final_dataframes = []
+list_final_dataframes = loop_through_emms_emissions(emm_regions, list_final_dataframes)
+list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_dataframes)
+ecm_results_2 = concat_and_filter_years(list_final_dataframes)
+ecm_results_2.to_csv('ecm_results_2.csv')
+
+# ecm_results_3-1
+#global list_keys
+list_keys = []
+path = 'Results_Files_3/ecm_results_3-1.json'
+json_dict = get_json(path)
+walk(json_dict,list_keys)
+list_keys = [i for n, i in enumerate(list_keys) if i not in list_keys[:n]]
+list_final_dataframes = []
+list_final_dataframes = loop_through_emms_emissions(emm_regions, list_final_dataframes)
+list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_dataframes)
+ecm_results_3_1 = concat_and_filter_years(list_final_dataframes)
+ecm_results_3_1.to_csv('ecm_results_3-1.csv')
+
+
+# ecm_results_1-1
+#global list_keys
+list_keys = []
+path = 'Results_Files_3/ecm_results_1-1.json'
+json_dict = get_json(path)
+walk(json_dict,list_keys)
+list_keys = [i for n, i in enumerate(list_keys) if i not in list_keys[:n]]
+list_final_dataframes = []
+list_final_dataframes = loop_through_emms_emissions(emm_regions, list_final_dataframes)
+list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_dataframes)
+ecm_results_1_1 = concat_and_filter_years(list_final_dataframes)
+ecm_results_1_1.to_csv('ecm_results_1-1.csv')
+
+
+
+
+
 # ================== 2) LOAD BASELINE
 def walk_baseline(json_dict, list_keys_baseline, key_list=[]):
-
+    
     # Explore the data structure from the current location
     for key, item in json_dict.items():
         # If there are additional levels in the dict, call the function
@@ -656,7 +707,7 @@ def retrieve_values_baseline(list_args, json_dict_baseline):
     item = json_dict_baseline[list_args[i]]
     while (isinstance(item, dict)) and (i<len(list_args)-1):
         i += 1
-        item = item[list_args[i]]
+        item = item[list_args[i]] 
     return item
 
 def is_subset(l1, l2):
@@ -665,7 +716,7 @@ def is_subset(l1, l2):
 
 def extract_sum(keywords, list_keys_baseline, name):
     building_types = ['assembly', 'education', 'food sales', 'food service',
-                      'health care', 'lodging', 'large office', 'small office',
+                      'health care', 'lodging', 'large office', 'small office', 
                       'mercantile/service', 'warehouse', 'unspecified']
     list_selection = []
     list_keywords = []
@@ -707,11 +758,11 @@ def extract_sum(keywords, list_keys_baseline, name):
 
 def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
     unspecified = ['unspecified']
-
+    
     for emm in emm_regions:
         print(emm)
         MMBtu_to_EJ = 1.05505585262e-9
-        #==========================   GAS  ==========================
+        #==========================   GAS  ==========================   
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Appliances|Gas'
         list_dfs = []
         for com in com_bldg:
@@ -720,7 +771,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
         df_energy_commercial_appliances_gas = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_appliances_gas)
         df_energy_commercial_appliances_gas
-
+        
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Heating|Gas'
         list_dfs = []
         for com in com_bldg:
@@ -728,7 +779,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, com, 'natural gas', 'secondary heating', 'energy', 'supply'], list_keys_baseline, name))
         df_energy_commercial_heating_gas = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_heating_gas)
-        #
+        #   
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Other|Gas'
         list_dfs = []
         for com in com_bldg:
@@ -742,13 +793,13 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, com, 'natural gas', 'cooling', 'energy', 'supply'], list_keys_baseline, name))
         df_energy_commercial_cooling_gas = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_cooling_gas)
-        #
+        # 
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Gas'
-        df_energy_commercial_gas = pd.concat([df_energy_commercial_appliances_gas,
+        df_energy_commercial_gas = pd.concat([df_energy_commercial_appliances_gas, 
                                                  df_energy_commercial_heating_gas,
-                                                 df_energy_commercial_other_gas,
+                                                 df_energy_commercial_other_gas, 
                                                    df_energy_commercial_cooling_gas ], axis=1).sum(axis=1).to_frame(name)
-        list_final_dataframes.append(df_energy_commercial_gas)
+        list_final_dataframes.append(df_energy_commercial_gas)  
         #
         #
         #----------------RESIDENTIAL
@@ -761,7 +812,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'natural gas', 'secondary heating', 'energy', 'supply'], list_keys_baseline, name))
         df_energy_residential_heating_gas = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_heating_gas)
-        #
+        # 
         #
         name = emm + '*' + 'Final Energy|Buildings|Residential|Heating|Gas_lpg'
         list_dfs = []
@@ -770,7 +821,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'other fuel', 'furnace (LPG)', 'energy'], list_keys_baseline, name))
         df_energy_residential_heating_gas_lpg = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_heating_gas_lpg)
-        #
+        #   
         #           Seems right but not aligned with Tab 4
         name = emm + '*' + 'Final Energy|Buildings|Residential|Appliances|Gas'
         list_dfs = []
@@ -780,7 +831,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'natural gas', 'drying', 'energy'], list_keys_baseline, name))
         df_energy_residential_appliances_gas = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_appliances_gas)
-
+        
         name = emm + '*' + 'Final Energy|Buildings|Residential|Cooling|Gas'
         list_dfs = []
         for res in res_bldg:
@@ -794,18 +845,18 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'natural gas', 'other', 'energy'], list_keys_baseline, name))
         df_energy_residential_other_gas = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_other_gas)
-
+         
         #
         name = emm + '*' + 'Final Energy|Buildings|Residential|Gas'
-        df_energy_residential_gas = pd.concat([df_energy_residential_heating_gas,
+        df_energy_residential_gas = pd.concat([df_energy_residential_heating_gas, 
                                                  df_energy_residential_appliances_gas,
                                                  df_energy_residential_cooling_gas,
                                                  df_energy_residential_other_gas,
                                                 df_energy_residential_heating_gas_lpg], axis=1).sum(axis=1).to_frame(name)
-        list_final_dataframes.append(df_energy_residential_gas)
+        list_final_dataframes.append(df_energy_residential_gas) 
 
-        #         ==========================   ELECTRICITY  ==========================
-
+        #         ==========================   ELECTRICITY  ==========================  
+          
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Appliances|Electricity'
         list_dfs = []
         for com in com_bldg:
@@ -814,14 +865,14 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, com, 'electricity', 'cooking', 'energy'], list_keys_baseline, name))
         df_energy_commercial_appliances_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_appliances_electricity)
-        #
+        #   
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Cooling|Electricity'
         list_dfs = []
         for com in com_bldg:
             list_dfs.append(extract_sum([emm, com, 'electricity', 'cooling', 'energy', 'supply'], list_keys_baseline, name))
         df_energy_commercial_cooling_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_cooling_electricity)
-        #
+        #   
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Heating|Electricity'
         list_dfs = []
         for com in com_bldg:
@@ -830,14 +881,14 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, com, 'electricity', 'ventilation', 'energy'], list_keys_baseline, name))
         df_energy_commercial_heating_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_heating_electricity)
-
+          
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Lighting|Electricity'
         list_dfs = []
         for com in com_bldg:
             list_dfs.append(extract_sum([emm, com, 'electricity', 'lighting', 'energy'], list_keys_baseline, name))
         df_energy_commercial_lighting_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
-        list_final_dataframes.append(df_energy_commercial_lighting_electricity)
-        #
+        list_final_dataframes.append(df_energy_commercial_lighting_electricity)    
+        #   
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Other|Electricity'
         list_dfs = []
         for com in com_bldg:
@@ -846,9 +897,9 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, com, 'electricity', 'MELs', 'energy'], list_keys_baseline, name))   #0.47
         df_energy_commercial_other_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_other_electricity)
-        #
+        #   
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Electricity'
-        df_energy_commercial_electricity = pd.concat([df_energy_commercial_cooling_electricity,
+        df_energy_commercial_electricity = pd.concat([df_energy_commercial_cooling_electricity, 
                                                       df_energy_commercial_appliances_electricity,
                                                       df_energy_commercial_heating_electricity,
                                                       df_energy_commercial_lighting_electricity,
@@ -865,7 +916,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'electricity', 'cooling', 'energy', 'supply'], list_keys_baseline, name))
         df_energy_residential_cooling_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_cooling_electricity)
-
+          
         name = emm + '*' + 'Final Energy|Buildings|Residential|Appliances|Electricity'
         list_dfs = []
         for res in res_bldg:
@@ -876,7 +927,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'electricity', 'drying', 'energy'], list_keys_baseline, name))
         df_energy_residential_appliances_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_appliances_electricity)
-        #
+        #     
         name = emm + '*' + 'Final Energy|Buildings|Residential|Heating|Electricity'
         list_dfs = []
         for res in res_bldg:
@@ -885,14 +936,14 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'electricity', 'fans and pumps', 'energy'], list_keys_baseline, name))
         df_energy_residential_heating_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_heating_electricity)
-
+          
         name = emm + '*' + 'Final Energy|Buildings|Residential|Lighting|Electricity'
         list_dfs = []
         for res in res_bldg:
             list_dfs.append(extract_sum([emm, res, 'electricity', 'lighting', 'energy'], list_keys_baseline, name))
         df_energy_residential_lighting_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
-        list_final_dataframes.append(df_energy_residential_lighting_electricity)
-
+        list_final_dataframes.append(df_energy_residential_lighting_electricity)    
+          
         name = emm + '*' + 'Final Energy|Buildings|Residential|Other|Electricity'
         list_dfs = []
         for res in res_bldg:
@@ -901,15 +952,15 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum([emm, res, 'electricity', 'other', 'energy'], list_keys_baseline, name))
         df_energy_residential_other_electricity = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_other_electricity)
-        #
+        # 
         name = emm + '*' + 'Final Energy|Buildings|Residential|Electricity'
-        df_energy_residential_electricity = pd.concat([df_energy_residential_cooling_electricity,
+        df_energy_residential_electricity = pd.concat([df_energy_residential_cooling_electricity, 
                                                       df_energy_residential_appliances_electricity,
                                                       df_energy_residential_heating_electricity,
                                                       df_energy_residential_lighting_electricity,
                                                       df_energy_residential_other_electricity], axis=1).sum(axis=1).to_frame(name)
         list_final_dataframes.append(df_energy_residential_electricity)
-
+        
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Heating|Oil'
         list_dfs = []
         for com in com_bldg:
@@ -937,36 +988,36 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum(keywords, list_keys_baseline, name))
         df_energy_residential_heating_oil_kerosene = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_heating_oil_kerosene)
-
-        #
+        
+        #         
         name = emm + '*' + 'Final Energy|Buildings|Residential|Appliances|Oil'
         list_dfs = []
         for res in res_bldg:
             list_dfs.append(extract_sum([emm, res, 'distillate', 'water heating', 'energy'], list_keys_baseline, name))
         df_energy_residential_appliances_oil = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_appliances_oil)
-
+        
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Appliances|Oil'
         list_dfs = []
         for com in com_bldg:
             list_dfs.append(extract_sum([emm, com, 'distillate', 'water heating', 'energy'], list_keys_baseline, name))
         df_energy_commercial_appliances_oil = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_appliances_oil)
-        #
+        # 
         name = emm + '*' + 'Final Energy|Buildings|Residential|Other|Oil'
         list_dfs = []
         for res in res_bldg:
             list_dfs.append(extract_sum([emm, res, 'distillate', 'other', 'energy'], list_keys_baseline, name))
         df_energy_residential_other_oil = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_other_oil)
-        #
+        # 
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Other|Oil'
         list_dfs = []
         for com in com_bldg:
             list_dfs.append(extract_sum([emm, com, 'distillate', 'other', 'energy'], list_keys_baseline, name))
         df_energy_commercial_other_oil = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_commercial_other_oil)
-
+        
         #
         name = emm + '*' + 'Final Energy|Buildings|Commercial|Oil'
         df_energy_commercial_oil = pd.concat([df_energy_commercial_heating_oil,
@@ -979,8 +1030,8 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
                                   df_energy_residential_other_oil,
                                   df_energy_residential_appliances_oil,
                                 df_energy_residential_heating_oil_kerosene], axis=1).sum(axis=1).to_frame(name)
-        list_final_dataframes.append(df_energy_residential_oil)
-
+        list_final_dataframes.append(df_energy_residential_oil)        
+        
         name = emm + '*' + 'Final Energy|Buildings|Residential|Heating|Biomass solids'
         list_dfs = []
         for res in res_bldg:
@@ -990,7 +1041,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
             list_dfs.append(extract_sum(keywords, list_keys_baseline, name))
         df_energy_residential_heating_bio = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_heating_bio)
-
+        
         name = emm + '*' + 'Final Energy|Buildings|Residential|Biomass solids'
         list_dfs = []
         for res in res_bldg:
@@ -1001,8 +1052,8 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
         df_energy_residential_bio = (pd.concat(list_dfs, axis=1).sum(axis=1)*MMBtu_to_EJ).to_frame(name)
         list_final_dataframes.append(df_energy_residential_bio)
 
-
-
+        
+        
         #       -----------General---------------
         #
         # Final Energy|Buildings|Electricity
@@ -1012,7 +1063,7 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
         list_final_dataframes.append(df_energy_electricity)
         #
         name = emm + '*' + 'Final Energy|Buildings|Gas'
-        df_energy_gas = pd.concat([df_energy_residential_gas,
+        df_energy_gas = pd.concat([df_energy_residential_gas, 
                                    df_energy_commercial_gas], axis=1).sum(axis=1).to_frame(name)
         list_final_dataframes.append(df_energy_gas)
         #
@@ -1022,12 +1073,12 @@ def get_data_baseline(emm_regions, list_final_dataframes, com_bldg, res_bldg):
 
         # Final Energy|Buildings
         name = emm + '*' + 'Final Energy|Buildings'
-        df_energy = pd.concat([df_energy_electricity,
-                               df_energy_gas,
-                               df_energy_oil,
+        df_energy = pd.concat([df_energy_electricity, 
+                               df_energy_gas, 
+                               df_energy_oil, 
                                df_energy_residential_heating_bio], axis=1).sum(axis=1).to_frame(name)
         list_final_dataframes.append(df_energy)
-
+        
     return list_final_dataframes
 
 def get_conversion_coeffs(emm_regions):
@@ -1038,12 +1089,12 @@ def get_conversion_coeffs(emm_regions):
         list_coeffs.append(pd.DataFrame.from_dict(convert_coeffs['CO2 intensity of electricity']['data'][emm], orient='index', columns=[emm]))
     final_df_coeffs = pd.concat(list_coeffs, axis=1)
     final_df_coeffs = final_df_coeffs.transpose()
-    final_df_coeffs = final_df_coeffs[['2025', '2030','2035', '2040', '2045', '2050']]
+    final_df_coeffs = final_df_coeffs[['2025', '2030','2035', '2040', '2045', '2050']]    
     return final_df_coeffs
-
+       
 def convert_energy_to_co2(emm_regions, conv_coefficients):
     ej_to_quad = 0.9478
-
+    
     ej_to_mt_co2_propane = ej_to_quad * 62.88
     ej_to_mt_co2_kerosene = ej_to_quad * 73.38
     ej_to_mt_co2_gas = ej_to_quad * 53.056
@@ -1051,13 +1102,13 @@ def convert_energy_to_co2(emm_regions, conv_coefficients):
     ej_to_mt_co2_bio =ej_to_quad * 96.88
     pound_to_mt = 0.000453592
     ej_to_twh = 277.778
-
-
+       
+    
     for emm in emm_regions:
         dict_energy_emissions = {emm + "*Final Energy|Buildings":emm + "*Emissions|CO2|Energy|Demand|Buildings",
                                 emm + "*Final Energy|Buildings|Commercial|Appliances|Gas":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances|Direct_gas",
                                 emm + "*Final Energy|Buildings|Commercial|Appliances|Electricity":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances|Indirect",
-                                emm + "*Final Energy|Buildings|Commercial|Appliances|Oil":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances|Direct_O_il",
+                                emm + "*Final Energy|Buildings|Commercial|Appliances|Oil":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances|Direct_O_il", 
                                 emm + "*Final Energy|Buildings|Commercial|Cooling|Electricity":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Cooling|Indirect",
                                 emm + "*Final Energy|Buildings|Commercial|Cooling|Gas":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Cooling|Direct",
                                 emm + "*Final Energy|Buildings|Commercial|Heating|Gas":emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Heating|Direct_gas",
@@ -1093,9 +1144,9 @@ def convert_energy_to_co2(emm_regions, conv_coefficients):
                                 emm + "*Final Energy|Buildings|Electricity":emm + "*Emissions|CO2|Energy|Demand|Buildings|Indirect",
                                 emm + "*Final Energy|Buildings|Gas":emm + "*Emissions|CO2|Energy|Demand|Buildings|Direct_gas",
                                 emm + "*Final Energy|Buildings|Oil":emm + "*Emissions|CO2|Energy|Demand|Buildings|Direct_O_il",}
-
-
-
+        
+        
+        
         coeffs_emm = conv_coefficients[conv_coefficients.index == emm].values[0]
         for i in final_df.index:
             if (emm in i) and ('Electricity' in i):
@@ -1110,35 +1161,35 @@ def convert_energy_to_co2(emm_regions, conv_coefficients):
                 final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_oil
             elif (emm in i) and ('Biomass' in i):
                 final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_bio
-
+                
         emissions_string = "*Emissions|CO2|Energy|Demand|Buildings|"
         #Now let's add the combinations for the emissions
-        final_df.loc[emm + emissions_string + "Commercial|Appliances"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_O_il"].values[0])
+        final_df.loc[emm + emissions_string + "Commercial|Appliances"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_O_il"].values[0]) 
         final_df.loc[emm + emissions_string + "Commercial|Cooling"]  = (final_df[final_df.index==emm + emissions_string + "Commercial|Cooling|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Cooling|Indirect"].values[0])
         final_df.loc[emm + emissions_string + "Commercial|Heating"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Heating|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Heating|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Heating|Direct_O_il"].values[0])
         final_df.loc[emm + emissions_string + "Commercial|Lighting"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Lighting|Indirect"].values[0])
         final_df.loc[emm + emissions_string + "Commercial|Other"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Other|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Other|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Other|Direct_O_il"].values[0])
-        final_df.loc[emm + emissions_string + "Residential|Appliances"]= (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_O_il"].values[0])
+        final_df.loc[emm + emissions_string + "Residential|Appliances"]= (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_O_il"].values[0]) 
         final_df.loc[emm + emissions_string + "Residential|Cooling"]  = (final_df[final_df.index==emm + emissions_string + "Residential|Cooling|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Cooling|Indirect"].values[0])
         final_df.loc[emm + emissions_string + "Residential|Heating"] = (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_gas_lpg"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_O_il"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_O_il_kerosene"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_bio"].values[0])
         final_df.loc[emm + emissions_string + "Residential|Lighting"] = (final_df[final_df.index==emm + emissions_string + "Residential|Lighting|Indirect"].values[0])
         final_df.loc[emm + emissions_string + "Residential|Other"] = (final_df[final_df.index==emm + emissions_string + "Residential|Other|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Other|Indirect"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Other|Direct_O_il"].values[0])
         #Combine different fuels
-        final_df.loc[emm + emissions_string + "Commercial|Appliances|Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_O_il"].values[0])
+        final_df.loc[emm + emissions_string + "Commercial|Appliances|Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct_O_il"].values[0]) 
         final_df.loc[emm + emissions_string + "Commercial|Heating|Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Heating|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Heating|Direct_O_il"].values[0])
         final_df.loc[emm + emissions_string + "Commercial|Other|Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Other|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Other|Direct_O_il"].values[0])
         final_df.loc[emm + emissions_string + "Commercial|Cooling|Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Cooling|Direct"].values[0])
-        final_df.loc[emm + emissions_string + "Residential|Appliances|Direct"]= (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_O_il"].values[0])
+        final_df.loc[emm + emissions_string + "Residential|Appliances|Direct"]= (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct_O_il"].values[0]) 
         final_df.loc[emm + emissions_string + "Residential|Cooling|Direct"] = (final_df[final_df.index==emm + emissions_string + "Residential|Cooling|Direct"].values[0])
         final_df.loc[emm + emissions_string + "Residential|Heating|Direct"] = (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_gas_lpg"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_O_il"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_O_il_kerosene"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct_bio"].values[0])
         final_df.loc[emm + emissions_string + "Residential|Other|Direct"] = (final_df[final_df.index==emm + emissions_string + "Residential|Other|Direct_gas"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Other|Direct_O_il"].values[0])
         final_df.loc[emm + emissions_string + "Residential|Direct"] = (final_df[final_df.index==emm + emissions_string + "Residential|Appliances|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Heating|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Cooling|Direct"].values[0])+ (final_df[final_df.index==emm + emissions_string + "Residential|Other|Direct"].values[0])
         final_df.loc[emm + emissions_string + "Commercial|Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Appliances|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Heating|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Cooling|Direct"].values[0])+ (final_df[final_df.index==emm + emissions_string + "Commercial|Other|Direct"].values[0])
-        final_df.loc[emm + emissions_string + "Residential"] = (final_df[final_df.index==emm + emissions_string + "Residential|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Indirect"].values[0])
-        final_df.loc[emm + emissions_string + "Commercial"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Indirect"].values[0])
-        final_df.loc[emm + emissions_string + "Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Direct"].values[0])
-        final_df.loc[emm + "*Emissions|CO2|Energy|Demand|Buildings"] = (final_df[final_df.index==emm + emissions_string + "Commercial"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential"].values[0])
-
+        final_df.loc[emm + emissions_string + "Residential"] = (final_df[final_df.index==emm + emissions_string + "Residential|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Indirect"].values[0]) 
+        final_df.loc[emm + emissions_string + "Commercial"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Commercial|Indirect"].values[0]) 
+        final_df.loc[emm + emissions_string + "Direct"] = (final_df[final_df.index==emm + emissions_string + "Commercial|Direct"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential|Direct"].values[0])       
+        final_df.loc[emm + "*Emissions|CO2|Energy|Demand|Buildings"] = (final_df[final_df.index==emm + emissions_string + "Commercial"].values[0]) + (final_df[final_df.index==emm + emissions_string + "Residential"].values[0]) 
+        
     for emm in emm_regions:
         final_df.drop(labels=[emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances|Direct_gas",
             emm + "*Emissions|CO2|Energy|Demand|Buildings|Commercial|Appliances|Direct_O_il",
@@ -1168,10 +1219,65 @@ def convert_energy_to_co2(emm_regions, conv_coefficients):
             emm + "*Final Energy|Buildings|Residential|Heating|Oil_kerosene"
         ], axis=0, inplace=True)
     return final_df
+                
+        
+
+com_bldg = ['assembly', 'education', 'food sales', 'food service', 
+            'health care', 'lodging', 'large office', 'small office', 'mercantile/service', 'warehouse', 'other', 'unspecified']
+res_bldg = ['single family home', 'multi family home', 'mobile home']
+
+global list_keys_baseline
+list_keys_baseline = []
+path = 'mseg_res_com_emm_NEW.json'
+json_dict_baseline = get_json(path)
+walk_baseline(json_dict_baseline,list_keys_baseline)
+list_final_dataframes = []
+list_keys_baseline = [i for n, i in enumerate(list_keys_baseline) if i not in list_keys_baseline[:n]]
+list_final_dataframes = get_data_baseline(emm_regions,list_final_dataframes, com_bldg, res_bldg)  
+final_df = pd.concat(list_final_dataframes, axis=1)
+final_df = final_df.transpose()
+final_df = final_df[['2025', '2030','2035', '2040', '2045', '2050']]
+conv_coefficients = get_conversion_coeffs(emm_regions)
+final_df = convert_energy_to_co2(emm_regions, conv_coefficients)
+final_df.to_csv('mseg_res_com_emm+emissions.csv')
+final_df.loc['SUM'] = final_df.sum()/1.055
+
+df = pd.read_csv('mseg_res_com_emm+emissions.csv')
+df.index = df['Unnamed: 0']
+df_filter = df[df['Unnamed: 1']=='Final Energy|Buildings|Commercial|Other|Gas']
+df_filter = df_filter.drop(['Unnamed: 1', 'Unnamed: 0'], axis=1)
+df_filter.loc['SUM'] = df_filter.sum()/1.055
+
+
+# Combine Baseline and Scout Results
+ecm_results_2_final = final_df.sort_index(ascending=True).subtract(ecm_results_2.sort_index(ascending=True))
+ecm_results_3_1_final = final_df.sort_index(ascending=True).subtract(ecm_results_3_1.sort_index(ascending=True))
+ecm_results_1_1_final = final_df.sort_index(ascending=True).subtract(ecm_results_1_1.sort_index(ascending=True))
+# 
+ecm_results_2_final.to_csv('ecm_results_2_final.csv')
+ecm_results_3_1_final.to_csv('ecm_results_3_1_final.csv')
+ecm_results_1_1_final.to_csv('ecm_results_1_1_final.csv')
+
 
 
 # ================== 3) PLOT OUT EVERYTHING
-# no function definitions
+import matplotlib.pyplot as plt
+emms = ['CASO', 'ISNE', 'SRSE']
+for emm in emms:
+    for i in range(0,len(ecm_results_1_1_final.sort_index(ascending=True).index)):
+        if emm in ecm_results_1_1_final.sort_index(ascending=True).index[i]:
+            df = pd.DataFrame(columns = ['2025', '2030', '2035', '2040', '2045', '2050'])
+            df.loc['1-1'] = ecm_results_1_1_final.sort_index(ascending=True).iloc[i]
+            df.loc['2'] = ecm_results_2_final.sort_index(ascending=True).iloc[i]
+            df.loc['3-1'] = ecm_results_3_1_final.sort_index(ascending=True).iloc[i]
+            df.loc['Baseline'] = final_df.sort_index(ascending=True).iloc[i]
+            df = df.transpose()
+    #         print(df)
+            df.plot(kind='line', title = ecm_results_1_1_final.sort_index(ascending=True).index[i])
+    #         plt.show()
+            plt.savefig('test_aggregate/' + ecm_results_1_1_final.sort_index(ascending=True).index[i] + '.pdf')
+            plt.clf()
+    
 
 
 # ================== 4) AREAS AND PRICES
@@ -1213,7 +1319,7 @@ def get_prices_gas_oil(emm_regions, res_com, fuel):
 
 def get_areas(emm_regions):
     sqft_to_Mm2 = 0.092903/1000000
-    com_bldg = ['assembly', 'education', 'food sales', 'food service',
+    com_bldg = ['assembly', 'education', 'food sales', 'food service', 
                 'health care', 'lodging', 'large office', 'small office', 'mercantile/service', 'warehouse', 'other']
     res_bldg = ['single family home', 'multi family home', 'mobile home']
     path = 'mseg_res_com_emm_NEW.json'
@@ -1240,4 +1346,18 @@ def get_areas(emm_regions):
         list_areas.append(tot_area)
     final_df = pd.concat(list_areas, axis=0)
     return final_df
+
+
+res_com = 'residential'
+price_elec_res = get_prices_electricity(emm_regions, res_com)
+price_gas_res = get_prices_gas_oil(emm_regions, res_com, 'gas')
+price_oil_res = get_prices_gas_oil(emm_regions, res_com, 'oil')
+res_com = 'commercial'
+price_elec_com = get_prices_electricity(emm_regions, res_com)
+price_gas_com = get_prices_gas_oil(emm_regions, res_com, 'gas')
+price_oil_com = get_prices_gas_oil(emm_regions, res_com, 'oil')
+# 
+prices = pd.concat([price_elec_res, price_elec_com,price_gas_res, price_gas_com, price_oil_res, price_oil_com ], axis=0)
+
+areas_df = get_areas(emm_regions)
 
