@@ -31,3 +31,4 @@ dependencies:
   - fastparquet
   - pyarrow
   - plotly
+  - matplotlib
