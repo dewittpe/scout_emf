@@ -1,14 +1,13 @@
-
 import pandas as pd
 import numpy as np
 import json
-import time
+import datetime
 from collections import Counter
  
-tic0 = time.time()
+tic0 = datetime.datetime.now()
 
 # ================== 1) LOAD SCOUT RESULTS
-tic = time.time()
+tic = datetime.datetime.now()
 print("Start LOAD SCOUT RESULTS")
 
 def get_json(json_name):
@@ -687,13 +686,13 @@ list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_datafra
 ecm_results_1_1 = concat_and_filter_years(list_final_dataframes)
 ecm_results_1_1.to_csv('EMF_Scout_output/ecm_results_1-1.csv')
 
-
-print("LOAD SCOUT RESULTS: Completed in " + str(time.time() - tic) + " seconds.")
+time_delta_load_results = datetime.datetime.now() - tic
+print(f"LOAD SCOUT RESULTS: Completed in {time_delta_load_results}")
 
 
 
 # ================== 2) LOAD BASELINE
-tic = time.time()
+tic = datetime.datetime.now()
 print("Start LOAD BASELINE")
 
 def walk_baseline(json_dict, list_keys_baseline, key_list=[]):
@@ -1266,12 +1265,14 @@ ecm_results_2_final.to_csv('EMF_Scout_output/ecm_results_2_final.csv')
 ecm_results_3_1_final.to_csv('EMF_Scout_output/ecm_results_3_1_final.csv')
 ecm_results_1_1_final.to_csv('EMF_Scout_output/ecm_results_1_1_final.csv')
 
-print("Completed LOAD BASELINE in " + str(time.time() - tic) + " seconds.")
+print("Completed LOAD BASELINE in " + str(datetime.datetime.now() - tic) + " seconds.")
 
+time_delta_load_baseline = datetime.datetime.now() - tic
+print(f"LOAD BASELINE: Completed in {time_delta_load_baseline}")
 
 
 # ================== 3) PLOT OUT EVERYTHING
-tic = time.time()
+tic = datetime.datetime.now()
 print("Start PLOT OUT EVERYTHING")
 
 import matplotlib.pyplot as plt
@@ -1291,9 +1292,12 @@ for emm in emms:
             plt.savefig('EMF_Scout_output/test_aggregate/' + ecm_results_1_1_final.sort_index(ascending=True).index[i] + '.pdf')
             plt.clf()
     
+time_delta_plot_everything = datetime.datetime.now() - tic
+print(f"Plot Everything: Completed in {time_delta_plot_everything}")
 
 
 # ================== 4) AREAS AND PRICES
+tic = datetime.datetime.now()
 def get_prices_electricity(emm_regions, res_com):
     kwh_to_GJ = 1/0.0036
     path = './supporting_data/convert_data/emm_region_emissions_prices.json'
@@ -1378,5 +1382,14 @@ prices_areas = pd.concat([prices, areas_df], axis=0)
 prices_areas.to_csv('EMF_Scout_output/price_areas.csv')
 
 
-print("Finished PLOT OUT EVERYTHING in " + str(time.time() - tic) + " seconds.")
-print("EMF_Scout.py finished in " + str((time.time() - tic) / 60) + " minutes.")
+time_delta_areas_prices = datetime.datetime.now() - tic
+print(f"Areas and Prices: Completed in {time_delta_areas_prices}")
+
+print("\n\nTime")
+time_delta_total = datetime.datetime.now() - tic0
+print(f"LOAD SCOUT RESULTS:  Completed in {time_delta_load_results}")
+print(f"LOAD BASELINE:       Completed in {time_delta_load_baseline}")
+print(f"Plot Everything:     Completed in {time_delta_plot_everything}")
+print(f"Areas and Prices:    Completed in {time_delta_areas_prices}")
+print(f"EMF_Scout.py script: Completed in {time_delta_total}")
+
