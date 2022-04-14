@@ -1,3 +1,9 @@
+################################################################################
+# This R script is useful for development of the EMF methods.  The
+# tidyjson::json_structure method is extremely helpful for exploring the json
+# files within scout.  None of this code is going to be part of the project,
+# just useful for exploring the json files.
+
 library(jsonlite)
 library(tidyjson)
 library(igraph)
