@@ -1236,7 +1236,7 @@ res_bldg = ['single family home', 'multi family home', 'mobile home']
 
 global list_keys_baseline
 list_keys_baseline = []
-path = 'mseg_res_com_emm_NEW.json'
+path = './supporting_data/stock_energy_tech_data/mseg_res_com_emm'
 json_dict_baseline = get_json(path)
 walk_baseline(json_dict_baseline,list_keys_baseline)
 list_final_dataframes = []
@@ -1335,7 +1335,7 @@ def get_areas(emm_regions):
     com_bldg = ['assembly', 'education', 'food sales', 'food service', 
                 'health care', 'lodging', 'large office', 'small office', 'mercantile/service', 'warehouse', 'other']
     res_bldg = ['single family home', 'multi family home', 'mobile home']
-    path = 'mseg_res_com_emm_NEW.json'
+    path = 'supporting_data/stock_energy_tech_data/mseg_res_com_emm'
     convert_coeffs = get_json(path)
     list_areas = []
     list_coeffs_com = []
