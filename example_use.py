@@ -1,35 +1,35 @@
 import json
 import pandas as pd
 import re
-import time
+import datetime
 from import_ecm_results import import_ecm_results
 from import_ecm_results import import_baseline_fuel_data
 from import_ecm_results import import_baseline_non_fuel_data
 from import_ecm_results import aggregate_emf
 
+tic0 = datetime.datetime.now()
+
 ################################################################################
 # Import baseline data
-fuel_b     = import_baseline_fuel_data("./mseg_res_com_emm.json")
-non_fuel_b = import_baseline_non_fuel_data("./mseg_res_com_emm.json")
+fuel_b     = import_baseline_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+non_fuel_b = import_baseline_non_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
 ################################################################################
 # Import the example result files
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
 ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
-ecm_4 = import_ecm_results("ecm_results_4.json")
 
 # aggregate the results
 emf_1 = aggregate_emf(ecm_1)
 emf_2 = aggregate_emf(ecm_2)
 emf_3 = aggregate_emf(ecm_3)
-emf_4 = aggregate_emf(ecm_4)
 
 ################################################################################
 # import the original results
-emf_1_orig = pd.read_csv("ecm_results_1-1.csv")
-emf_2_orig = pd.read_csv("ecm_results_2.csv")
-emf_3_orig = pd.read_csv("ecm_results_3-1.csv")
+emf_1_orig = pd.read_csv("EMF_Scout_output/ecm_results_1-1.csv")
+emf_2_orig = pd.read_csv("EMF_Scout_output/ecm_results_2.csv")
+emf_3_orig = pd.read_csv("EMF_Scout_output/ecm_results_3-1.csv")
 
 emf_1_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
 emf_2_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
@@ -209,6 +209,10 @@ ecm_2[(ecm_2.emf_string == "BASN*Final Energy|Buildings") &
 # raw json, but that does not seem to be the case.
 
 
+################################################################################
+time_delta = datetime.datetime.now() - tic0
+print("\n\nTiming:")
+print(f"example_use.py completed in: {time_delta}")
 
 ################################################################################
 #                                 End of File                                  #
