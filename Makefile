@@ -7,5 +7,5 @@ JSONS += Results_Files_3/ecm_results_3-1.json
 all: $(JSONS)
 
 %.json : %.json.gz
-	gzip -dk $<
+	gzip -dkf $<
 
