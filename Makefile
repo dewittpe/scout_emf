@@ -9,7 +9,7 @@ INPUTCSVS = mseg_res_com_emm+emissions.csv
 
 .PHONY: all
 
-all: EMF_Scout_output/EMF_Scout.py.log
+all: EMF_Scout_output/EMF_Scout.py.log example_use.py.log
 
 % : %.gz
 	gzip -dkf $<
@@ -17,4 +17,7 @@ all: EMF_Scout_output/EMF_Scout.py.log
 
 EMF_Scout_output/EMF_Scout.py.log : EMF_Scout.py $(JSONS) $(INPUTCSVS)
 	mkdir -p EMF_Scout_output/test_aggregate
-	python EMF_Scout.py > $@
+	python $< > $@
+
+example_use.py.log : example_use.py $(JSONS)
+	python $< > $@
