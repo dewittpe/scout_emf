@@ -4,8 +4,10 @@ possible extension for scout
 ## Preliminary work
 
 The `EMF_Scout.py` and `EMF_Scout_Functions.py` files are the original outline
-for the needed work to be done.  `EMF_Scout.py.log` is a log file from running
-the `EMF_Scout.py` script.
+for the needed work to be done.  The function definitons in
+`EMF_Scout_Functions.py` were found to be identical to function definitions
+found in `EMF_Scout.py`.  Therefore, `EMF_Scout_Functions.py` was removed from
+the working directory.
 
 The provided scripts and example data files _do not_ run to completion.
 Specifically, running:
@@ -38,6 +40,9 @@ results in:
     user	63m23.662s
     sys	0m2.018s
 
+A several edits have been made to the EMF_Scout.py script to allow it to run to
+completion.
+
 ## Updated work
 
 @dewittpe was provided with the initial files noted above and has started to
@@ -49,10 +54,6 @@ refactor the project.
 
 The file `example_use.py` is a incremental development file showing how to use
 the refactored code.
-
-* Data
-  * The data set are gzip files in this repo.  You will need to decompress these
-      files before running `example_use.py`
 
 ## Development Environment
 
@@ -70,4 +71,6 @@ and packages for working on scout and this possible emf extension.
     # manually removed from environment.yml
     conda env export --from-history > environment.yml
 
-
+A `Makefile` has been provided to make it easy to run the original
+`EMF_Scout.py` methods, the refactored methods, and build diagnostic outputs as
+well.
