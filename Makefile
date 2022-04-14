@@ -9,7 +9,7 @@ INPUTCSVS = mseg_res_com_emm+emissions.csv
 
 .PHONY: all
 
-all: $(JSONS) $(INPUTCSVS) #EMF_Scout.py.log
+all: EMF_Scout.py.log
 
 % : %.gz
 	gzip -dkf $<
