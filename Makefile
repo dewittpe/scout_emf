@@ -9,12 +9,12 @@ INPUTCSVS = mseg_res_com_emm+emissions.csv
 
 .PHONY: all
 
-all: EMF_Scout.py.log
+all: EMF_Scout_output/EMF_Scout.py.log
 
 % : %.gz
 	gzip -dkf $<
 	@touch $@ # needed to prevent make from decompressing these files over and over again.
 
-EMF_Scout.py.log : EMF_Scout.py $(JSONS) $(INPUTCSVS)
-	mkdir -p test_aggregate
+EMF_Scout_output/EMF_Scout.py.log : EMF_Scout.py $(JSONS) $(INPUTCSVS)
+	mkdir -p EMF_Scout_output/test_aggregate
 	python EMF_Scout.py > $@

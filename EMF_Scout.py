@@ -658,7 +658,7 @@ list_final_dataframes = []
 list_final_dataframes = loop_through_emms_emissions(emm_regions, list_final_dataframes)
 list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_dataframes)
 ecm_results_2 = concat_and_filter_years(list_final_dataframes)
-ecm_results_2.to_csv('ecm_results_2.csv')
+ecm_results_2.to_csv('EMF_Scout_output/ecm_results_2.csv')
 
 # ecm_results_3-1
 #global list_keys
@@ -671,7 +671,7 @@ list_final_dataframes = []
 list_final_dataframes = loop_through_emms_emissions(emm_regions, list_final_dataframes)
 list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_dataframes)
 ecm_results_3_1 = concat_and_filter_years(list_final_dataframes)
-ecm_results_3_1.to_csv('ecm_results_3-1.csv')
+ecm_results_3_1.to_csv('EMF_Scout_output/ecm_results_3-1.csv')
 
 
 # ecm_results_1-1
@@ -685,7 +685,7 @@ list_final_dataframes = []
 list_final_dataframes = loop_through_emms_emissions(emm_regions, list_final_dataframes)
 list_final_dataframes = loop_through_emms_energy(emm_regions, list_final_dataframes)
 ecm_results_1_1 = concat_and_filter_years(list_final_dataframes)
-ecm_results_1_1.to_csv('ecm_results_1-1.csv')
+ecm_results_1_1.to_csv('EMF_Scout_output/ecm_results_1-1.csv')
 
 
 print("LOAD SCOUT RESULTS: Completed in " + str(time.time() - tic) + " seconds.")
@@ -1247,7 +1247,7 @@ final_df = final_df.transpose()
 final_df = final_df[['2025', '2030','2035', '2040', '2045', '2050']]
 conv_coefficients = get_conversion_coeffs(emm_regions)
 final_df = convert_energy_to_co2(emm_regions, conv_coefficients)
-final_df.to_csv('mseg_res_com_emm+emissions.csv')
+final_df.to_csv('EMF_Scout_output/mseg_res_com_emm+emissions.csv')
 final_df.loc['SUM'] = final_df.sum()/1.055
 
 df = pd.read_csv('mseg_res_com_emm+emissions.csv')
@@ -1262,9 +1262,9 @@ ecm_results_2_final = final_df.sort_index(ascending=True).subtract(ecm_results_2
 ecm_results_3_1_final = final_df.sort_index(ascending=True).subtract(ecm_results_3_1.sort_index(ascending=True))
 ecm_results_1_1_final = final_df.sort_index(ascending=True).subtract(ecm_results_1_1.sort_index(ascending=True))
 # 
-ecm_results_2_final.to_csv('ecm_results_2_final.csv')
-ecm_results_3_1_final.to_csv('ecm_results_3_1_final.csv')
-ecm_results_1_1_final.to_csv('ecm_results_1_1_final.csv')
+ecm_results_2_final.to_csv('EMF_Scout_output/ecm_results_2_final.csv')
+ecm_results_3_1_final.to_csv('EMF_Scout_output/ecm_results_3_1_final.csv')
+ecm_results_1_1_final.to_csv('EMF_Scout_output/ecm_results_1_1_final.csv')
 
 print("Completed LOAD BASELINE in " + str(time.time() - tic) + " seconds.")
 
@@ -1288,7 +1288,7 @@ for emm in emms:
     #         print(df)
             df.plot(kind='line', title = ecm_results_1_1_final.sort_index(ascending=True).index[i])
     #         plt.show()
-            plt.savefig('test_aggregate/' + ecm_results_1_1_final.sort_index(ascending=True).index[i] + '.pdf')
+            plt.savefig('EMF_Scout_output/test_aggregate/' + ecm_results_1_1_final.sort_index(ascending=True).index[i] + '.pdf')
             plt.clf()
     
 
@@ -1375,7 +1375,7 @@ prices = pd.concat([price_elec_res, price_elec_com,price_gas_res, price_gas_com,
 areas_df = get_areas(emm_regions)
 
 prices_areas = pd.concat([prices, areas_df], axis=0)
-prices_areas.to_csv('price_areas.csv')
+prices_areas.to_csv('EMF_Scout_output/price_areas.csv')
 
 
 print("Finished PLOT OUT EVERYTHING in " + str(time.time() - tic) + " seconds.")
