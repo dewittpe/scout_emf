@@ -1311,7 +1311,7 @@ def get_prices_electricity(emm_regions, res_com):
 
 def get_prices_gas_oil(emm_regions, res_com, fuel):
     MMBtu_to_GJ = 1/1.055056
-    path = 'site_source_co2_conversions.json'
+    path = 'supporting_data/convert_data/site_source_co2_conversions.json'
     convert_coeffs = get_json(path)
     list_coeffs = []
     for emm in emm_regions:
