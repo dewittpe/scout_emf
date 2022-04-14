@@ -1,7 +1,7 @@
 import json
 import pandas as pd
 import re
-import time
+import datetime
 
 def import_baseline_fuel_data(path, verbose = True):
     """ Import baseline fuel data
@@ -10,7 +10,7 @@ def import_baseline_fuel_data(path, verbose = True):
         path: file path to json file (mseg_res_com_emm_NEW.json)
         verbose: print time required to import the data
     """
-    tic = time.time()
+    tic = datetime.datetime.now()
 
     f = open(path, "r")
     baseline = json.load(f)
@@ -164,8 +164,8 @@ def import_baseline_fuel_data(path, verbose = True):
     rtn.drop(axis = 1, inplace = True, columns = "leaf")
 
     if verbose:
-        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
-                str(time.time() - tic) + " seconds.")
+        time_delta = datetime.datetime.now() - tic
+        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
 
     return rtn
 
@@ -175,7 +175,7 @@ def import_baseline_non_fuel_data(path, verbose = True):
         path: file path to json file (mseg_res_com_emm_NEW.json)
         verbose: print time required to import the data
     """
-    tic = time.time()
+    tic = datetime.datetime.now()
 
     f = open(path, "r")
     baseline = json.load(f)
@@ -216,8 +216,8 @@ def import_baseline_non_fuel_data(path, verbose = True):
     non_fuels = pd.DataFrame.from_dict(non_fuels)
 
     if verbose:
-        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
-                str(time.time() - tic) + " seconds.")
+        time_delta = datetime.datetime.now() - tic
+        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
 
     return(non_fuels)
 
@@ -235,7 +235,7 @@ def import_ecm_results(path, verbose = True):
     Return:
         a pandas DataFrame
     """
-    tic = time.time()
+    tic = datetime.datetime.now()
 
     f = open(path, "r")
     ecm_results = json.load(f)
@@ -306,9 +306,9 @@ def import_ecm_results(path, verbose = True):
     rtn.reset_index(inplace = True, drop = True)
 
     if verbose:
-        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
-                str(time.time() - tic) + " seconds.")
-        tic2 = time.time()
+        time_delta = datetime.datetime.now() - tic
+        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
+        tic2 = datetime.datetime.now()
         print("Constructing additional columns now...")
 
     # Base EMF String -- only return the rows with a base sting
@@ -354,10 +354,8 @@ def import_ecm_results(path, verbose = True):
     rtn.loc[rtn.end_use.isin(['Computers and Electronics', "Other"]), "end_use2"] =  "Other"
 
     if verbose:
-        print("Additonal columns built in " + str(time.time() - tic2) +\
-                " seconds.")
-        print(path + "\n  total time:\n  " +\
-                str(time.time() - tic) + " seconds.")
+        time_delta = datetime.datetime.now() - tic2
+        print(f"additional columns built in {time_delta}")
 
     return rtn
 
@@ -375,7 +373,7 @@ def import_ecm_results_v1(path, verbose = True):
     Return:
         a pandas DataFrame
     """
-    tic = time.time()
+    tic = datetime.datetime.now()
 
     f = open(path, "r")
     ecm_results = json.load(f)
@@ -413,21 +411,24 @@ def import_ecm_results_v1(path, verbose = True):
     cms["cms"] = CMS
 
     if verbose:
-        print(path + "\n  imported and coerced to a DataFrame in\n  " +\
-                str(time.time() - tic) + " seconds.")
+        time_delta = datetime.datetime.now() - tic
+        print(f"{path} imported and coerced to a Dataframe in {time_delta}")
 
     return cms
 
 
-def aggregate_emf(df) :
+def aggregate_emf(df, verbose = True) :
     """ Aggregate results for EMF
 
     Arguments:
         df: a pandas DataFrame returned from import_ecm_results
+        verbose: report progress and timing to the user
 
     Return:
         a pandas DataFrame
     """
+    tic = datetime.datetime.now()
+
     a0 = df\
             .groupby(['emf_string', 'year'])\
             .agg(value=('value','sum'))
@@ -510,6 +511,10 @@ def aggregate_emf(df) :
     a = a.pivot(index = ["emf_string"], columns = ["year"], values = ["value"])
     a.columns = a.columns.droplevel(0)
     a.reset_index(inplace = True)
+
+    if verbose:
+        time_delta = datetime.datetime.now() - tic
+        print(f"Aggregation completed in {time_delta}")
 
     return a
 
