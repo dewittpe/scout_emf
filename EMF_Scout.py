@@ -1296,7 +1296,7 @@ for emm in emms:
 # ================== 4) AREAS AND PRICES
 def get_prices_electricity(emm_regions, res_com):
     kwh_to_GJ = 1/0.0036
-    path = 'emm_region_emissions_prices.json'
+    path = './supporting_data/convert_data/emm_region_emissions_prices.json'
     convert_coeffs = get_json(path)
     list_coeffs = []
     for emm in emm_regions:
