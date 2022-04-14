@@ -5,7 +5,7 @@ import json
 import time
 from collections import Counter
  
-
+tic0 = time.time()
 
 # ================== 1) LOAD SCOUT RESULTS
 tic = time.time()
@@ -1379,3 +1379,4 @@ prices_areas.to_csv('price_areas.csv')
 
 
 print("Finished PLOT OUT EVERYTHING in " + str(time.time() - tic) + " seconds.")
+print("EMF_Scout.py finished in " + str((time.time() - tic) / 60) + " minutes.")
