@@ -130,3 +130,4 @@ dmypy.json
 *.json
 *.gz
 supporting_data/stock_energy_tech_data/mseg_res_com_emm
+mseg_res_com_emm+emissions.csv
