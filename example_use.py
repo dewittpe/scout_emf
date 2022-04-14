@@ -1,19 +1,31 @@
+################################################################################
+# file: example_use.py
+# author: Peter DeWitt
+#
+# purpose: using the refactored functions defined in import_ecm_results.py
+# compare DeWitt's refactored results to the results of the original work done
+# via the EMF_Scout.py script.
+#
+################################################################################
+
 import json
 import pandas as pd
 import re
 import datetime
+
 from import_ecm_results import import_ecm_results
 from import_ecm_results import import_baseline_fuel_data
 from import_ecm_results import import_baseline_non_fuel_data
 from import_ecm_results import aggregate_emf
 
+# tic0 - the tic for the toc at the end of the script
 tic0 = datetime.datetime.now()
 
 ################################################################################
-# Import baseline data
-fuel_b     = import_baseline_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
-non_fuel_b = import_baseline_non_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
-
+#                                  SECTION 1                                   #
+#                                                                              #
+#          Import and Compare aggregation of ecm_results*.json files           #
+#                                                                              #
 ################################################################################
 # Import the example result files
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
@@ -208,6 +220,16 @@ ecm_2[(ecm_2.emf_string == "BASN*Final Energy|Buildings") &
 # The non-zero values in the original work suggest there should be data in the
 # raw json, but that does not seem to be the case.
 
+
+################################################################################
+#                                  SECTION 2                                   #
+#                                                                              #
+#                  Import, convert, and compare Baseline Data                  #
+#                                                                              #
+################################################################################
+# Import baseline data
+fuel_b     = import_baseline_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+non_fuel_b = import_baseline_non_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
 ################################################################################
 time_delta = datetime.datetime.now() - tic0
