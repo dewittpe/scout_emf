@@ -13,10 +13,10 @@ import pandas as pd
 import re
 import datetime
 
-from import_ecm_results import import_ecm_results
-from import_ecm_results import import_baseline_fuel_data
-from import_ecm_results import import_baseline_non_fuel_data
-from import_ecm_results import aggregate_emf
+from scout_emf_methods import import_ecm_results
+from scout_emf_methods import import_baseline_fuel_data
+from scout_emf_methods import import_baseline_non_fuel_data
+from scout_emf_methods import aggregate_emf
 
 # tic0 - the tic for the toc at the end of the script
 tic0 = datetime.datetime.now()
