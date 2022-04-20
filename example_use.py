@@ -14,8 +14,8 @@ import re
 import datetime
 
 from scout_emf_methods import import_ecm_results
-from scout_emf_methods import import_baseline_fuel_data
-from scout_emf_methods import import_baseline_non_fuel_data
+from scout_emf_methods import import_baseline_energy_data
+from scout_emf_methods import import_baseline_building_data
 from scout_emf_methods import aggregate_emf
 
 # tic0 - the tic for the toc at the end of the script
@@ -228,8 +228,8 @@ ecm_2[(ecm_2.emf_string == "BASN*Final Energy|Buildings") &
 #                                                                              #
 ################################################################################
 # Import baseline data
-fuel_b     = import_baseline_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
-non_fuel_b = import_baseline_non_fuel_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+baseline_energy   = import_baseline_energy_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+baseline_building = import_baseline_building_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
 ################################################################################
 time_delta = datetime.datetime.now() - tic0

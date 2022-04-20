@@ -6,6 +6,11 @@
 #
 # Methods Defined herein:
 #
+# * import_baseline_energy_data
+# * import_baseline_building_data
+# * import_ecm_results
+# * aggregate_emf
+#
 ################################################################################
 import json
 import pandas as pd
@@ -13,8 +18,8 @@ import re
 import datetime
 
 ################################################################################
-def import_baseline_fuel_data(path, verbose = True):
-    """ Import baseline fuel data
+def import_baseline_energy_data(path, verbose = True):                      #{{{
+    """ Import baseline energy data
 
     Arguments:
         path: file path to json file (mseg_res_com_emm_NEW.json)
@@ -179,7 +184,10 @@ def import_baseline_fuel_data(path, verbose = True):
 
     return rtn
 
-def import_baseline_non_fuel_data(path, verbose = True):
+# }}}
+
+################################################################################
+def import_baseline_building_data(path, verbose = True):                    #{{{
     """
     Arguments:
         path: file path to json file (mseg_res_com_emm_NEW.json)
@@ -231,11 +239,10 @@ def import_baseline_non_fuel_data(path, verbose = True):
 
     return(non_fuels)
 
+# }}}
 
-
-
-
-def import_ecm_results(path, verbose = True):
+################################################################################
+def import_ecm_results(path, verbose = True):                               #{{{
     """ Import ECM results
 
     Arguments:
@@ -369,7 +376,10 @@ def import_ecm_results(path, verbose = True):
 
     return rtn
 
-def import_ecm_results_v1(path, verbose = True):
+# }}}
+
+################################################################################
+def import_ecm_results_v1(path, verbose = True):                            #{{{
     """ Import ECM results
 
      THIS IS VERY FAST BUT REQUIRES A CONSISTENT JSON FORMAT.  SINCE FUEL TYPE
@@ -426,8 +436,10 @@ def import_ecm_results_v1(path, verbose = True):
 
     return cms
 
+# }}}
 
-def aggregate_emf(df, verbose = True) :
+################################################################################
+def aggregate_emf(df, verbose = True) :                                     #{{{
     """ Aggregate results for EMF
 
     Arguments:
@@ -528,6 +540,7 @@ def aggregate_emf(df, verbose = True) :
 
     return a
 
+# end of aggregate_emf }}}
 
 ################################################################################
 #                                 End of File                                  #
