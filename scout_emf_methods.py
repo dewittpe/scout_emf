@@ -8,6 +8,7 @@
 #
 # * import_baseline_energy_data
 # * import_baseline_building_data
+# * import_conversion_coeffs
 # * import_ecm_results
 # * aggregate_emf
 #
@@ -16,6 +17,58 @@ import json
 import pandas as pd
 import re
 import datetime
+
+################################################################################
+def import_conversion_coeffs(path, verbose = True):                         #{{{
+    tic = datetime.datetime.now()
+
+    f = open(path, "r")
+    d = json.load(f)
+    f.close()
+
+    co2 = [{
+        "updated_to_aeo_case" : d["updated_to_aeo_case"],
+        "updated_to_aeo_year" : d["updated_to_aeo_year"],
+        "concept"             : "CO2 intensity of electricity",
+        "units"               : d["CO2 intensity of electricity"]["units"],
+        "source"              : d["CO2 intensity of electricity"]["source"],
+        "region"              : region,
+        "year"                : year,
+        "value"               : value
+        }\
+                for region in list(d["CO2 intensity of electricity"]["data"])\
+                for year   in list(d["CO2 intensity of electricity"]["data"][region])\
+                for value  in     [d["CO2 intensity of electricity"]["data"][region][year]]
+                ]
+    co2 = pd.DataFrame.from_dict(co2)
+
+    price = [{
+        "updated_to_aeo_case" : d["updated_to_aeo_case"],
+        "updated_to_aeo_year" : d["updated_to_aeo_year"],
+        "concept"             : "End-use electricity price",
+        "units"               : d["End-use electricity price"]["units"],
+        "source"              : d["End-use electricity price"]["source"],
+        "building_class"      : bc,
+        "region"              : region,
+        "year"                : year,
+        "value"               : value
+        }\
+                for bc     in list(d["End-use electricity price"]["data"])\
+                for region in list(d["End-use electricity price"]["data"][bc])\
+                for year   in list(d["End-use electricity price"]["data"][bc][region])\
+                for value  in     [d["End-use electricity price"]["data"][bc][region][year]]
+                ]
+    price = pd.DataFrame.from_dict(price)
+
+    rtn = pd.concat([co2, price])
+
+    if verbose:
+        time_delta = datetime.datetime.now() - tic
+        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
+
+    return rtn
+
+# }}}
 
 ################################################################################
 def import_baseline_energy_data(path, verbose = True):                      #{{{
