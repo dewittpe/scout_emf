@@ -439,7 +439,7 @@ def import_ecm_results_v1(path, verbose = True):                            #{{{
 # }}}
 
 ################################################################################
-def aggregate_emf(df, verbose = True) :                                     #{{{
+def aggregate_ecm_results(df, verbose = True):                              #{{{
     """ Aggregate results for EMF
 
     Arguments:

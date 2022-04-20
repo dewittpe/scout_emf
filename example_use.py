@@ -16,7 +16,7 @@ import datetime
 from scout_emf_methods import import_ecm_results
 from scout_emf_methods import import_baseline_energy_data
 from scout_emf_methods import import_baseline_building_data
-from scout_emf_methods import aggregate_emf
+from scout_emf_methods import aggregate_ecm_results
 
 # tic0 - the tic for the toc at the end of the script
 tic0 = datetime.datetime.now()
@@ -33,9 +33,9 @@ ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
 ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
 # aggregate the results
-emf_1 = aggregate_emf(ecm_1)
-emf_2 = aggregate_emf(ecm_2)
-emf_3 = aggregate_emf(ecm_3)
+emf_1 = aggregate_ecm_results(ecm_1)
+emf_2 = aggregate_ecm_results(ecm_2)
+emf_3 = aggregate_ecm_results(ecm_3)
 
 ################################################################################
 # import the original results
