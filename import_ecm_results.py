@@ -1,8 +1,18 @@
+################################################################################
+# file: scout_emf_methods.py
+#
+# Define methods for simplifing importing the ECM results, baseline values,
+# converstion metrics, and building of graphics for Scout EMF.
+#
+# Methods Defined herein:
+#
+################################################################################
 import json
 import pandas as pd
 import re
 import datetime
 
+################################################################################
 def import_baseline_fuel_data(path, verbose = True):
     """ Import baseline fuel data
 
@@ -518,4 +528,8 @@ def aggregate_emf(df, verbose = True) :
 
     return a
 
+
+################################################################################
+#                                 End of File                                  #
+################################################################################
 
