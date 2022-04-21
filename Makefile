@@ -17,5 +17,5 @@ EMF_Scout_output/EMF_Scout.py.log : EMF_Scout.py $(JSONS)
 	mkdir -p EMF_Scout_output/test_aggregate
 	python $< > $@
 
-example_use.py.log : example_use.py $(JSONS)
+example_use.py.log : example_use.py $(JSONS) scout_emf_methods.py
 	python $< > $@
