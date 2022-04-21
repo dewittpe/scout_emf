@@ -1244,17 +1244,22 @@ list_final_dataframes = get_data_baseline(emm_regions,list_final_dataframes, com
 final_df = pd.concat(list_final_dataframes, axis=1)
 final_df = final_df.transpose()
 final_df = final_df[['2025', '2030','2035', '2040', '2045', '2050']]
+print(final_df)
 conv_coefficients = get_conversion_coeffs(emm_regions)
 final_df = convert_energy_to_co2(emm_regions, conv_coefficients)
+print(final_df)
 final_df.to_csv('EMF_Scout_output/mseg_res_com_emm+emissions.csv')
 final_df.loc['SUM'] = final_df.sum()/1.055
+print(final_df)
 
-df = pd.read_csv('mseg_res_com_emm+emissions.csv')
+df = pd.read_csv('EMF_Scout_output/mseg_res_com_emm+emissions.csv')
+print(df)
 df.index = df['Unnamed: 0']
+print(df)
 df_filter = df[df['Unnamed: 0']=='Final Energy|Buildings|Commercial|Other|Gas']
 df_filter = df_filter.drop(['Unnamed: 0'], axis=1)
 df_filter.loc['SUM'] = df_filter.sum()/1.055
-
+print(df_filter)
 
 # Combine Baseline and Scout Results
 ecm_results_2_final = final_df.sort_index(ascending=True).subtract(ecm_results_2.sort_index(ascending=True))

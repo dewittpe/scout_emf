@@ -5,8 +5,6 @@ JSONS += supporting_data/convert_data/emm_region_emissions_prices.json
 JSONS += supporting_data/convert_data/site_source_co2_conversions.json
 JSONS += supporting_data/stock_energy_tech_data/mseg_res_com_emm
 
-INPUTCSVS = mseg_res_com_emm+emissions.csv
-
 .PHONY: all
 
 all: EMF_Scout_output/EMF_Scout.py.log example_use.py.log
@@ -15,7 +13,7 @@ all: EMF_Scout_output/EMF_Scout.py.log example_use.py.log
 	gzip -dkf $<
 	@touch $@ # needed to prevent make from decompressing these files over and over again.
 
-EMF_Scout_output/EMF_Scout.py.log : EMF_Scout.py $(JSONS) $(INPUTCSVS)
+EMF_Scout_output/EMF_Scout.py.log : EMF_Scout.py $(JSONS)
 	mkdir -p EMF_Scout_output/test_aggregate
 	python $< > $@
 
