@@ -20,7 +20,16 @@ import re
 import datetime
 
 ################################################################################
-def convert_energy_to_co2():                                                #{{{
+def convert_energy_to_co2(coefs, verbose = True):                           #{{{
+    """
+    Convert energy in exajoules to metric tonne of CO2
+
+    Args:
+        coef: the pandas DataFrame returned from import_conversion_coeffs
+        verbose: report timing
+    Return:
+        a pandas DataFrame
+    """
     # conversion factors
     # ej = exajoule = 1e18 joules
     # mt = metric tonne
@@ -33,22 +42,30 @@ def convert_energy_to_co2():                                                #{{{
     pound_to_mt           = 0.000453592
     ej_to_twh             = 277.778
 
-    coeffs_emm = conv_coefficients[conv_coefficients.index == emm].values[0]
-    for i in final_df.index:
-        if (emm in i) and ('Electricity' in i):
-            final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * coeffs_emm * ej_to_twh
-        if (emm in i) and ('Gas_lpg' in i):
-            final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_propane
-        elif (emm in i) and ('Gas' in i):
-            final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_gas
-        if (emm in i) and ('Oil_kerosene' in i):
-            final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_kerosene
-        elif (emm in i) and ('Oil' in i):
-            final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_oil
-        elif (emm in i) and ('Biomass' in i):
-            final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_bio
+    conversion_factors =\
+            {'fuel_type' : ["Electricity", "Gas_lpg", "Gas", "Oil_kerosene",
+                "Oil", "Biomass"],
+             'coef' : [ej_to_twh, ej_to_mt_co2_propane, ej_to_mt_co2_gas,
+                 ej_to_mt_co2_kerosene, ej_to_mt_co2_oil, ej_to_mt_co2_bio]
+            }
+    conversion_factors = pd.DataFrame(data = conversion_factors)
 
-    return None
+    #coeffs_emm = conv_coefficients[conv_coefficients.index == emm].values[0]
+    #for i in final_df.index:
+    #    if (emm in i) and ('Electricity' in i):
+    #        final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * coeffs_emm * ej_to_twh
+    #    if (emm in i) and ('Gas_lpg' in i):
+    #        final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_propane
+    #    elif (emm in i) and ('Gas' in i):
+    #        final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_gas
+    #    if (emm in i) and ('Oil_kerosene' in i):
+    #        final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_kerosene
+    #    elif (emm in i) and ('Oil' in i):
+    #        final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_oil
+    #    elif (emm in i) and ('Biomass' in i):
+    #        final_df.loc[dict_energy_emissions[i]] = (final_df[final_df.index==i].values[0]) * ej_to_mt_co2_bio
+
+    return conversion_factors
 
 # end of convert_energy_to_co2 }}}
 
