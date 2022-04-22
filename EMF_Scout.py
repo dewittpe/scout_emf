@@ -1244,6 +1244,7 @@ list_final_dataframes = get_data_baseline(emm_regions,list_final_dataframes, com
 final_df = pd.concat(list_final_dataframes, axis=1)
 final_df = final_df.transpose()
 final_df = final_df[['2025', '2030','2035', '2040', '2045', '2050']]
+final_df.to_csv('EMF_Scout_output/mseg_res_com_emm+emissions_BEFORE_convert.csv')
 print(f"1. final_df:\n{final_df}")
 conv_coefficients = get_conversion_coeffs(emm_regions)
 print(f"2. conv_coefficients:\n{conv_coefficients}")
