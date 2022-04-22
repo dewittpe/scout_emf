@@ -18,6 +18,7 @@ from scout_emf_methods import import_baseline_energy_data
 from scout_emf_methods import import_baseline_building_data
 from scout_emf_methods import aggregate_ecm_results
 from scout_emf_methods import import_conversion_coeffs
+from scout_emf_methods import convert_energy_to_co2
 
 # tic0 - the tic for the toc at the end of the script
 tic0 = datetime.datetime.now()
@@ -230,6 +231,8 @@ ecm_2[(ecm_2.emf_string == "BASN*Final Energy|Buildings") &
 ################################################################################
 # Import baseline data
 baseline_energy   = import_baseline_energy_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+baseline_energy
+
 baseline_building = import_baseline_building_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
 # covert coeff
@@ -243,10 +246,20 @@ emf_1 = aggregate_ecm_results(ecm_1)
 ecm_1.info()
 
 set(ecm_1.fuel_type)
+set(ecm_1.fuel_type2)
+ecm_1
+emf_1
 
 convert_coeffs.info()
 convert_coeffs[["concept", "units", "region", "year", "value"]]
 
+convert_coeffs.loc[convert_coeffs.concept == "CO2 intensity of electricity",
+        ["concept", "units", "region", "year", "value"]
+        ]
+
+convert_coeffs[["concept", "units", "region", "year", "value"]]
+
+convert_energy_to_co2(convert_coeffs)
 
 ################################################################################
 time_delta = datetime.datetime.now() - tic0

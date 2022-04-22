@@ -50,6 +50,11 @@ def convert_energy_to_co2(coefs, verbose = True):                           #{{{
             }
     conversion_factors = pd.DataFrame(data = conversion_factors)
 
+    coefs = coefs.loc[coefs.concept == "CO2 intensity of electricity",
+            ["concept", "units", "region", "year", "value"]]
+
+    
+
     #coeffs_emm = conv_coefficients[conv_coefficients.index == emm].values[0]
     #for i in final_df.index:
     #    if (emm in i) and ('Electricity' in i):
@@ -81,10 +86,10 @@ def import_conversion_coeffs(path, verbose = True):                         #{{{
         "updated_to_aeo_case" : d["updated_to_aeo_case"],
         "updated_to_aeo_year" : d["updated_to_aeo_year"],
         "concept"             : "CO2 intensity of electricity",
-        "units"               : d["CO2 intensity of electricity"]["units"],
         "source"              : d["CO2 intensity of electricity"]["source"],
         "region"              : region,
         "year"                : year,
+        "units"               : d["CO2 intensity of electricity"]["units"],
         "value"               : value
         }\
                 for region in list(d["CO2 intensity of electricity"]["data"])\
@@ -97,11 +102,11 @@ def import_conversion_coeffs(path, verbose = True):                         #{{{
         "updated_to_aeo_case" : d["updated_to_aeo_case"],
         "updated_to_aeo_year" : d["updated_to_aeo_year"],
         "concept"             : "End-use electricity price",
-        "units"               : d["End-use electricity price"]["units"],
         "source"              : d["End-use electricity price"]["source"],
         "building_class"      : bc,
         "region"              : region,
         "year"                : year,
+        "units"               : d["End-use electricity price"]["units"],
         "value"               : value
         }\
                 for bc     in list(d["End-use electricity price"]["data"])\
