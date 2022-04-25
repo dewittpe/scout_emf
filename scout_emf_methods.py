@@ -443,43 +443,72 @@ def import_ecm_results(path                                                 #{{{
 
     return rtn
 
+################################################################################
+def mapping_emf_base_string():                                              #{{{
+    """
+    A data frame to map variable values to base EMF strings
+
+    Arguments:
+        None
+
+    Return:
+        A pandas DataFrame
+    """
+    d = {
+            "variable" : ["Avoided CO\u2082 Emissions (MMTons)"
+                , "Energy Savings (MMBtu)"]
+            , "emf_base_string" : ["*Emissions|CO2|Energy|Demand|Buildings"
+                , "*Final Energy|Buildings"
+                ]
+            }
+    return pd.DataFrame(data = d)
+#}}}
+
+################################################################################
+def mapping_building_class():                                              #{{{
+    """
+    Map for what is really just splitting a string
+    """
+    d = {
+            "building_class0" : ["Commercial (Existing)", "Commercial (New)"
+                , "Residential (Existing)", "Residential (New)"]
+            , "building_class" : ["Commercial", "Commercial", "Residential",
+            "Residential"]
+            , "building_construction" : ["Existing", "New", "Existing", "New"]
+            }
+    return pd.DataFrame(data = d)
+#}}}
+
+################################################################################
+def mapping_direct_fuel():                                                  #{{{
+    """
+    Map for fuel type to direct or indirect
+    """
+    fuel_types = ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
+
+    d = {
+            "fuel"         : ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
+            , "(in)direct" : ['Direct',      'Direct',           'Direct',  'Direct',  'Indirect', 'Direct']
+            }
+    return pd.DataFrame(data = d)
+#}}}
+
+################################################################################
+def mapping_emf_fuel():                                                     #{{{
+    """
+    Map for fuel types to emf fuel types
+    """
+    fuel_types = ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
+
+    d = {
+            "fuel"       : ['Natural Gas', 'Propane', 'Distillate/Other', 'Biomass', 'Electric', 'Electricity']
+            , "emf_fuel" : ['Gas',         'Gas',     'Oil',              'Biomass Solids', 'Electricity', 'Electricity']
+            }
+    return pd.DataFrame(data = d)
+#}}}
 
 ################################################################################
 def REFACTORTHIS(path, verbose = True):                            #{{{
-    tic2 = datetime.datetime.now()
-    print("Constructing additional columns now...")
-
-    # Base EMF String -- only return the rows with a base sting
-    idx = rtn.variable == "Avoided CO\u2082 Emissions (MMTons)"
-    rtn.loc[idx, "emf_string"] = rtn.region[idx] + "*Emissions|CO2|Energy|Demand|Buildings"
-    idx = rtn.variable == "Energy Savings (MMBtu)"
-    rtn.loc[idx, "emf_string"] = rtn.region[idx] + "*Final Energy|Buildings"
-    rtn = rtn[rtn.emf_string.notna()]
-
-    # add helpful columns
-    rtn["cms"] = CMS
-
-    # residential or commercial?  split the existing building_class into two columns
-    rtn.loc[rtn.building_class.isin(['Commercial (Existing)', 'Residential (Existing)']), "building_construction"] = "Existing"
-    rtn.loc[rtn.building_class.isin(['Commercial (New)', 'Residential (New)']), "building_construction"] = "New"
-
-    rtn.loc[rtn.building_class.isin(['Commercial (Existing)', 'Commercial (New)']), "building_class"] = "Commercial"
-    rtn.loc[rtn.building_class.isin(['Residential (Existing)', 'Residential (New)']), "building_class"] = "Residential"
-
-    # add column for direct fuel status.
-    if not set(rtn.fuel_type).issubset(['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']):
-        # TODO: Improve error handling
-        print("Unexpected fuel type")
-        #exit(1)
-
-    rtn.loc[rtn.fuel_type.isin(['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Non-Electric']), "direct_fuel"] = "Direct"
-    rtn.loc[rtn.fuel_type.isin(['Electric']), "direct_fuel"] = "Indirect"
-
-    # fuel_type2
-    rtn.loc[rtn.fuel_type.isin(['Natural Gas', 'Propane']), "fuel_type2"] = "Gas"
-    rtn.loc[rtn.fuel_type.isin(['Distillate/Other']), "fuel_type2"] = "Oil"
-    rtn.loc[rtn.fuel_type.isin(['Biomass']), "fuel_type2"] = "Biomass Solids"
-    rtn.loc[rtn.fuel_type.isin(['Electric']), "fuel_type2"] =  "Electricity"
 
     # Simplified End use columns
     # TODO: Where should "Ventilation" be placed?

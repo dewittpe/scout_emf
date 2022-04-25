@@ -19,6 +19,13 @@ from scout_emf_methods import import_baseline_building_data
 from scout_emf_methods import aggregate_ecm_results
 from scout_emf_methods import import_conversion_coeffs
 from scout_emf_methods import convert_energy_to_co2
+from scout_emf_methods import mapping_emf_base_string
+from scout_emf_methods import mapping_building_class
+from scout_emf_methods import mapping_direct_fuel
+
+mapping_emf_base_string()
+mapping_building_class()
+mapping_direct_fuel()
 
 # tic0 - the tic for the toc at the end of the script
 tic0 = datetime.datetime.now()
@@ -33,6 +40,22 @@ tic0 = datetime.datetime.now()
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
 ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
+baseline_energy = import_baseline_energy_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+
+ecm_1
+ecm_2
+ecm_3.info()
+baseline_energy.info()
+
+ecm_1.info()
+emf_mapping_base_string(ecm_1.variable)
+
+range(len(ecm_1.variable))
+
+set(ecm_1["fuel_type"])
+set(ecm_2["fuel_type"]) 
+set(ecm_3["fuel_type"])
+set(baseline_energy["fuel"])
 
 # aggregate the results
 emf_1 = aggregate_ecm_results(ecm_1)
@@ -241,6 +264,11 @@ convert_coeffs = import_conversion_coeffs( './supporting_data/convert_data/emm_r
 # fresh read of aggregated ecm results
 ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 emf_1 = aggregate_ecm_results(ecm_1)
+
+
+baseline_energy
+ecm_1
+
 
 # covert energy to co2
 ecm_1.info()
