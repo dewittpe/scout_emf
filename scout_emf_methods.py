@@ -220,7 +220,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
                     , "appliance" : fuels_2[i]["appliance"]
                     , "year"      : None
                     , "leaf"      : None
-                    , "value"     : None
+                    , "value"     : np.nan
                     }
             if leaf in ["stock", "energy"]:
                 d1["se"] = leaf
@@ -229,7 +229,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
                 d1["year"] = leaf
                 d1["value"] = fuels_2[i]["leaf"][leaf]
             elif leaf in ["N", "A"]:
-                d1["value"] = None
+                d1["value"] = np.nan
             else:
                 d1["appliance"] = leaf
                 d1["leaf"] = fuels_2[i]["leaf"][leaf]
@@ -239,18 +239,18 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
     fuels_4 = []
 
     for i in range(len(fuels_3)):
+        d1 = {    "region"    : fuels_3[i]["region"]
+                , "bldg"      : fuels_3[i]["bldg"]
+                , "fuel"      : fuels_3[i]["fuel"]
+                , "enduse"    : fuels_3[i]["enduse"]
+                , "se"        : fuels_3[i]["se"]
+                , "ds"        : fuels_3[i]["ds"]
+                , "appliance" : fuels_3[i]["appliance"]
+                , "year"      : fuels_3[i]["year"]
+                , "leaf"      : fuels_3[i]["leaf"]
+                , "value"     : fuels_3[i]["value"]
+                }
         if fuels_3[i]["leaf"] is not None:
-            d1 = {    "region"    : fuels_3[i]["region"]
-                    , "bldg"      : fuels_3[i]["bldg"]
-                    , "fuel"      : fuels_3[i]["fuel"]
-                    , "enduse"    : fuels_3[i]["enduse"]
-                    , "se"        : fuels_3[i]["se"]
-                    , "ds"        : fuels_3[i]["ds"]
-                    , "appliance" : fuels_3[i]["appliance"]
-                    , "year"      : fuels_3[i]["year"]
-                    , "leaf"      : fuels_3[i]["leaf"]
-                    , "value"     : fuels_3[i]["value"]
-                    }
             for leaf in list(fuels_3[i]["leaf"]):
                 if leaf in ["stock", "energy"]:
                     d1["se"] = leaf
@@ -261,32 +261,32 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
                     d1["year"] = leaf
                     d1["value"] = fuels_3[i]["leaf"][leaf]
                     d1["leaf"] = None
-                fuels_4.append(d1)
+        fuels_4.append(d1)
 
     # finally, one more run though to get the yearly data
     fuels_5 = []
 
     for i in range(len(fuels_4)):
+        d1 = {    "region"    : fuels_4[i]["region"]
+                , "bldg"      : fuels_4[i]["bldg"]
+                , "fuel"      : fuels_4[i]["fuel"]
+                , "enduse"    : fuels_4[i]["enduse"]
+                , "se"        : fuels_4[i]["se"]
+                , "ds"        : fuels_4[i]["ds"]
+                , "appliance" : fuels_4[i]["appliance"]
+                , "year"      : fuels_4[i]["year"]
+                , "leaf"      : fuels_4[i]["leaf"]
+                , "value"     : fuels_4[i]["value"]
+                }
         if fuels_4[i]["leaf"] is not None:
             for leaf in list(fuels_4[i]["leaf"]):
-                d1 = {    "region"    : fuels_4[i]["region"]
-                        , "bldg"      : fuels_4[i]["bldg"]
-                        , "fuel"      : fuels_4[i]["fuel"]
-                        , "enduse"    : fuels_4[i]["enduse"]
-                        , "se"        : fuels_4[i]["se"]
-                        , "ds"        : fuels_4[i]["ds"]
-                        , "appliance" : fuels_4[i]["appliance"]
-                        , "year"      : fuels_4[i]["year"]
-                        , "leaf"      : fuels_4[i]["leaf"]
-                        , "value"     : fuels_4[i]["value"]
-                        }
                 if leaf in ["N", "A"]:
                     d1["leaf"] = None
                 else:
                     d1["year"] = leaf
                     d1["value"] = fuels_4[i]["leaf"][leaf]
                     d1["leaf"] = None
-                fuels_5.append(d1)
+        fuels_5.append(d1)
 
     rtn = pd.DataFrame.from_dict(fuels_5)
     rtn.drop(axis = 1, inplace = True, columns = "leaf")
