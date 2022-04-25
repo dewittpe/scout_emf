@@ -18,6 +18,7 @@
 ################################################################################
 import json
 import pandas as pd
+import numpy as np
 import re
 import datetime
 
@@ -443,6 +444,8 @@ def import_ecm_results(path                                                 #{{{
 
     return rtn
 
+#}}}
+
 ################################################################################
 def mapping_emf_base_string():                                              #{{{
     """
@@ -484,8 +487,6 @@ def mapping_direct_fuel():                                                  #{{{
     """
     Map for fuel type to direct or indirect
     """
-    fuel_types = ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
-
     d = {
             "fuel"         : ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
             , "(in)direct" : ['Direct',      'Direct',           'Direct',  'Direct',  'Indirect', 'Direct']
@@ -498,8 +499,6 @@ def mapping_emf_fuel():                                                     #{{{
     """
     Map for fuel types to emf fuel types
     """
-    fuel_types = ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
-
     d = {
             "fuel"       : ['Natural Gas', 'Propane', 'Distillate/Other', 'Biomass', 'Electric', 'Electricity']
             , "emf_fuel" : ['Gas',         'Gas',     'Oil',              'Biomass Solids', 'Electricity', 'Electricity']
@@ -508,25 +507,25 @@ def mapping_emf_fuel():                                                     #{{{
 #}}}
 
 ################################################################################
-def REFACTORTHIS(path, verbose = True):                            #{{{
-
-    # Simplified End use columns
-    # TODO: Where should "Ventilation" be placed?
-    # TODO: Where should "Heating (Env.)" and "Cooling (Env.)" be placed?
-
-    rtn.loc[rtn.end_use.isin(['Cooking', 'Water Heating', 'Refrigeration']), "end_use2"] = "Appliances"
-    rtn.loc[rtn.end_use.isin(['Cooling (Equip.)']), "end_use2"] = "Cooling"
-    rtn.loc[rtn.end_use.isin(['Heating (Equip.)']), "end_use2"] = "Heating"
-    rtn.loc[rtn.end_use.isin(['Lighting']), "end_use2"] =  "Lighting"
-    rtn.loc[rtn.end_use.isin(['Computers and Electronics', "Other"]), "end_use2"] =  "Other"
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic2
-        print(f"additional columns built in {time_delta}")
-
-    return rtn
-
-# }}}
+def mapping_end_uses():                                                     #{{{
+    """
+    Map for end uses
+    """
+    d = {
+              "Cooking"                   : "Appliances"
+            , "Cooling (Env.)"            : np.nan
+            , "Cooling (Equip.)"          : "Cooling"
+            , "Computers and Electronics" : "Other"
+            , "Heating (Env.)"            : np.nan
+            , "Heating (Equip.)"          : "Heating"
+            , "Lighting"                  : "Lighting"
+            , "Other"                     : "Other"
+            , "Refrigeration"             : "Appliances"
+            , "Ventilation"               : np.nan
+            , "Water Heating"             : "Appliances"
+            }
+    return pd.DataFrame(data = d.items(), columns = ["end_use0", "end_use"])
+#}}}
 
 ################################################################################
 def import_ecm_results_v1(path, verbose = True):                            #{{{

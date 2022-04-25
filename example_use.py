@@ -22,10 +22,12 @@ from scout_emf_methods import convert_energy_to_co2
 from scout_emf_methods import mapping_emf_base_string
 from scout_emf_methods import mapping_building_class
 from scout_emf_methods import mapping_direct_fuel
+from scout_emf_methods import mapping_end_uses
 
 mapping_emf_base_string()
 mapping_building_class()
 mapping_direct_fuel()
+mapping_end_uses()
 
 # tic0 - the tic for the toc at the end of the script
 tic0 = datetime.datetime.now()
