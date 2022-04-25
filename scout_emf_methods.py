@@ -53,7 +53,7 @@ def convert_energy_to_co2(coefs, verbose = True):                           #{{{
     coefs = coefs.loc[coefs.concept == "CO2 intensity of electricity",
             ["concept", "units", "region", "year", "value"]]
 
-    
+
 
     #coeffs_emm = conv_coefficients[conv_coefficients.index == emm].values[0]
     #for i in final_df.index:
@@ -142,7 +142,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
 
     d = [{"ecm" : ecm, "bldg" : bd, "leaf": lf}\
             for ecm in list(baseline)\
-            for bd  in list(baseline[ecm].keys())\
+            for bd  in list(baseline[ecm])\
             for lf  in     [baseline[ecm][bd]]
             ]
 
@@ -310,7 +310,7 @@ def import_baseline_building_data(path, verbose = True):                    #{{{
 
     d = [{"ecm" : ecm, "bldg" : bd, "leaf": lf}\
             for ecm in list(baseline)\
-            for bd  in list(baseline[ecm].keys())\
+            for bd  in list(baseline[ecm])\
             for lf  in     [baseline[ecm][bd]]
             ]
 
@@ -351,11 +351,14 @@ def import_baseline_building_data(path, verbose = True):                    #{{{
 # }}}
 
 ################################################################################
-def import_ecm_results(path, verbose = True):                               #{{{
+def import_ecm_results(path                                                 #{{{
+        , variables = ["Avoided CO\u2082 Emissions (MMTons)", "Energy Savings (MMBtu)"]
+        , verbose = True):
     """ Import ECM results
 
     Arguments:
         path: file path to a ecm_results.json file
+        variables: arrary of concepts to import, ignore others.
         verbose : print time required to import the data
 
     Return:
@@ -382,11 +385,11 @@ def import_ecm_results(path, verbose = True):                               #{{{
         , 'ftyv' : ftyv # this is a dictionary with possible fuel_type, year, and value
         }\
             for ecm in ecm_results_keys\
-            for ap  in list(ecm_results[ecm][CMS].keys())\
-            for v   in list(ecm_results[ecm][CMS][ap].keys())\
-            for rg  in list(ecm_results[ecm][CMS][ap][v].keys())\
-            for bg  in list(ecm_results[ecm][CMS][ap][v][rg].keys())\
-            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg].keys())\
+            for ap  in list(ecm_results[ecm][CMS])\
+            for v   in list(ecm_results[ecm][CMS][ap]) if v in variables\
+            for rg  in list(ecm_results[ecm][CMS][ap][v])\
+            for bg  in list(ecm_results[ecm][CMS][ap][v][rg])\
+            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg])\
             for ftyv in   [ecm_results[ecm][CMS][ap][v][rg][bg][eu]]
             ]
 
@@ -394,7 +397,7 @@ def import_ecm_results(path, verbose = True):                               #{{{
     regex = re.compile(r"\d{4}")
     cms3 = []
     for i in range(len(cms)):
-        k = list(cms[i]['ftyv'].keys())
+        k = list(cms[i]['ftyv'])
         if all([regex.search(k[j]) is not None for j in range(len(k))]):
             cms2 = [{
                   'ecm' : cms[i]["ecm"]
@@ -407,7 +410,7 @@ def import_ecm_results(path, verbose = True):                               #{{{
                 , 'year' : yr
                 , 'value' : value
                 }\
-                    for yr in list(cms[i]["ftyv"].keys())\
+                    for yr in list(cms[i]["ftyv"])\
                     for value in [cms[i]["ftyv"][yr]]
                     ]
         else:
@@ -422,8 +425,8 @@ def import_ecm_results(path, verbose = True):                               #{{{
                 , 'year' : yr
                 , 'value' : value
                 }\
-                    for ft in list(cms[i]["ftyv"].keys())\
-                    for yr in list(cms[i]["ftyv"][ft].keys())\
+                    for ft in list(cms[i]["ftyv"])\
+                    for yr in list(cms[i]["ftyv"][ft])\
                     for value in  [cms[i]["ftyv"][ft][yr]]
                     ]
         cms3.append(cms2)
@@ -525,13 +528,13 @@ def import_ecm_results_v1(path, verbose = True):                            #{{{
         , 'value'   : value
         }\
             for ecm in ecm_results_keys\
-            for ap  in list(ecm_results[ecm][CMS].keys())\
-            for v   in list(ecm_results[ecm][CMS][ap].keys())\
-            for rg  in list(ecm_results[ecm][CMS][ap][v].keys())\
-            for bg  in list(ecm_results[ecm][CMS][ap][v][rg].keys())\
-            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg].keys())\
-            for fl  in list(ecm_results[ecm][CMS][ap][v][rg][bg][eu].keys())\
-            for yr  in list(ecm_results[ecm][CMS][ap][v][rg][bg][eu][fl].keys())\
+            for ap  in list(ecm_results[ecm][CMS])\
+            for v   in list(ecm_results[ecm][CMS][ap])\
+            for rg  in list(ecm_results[ecm][CMS][ap][v])\
+            for bg  in list(ecm_results[ecm][CMS][ap][v][rg])\
+            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg])\
+            for fl  in list(ecm_results[ecm][CMS][ap][v][rg][bg][eu])\
+            for yr  in list(ecm_results[ecm][CMS][ap][v][rg][bg][eu][fl])\
             for value in   [ecm_results[ecm][CMS][ap][v][rg][bg][eu][fl][yr]]
             ]
 
