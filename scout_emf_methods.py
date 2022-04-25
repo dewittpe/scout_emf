@@ -10,6 +10,8 @@
 # * import_baseline_building_data
 # * import_conversion_coeffs
 # * import_ecm_results
+#   -- read in the ecm results json and return a DataFrame
+#
 # * aggregate_emf
 # * covert_energy_to_co2
 #
@@ -437,8 +439,14 @@ def import_ecm_results(path                                                 #{{{
     if verbose:
         time_delta = datetime.datetime.now() - tic
         print(f"{path} imported and coerced to a DataFrame in {time_delta}")
-        tic2 = datetime.datetime.now()
-        print("Constructing additional columns now...")
+
+    return rtn
+
+
+################################################################################
+def REFACTORTHIS(path, verbose = True):                            #{{{
+    tic2 = datetime.datetime.now()
+    print("Constructing additional columns now...")
 
     # Base EMF String -- only return the rows with a base sting
     idx = rtn.variable == "Avoided CO\u2082 Emissions (MMTons)"
