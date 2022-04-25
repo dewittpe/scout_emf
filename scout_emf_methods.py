@@ -142,10 +142,10 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
     baseline = json.load(f)
     f.close()
 
-    d = [{"ecm" : ecm, "bldg" : bd, "leaf": lf}\
-            for ecm in list(baseline)\
-            for bd  in list(baseline[ecm])\
-            for lf  in     [baseline[ecm][bd]]
+    d = [{"region" : region, "bldg" : bd, "leaf": lf}\
+            for region in list(baseline)\
+            for bd  in list(baseline[region])\
+            for lf  in     [baseline[region][bd]]
             ]
 
     # split the work into fuel and non-fuel dictionaries
@@ -155,17 +155,18 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
     for i in range(len(d)):
         for l in list(d[i]["leaf"]):
             if l in ["electricity", "natural gas", "distillate", "other fuel"]:
-                d1 = {"ecm" : d[i]["ecm"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
+                d1 = {"region" : d[i]["region"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
                 fuels.append(d1)
 
     # build a dictionary for fuels....
     # Well that mseg_res_com_emm_NEW.json has a unbelievable structure.  Divide
     # and conquer.
-    fuels = [{"ecm" : fuels[i]["ecm"]
-        , "bldg": fuels[i]["bldg"]
-        , "fuel": fuels[i]["fuel"]
+    fuels = [{
+         "region" : fuels[i]["region"]
+        , "bldg"  : fuels[i]["bldg"]
+        , "fuel"  : fuels[i]["fuel"]
         , "enduse": eu
-        , "leaf": leaf
+        , "leaf"  : leaf
         }\
                 for i in range(len(fuels))\
                 for eu in list(fuels[i]["leaf"])\
@@ -180,7 +181,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
 
     for i in range(len(fuels)):
         for leaf in list(fuels[i]["leaf"]):
-            d1 = {    "ecm"       : fuels[i]["ecm"]
+            d1 = {    "region"    : fuels[i]["region"]
                     , "bldg"      : fuels[i]["bldg"]
                     , "fuel"      : fuels[i]["fuel"]
                     , "enduse"    : fuels[i]["enduse"]
@@ -209,7 +210,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
 
     for i in range(len(fuels_2)):
         for leaf in list(fuels_2[i]["leaf"]):
-            d1 = {    "ecm"       : fuels_2[i]["ecm"]
+            d1 = {    "region"    : fuels_2[i]["region"]
                     , "bldg"      : fuels_2[i]["bldg"]
                     , "fuel"      : fuels_2[i]["fuel"]
                     , "enduse"    : fuels_2[i]["enduse"]
@@ -238,7 +239,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
 
     for i in range(len(fuels_3)):
         if fuels_3[i]["leaf"] is not None:
-            d1 = {    "ecm"       : fuels_3[i]["ecm"]
+            d1 = {    "region"    : fuels_3[i]["region"]
                     , "bldg"      : fuels_3[i]["bldg"]
                     , "fuel"      : fuels_3[i]["fuel"]
                     , "enduse"    : fuels_3[i]["enduse"]
@@ -267,7 +268,7 @@ def import_baseline_energy_data(path, verbose = True):                      #{{{
     for i in range(len(fuels_4)):
         if fuels_4[i]["leaf"] is not None:
             for leaf in list(fuels_4[i]["leaf"]):
-                d1 = {    "ecm"       : fuels_4[i]["ecm"]
+                d1 = {    "region"    : fuels_4[i]["region"]
                         , "bldg"      : fuels_4[i]["bldg"]
                         , "fuel"      : fuels_4[i]["fuel"]
                         , "enduse"    : fuels_4[i]["enduse"]
@@ -310,10 +311,10 @@ def import_baseline_building_data(path, verbose = True):                    #{{{
     baseline = json.load(f)
     f.close()
 
-    d = [{"ecm" : ecm, "bldg" : bd, "leaf": lf}\
-            for ecm in list(baseline)\
-            for bd  in list(baseline[ecm])\
-            for lf  in     [baseline[ecm][bd]]
+    d = [{"region" : region, "bldg" : bd, "leaf": lf}\
+            for region in list(baseline)\
+            for bd  in list(baseline[region])\
+            for lf  in     [baseline[region][bd]]
             ]
 
     # split the work into fuel and non-fuel dictionaries
@@ -323,15 +324,15 @@ def import_baseline_building_data(path, verbose = True):                    #{{{
     for i in range(len(d)):
         for l in list(d[i]["leaf"]):
             if l in ["electricity", "natural gas", "distillate", "other fuel"]:
-                d1 = {"ecm" : d[i]["ecm"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
+                d1 = {"region" : d[i]["region"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
                 fuels.append(d1)
             else:
-                d1 = {"ecm" : d[i]["ecm"], "bldg" : d[i]["bldg"], "variable" : l, "leaf" : d[i]["leaf"][l]}
+                d1 = {"region" : d[i]["region"], "bldg" : d[i]["bldg"], "variable" : l, "leaf" : d[i]["leaf"][l]}
                 non_fuels.append(d1)
 
     # build a DataFrame for the non-fuels
     non_fuels = [{
-                  "ecm"  : non_fuels[i]["ecm"]
+                  "region"  : non_fuels[i]["region"]
                 , "bldg" : non_fuels[i]["bldg"]
                 , "variable" : non_fuels[i]["variable"]
                 , "year" : yr
@@ -408,7 +409,7 @@ def import_ecm_results(path                                                 #{{{
                 , 'region' : cms[i]["region"]
                 , 'building_class' : cms[i]["building_class"]
                 , 'end_use' : cms[i]["end_use"]
-                , 'fuel_type' : "Not applicable"
+                , 'fuel_type' : None
                 , 'year' : yr
                 , 'value' : value
                 }\
