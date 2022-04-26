@@ -14,7 +14,6 @@ import re
 import datetime
 
 from scout_emf_methods import import_ecm_results
-from scout_emf_methods import import_ecm_results2
 from scout_emf_methods import import_baseline_energy_data
 from scout_emf_methods import import_baseline_building_data
 from scout_emf_methods import aggregate_ecm_results
@@ -40,16 +39,9 @@ tic0 = datetime.datetime.now()
 #                                                                              #
 ################################################################################
 # Import the example result files
-ecm_1_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-ecm_1_2 = import_ecm_results2("./Results_Files_3/ecm_results_1-1.json")
-
-ecm_2_1 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
-ecm_2_2 = import_ecm_results2("./Results_Files_3/ecm_results_2.json")
-
-ecm_3_1 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
-ecm_3_2 = import_ecm_results2("./Results_Files_3/ecm_results_3-1.json")
-
-
+ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
+ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
+ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
 baseline_energy = import_baseline_energy_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
