@@ -21,6 +21,7 @@ import pandas as pd
 import numpy as np
 import re
 import datetime
+from collections import defaultdict
 
 ################################################################################
 def convert_energy_to_co2(coefs, verbose = True):                           #{{{
@@ -410,7 +411,7 @@ def import_ecm_results(path                                                 #{{{
                 , 'region' : cms[i]["region"]
                 , 'building_class' : cms[i]["building_class"]
                 , 'end_use' : cms[i]["end_use"]
-                , 'fuel_type' : None
+                , 'fuel_type' : np.nan
                 , 'year' : yr
                 , 'value' : value
                 }\
@@ -437,6 +438,104 @@ def import_ecm_results(path                                                 #{{{
 
     rtn = pd.concat([pd.DataFrame.from_dict(d) for d in cms3])
     rtn.reset_index(inplace = True, drop = True)
+
+    if verbose:
+        time_delta = datetime.datetime.now() - tic
+        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
+
+    return rtn
+
+#}}}
+
+################################################################################
+def import_ecm_results2(path                                                #{{{
+        , variables = ["Avoided CO\u2082 Emissions (MMTons)", "Energy Savings (MMBtu)"]
+        , verbose = True):
+    """ Import ECM results
+
+    Arguments:
+        path: file path to a ecm_results.json file
+        variables: arrary of concepts to import, ignore others.
+        verbose : print time required to import the data
+
+    Return:
+        a pandas DataFrame
+    """
+    tic = datetime.datetime.now()
+
+    f = open(path, "r")
+    ecm_results = json.load(f)
+    f.close()
+
+    ecm_results_keys  = list(ecm_results)
+    ecm_results_keys.remove('On-site Generation')
+
+    CMS = "Markets and Savings (by Category)"
+
+    cms = [{
+        'ecm' : ecm
+        , 'adoption_scenario' : ap
+        , 'variable' : v
+        , 'region' : rg
+        , 'building_class' : bg
+        , 'end_use' : eu
+        , 'ftyv' : ftyv # this is a dictionary with possible fuel_type, year, and value
+        }\
+            for ecm in ecm_results_keys\
+            for ap  in list(ecm_results[ecm][CMS])\
+            for v   in list(ecm_results[ecm][CMS][ap]) if v in variables\
+            for rg  in list(ecm_results[ecm][CMS][ap][v])\
+            for bg  in list(ecm_results[ecm][CMS][ap][v][rg])\
+            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg])\
+            for ftyv in   [ecm_results[ecm][CMS][ap][v][rg][bg][eu]]
+            ]
+
+    # "flatten" the list of dictionaries to _a_ dictionary with array entries.
+    res = defaultdict(list)
+    {res[key].append(sub[key]) for sub in cms for key in sub}
+
+    # pull appart the ftyv element in two steps.  First, get the fuel type and
+    # record just the yv.  Second, extract the year and value entries.
+    res2 = defaultdict(list)
+    res3 = defaultdict(list)
+
+    regex = re.compile(r"\d{4}")
+    for i in range(len(res['ftyv'])):
+        k = list(res['ftyv'][i])
+        if all([regex.search(k[j]) is not None for j in range(len(k))]):
+            # no fuel type here
+            res2["ecm"].append(res["ecm"][i])
+            res2['adoption_scenario'].append(res["adoption_scenario"][i])
+            res2['variable'].append(res["variable"][i])
+            res2['region'].append(res["region"][i])
+            res2['building_class'].append(res["building_class"][i])
+            res2['end_use'].append(res["end_use"][i])
+            res2["fuel_type"].append(np.nan)
+            res2["yv"].append(res["ftyv"][i])
+        else:
+            for ft in k:
+                res2["ecm"].append(res["ecm"][i])
+                res2['adoption_scenario'].append(res["adoption_scenario"][i])
+                res2['variable'].append(res["variable"][i])
+                res2['region'].append(res["region"][i])
+                res2['building_class'].append(res["building_class"][i])
+                res2['end_use'].append(res["end_use"][i])
+                res2["fuel_type"].append(ft)
+                res2["yv"].append(res["ftyv"][i][ft])
+
+    for i in range(len(res2["ecm"])):
+        for yr in list(res2["yv"][i]):
+            res3["ecm"].append(res2["ecm"][i])
+            res3['adoption_scenario'].append(res2["adoption_scenario"][i])
+            res3['variable'].append(res2["variable"][i])
+            res3['region'].append(res2["region"][i])
+            res3['building_class'].append(res2["building_class"][i])
+            res3['end_use'].append(res2["end_use"][i])
+            res3["fuel_type"].append(res2["fuel_type"][i])
+            res3['year'].append(yr)
+            res3['value'].append(res2["yv"][i][yr])
+
+    rtn = pd.DataFrame.from_dict(res3)
 
     if verbose:
         time_delta = datetime.datetime.now() - tic
