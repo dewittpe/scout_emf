@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import datetime
 import numpy as np
+import copy
 from collections import defaultdict
 
 f = open("./supporting_data/stock_energy_tech_data/mseg_res_com_emm", "r")
@@ -69,6 +70,215 @@ def isyear(x) : # {{{
     except TypeError:
         return False
 # }}}
+
+def nested_json_to_df(x, d = {}):
+    rtn = []
+    try:
+        keys = x.keys()
+        for k in keys:
+            d1 = copy.deepcopy(d)
+            d1["lvl" + str(len(d))] = k
+            nested_json_to_df(x[k], d1)
+            rtn.append(d1)
+        return rtn
+    except AttributeError:
+        return x
+
+
+nested_json_to_df(baseline["TRE"]["small office"]["electricity"]["heating"]["demand"]["windows solar"]["energy"]["2025"])
+nested_json_to_df(baseline["TRE"]["small office"]["electricity"]["heating"]["demand"]["windows solar"]["energy"])
+nested_json_to_df(baseline["TRE"]["small office"]["electricity"]["heating"]["demand"]["windows solar"])
+
+def recur(x, d = {}):
+    these_keys = []
+    lvl0 = "lvl" + str(len(d))
+    lvl1 = "lvl" + str(len(d) + 1)
+    for parent, child in x.items():
+        if not isinstance(child, dict):
+            print("child is not dict")
+            d[lvl0] = parent
+            d[lvl1] = child
+            these_keys.append(d)
+            print(these_keys)
+        else:
+            print("child is dict")
+            d[lvl0] = parent
+            these_keys.append(d)
+            print(d)
+            print(these_keys)
+            recur(x[parent], d)
+    return(these_keys)
+
+
+#def recur(x, level = 0):
+#    l = "lvl" + str(level)
+#    if isinstance(x, dict):
+#        out = []
+#        for parent, child in x.items():
+#            out.append({l : parent, "child" : recur(child, level = level + 1)})
+#        return out
+#    else:
+#        return {l : x}
+
+def recur(x, level = 0, out = {}):
+    l0 = "lvl" + str(level)
+    l1 = "lvl" + str(level + 1)
+    if isinstance(x, dict):
+        for parent, child in x.items():
+            out[l0] = parent
+            #print("x is a dict")
+            #print(f"parent is {parent} and child is {child}")
+            out = recur(x = child, level = level + 1, out = out)
+    else:
+        #print(f"x is not dict, it is {type(x)}")
+        out[l0] = x
+    return out
+
+recur(baseline["TRE"]["small office"]["electricity"]["heating"]["demand"]["windows solar"]["energy"]["2025"])
+
+temp = recur(
+x =        baseline#["TRE"]["small office"]["electricity"]["heating"]["demand"]#["windows solar"]#["energy"]
+)
+temp
+
+
+def r(x, **kwargs):
+    lvl = len(kwargs)
+    if isinstance(x, dict):
+        for parent, child in x.items()
+
+
+
+    
+r(baseline, l0 = "as", lvl0 = "s")
+r(baseline)
+
+baseline["TRE"]["single family home"]["total homes"]
+
+set0 = \
+[{  "lvl0" : l0,
+    "lvl1" : l1,
+    "lvl2" : l2,
+    "lvl3" : l3,
+    "leaf" : leaf
+    }\
+    for l0 in baseline.keys()
+    for l1 in baseline[l0].keys()
+    for l2 in baseline[l0][l1].keys()
+    for l3 in baseline[l0][l1][l2].keys() 
+    #for l4 in [l for l in [baseline[l0][l1][l2][l3]] if not isinstance(l, dict) ]
+    for leaf in [baseline[l0][l1][l2][l3]]
+    ]
+
+pd.DataFrame.from_dict(set0)
+
+        
+
+set1 = \
+[{  "lvl0" : set0[i]["lvl0"],
+    "lvl1" : set0[i]["lvl1"],
+    "lvl2" : set0[i]["lvl2"],
+    "lvl3" : set0[i]["lvl3"],
+    "lvl4" : l4,
+    "lvl5" : ""#l5
+    }\
+            for i in range(len(set0))
+            for l4 in [l if isinstance(set0[i]['lvl4'], dict) else set0[i]["lvl4"] for l in set0[i]["lvl4"]]
+            #          for l5 in [set0[i]["lvl4"]]
+    ]
+
+pd.DataFrame.from_dict(set0)
+
+set0[2]['lvl0']
+
+
+temp[0]
+temp[1]
+
+
+[i if not isinstance(i, dict) else "" for i in baseline.keys()]
+
+
+keys = []
+for lvl0 in baseline.keys():
+    d = {"lvl0" : lvl0}
+    if not isinstance(baseline[lvl0], dict):
+        d["lvl1"] = baseline[lvl0]
+        keys.append(d)
+    else:
+        for lvl1 in baseline[lvl0].keys():
+            d = {"lvl0" : lvl0, "lvl1" : lvl1}
+            if not isinstance(baseline[lvl0][lvl1], dict):
+                d["lvl2"] = baseline[lvl0][lvl1]
+                keys.append(d)
+            else:
+                for lvl2 in baseline[lvl0][lvl1].keys():
+                    d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2}
+                    if not isinstance(baseline[lvl0][lvl1][lvl2], dict):
+                        d["lvl3"] = baseline[lvl0][lvl1][lvl2]
+                        keys.append(d)
+                    else:
+                        for lvl3 in baseline[lvl0][lvl1][lvl2].keys():
+                            d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3}
+                            if not isinstance(baseline[lvl0][lvl1][lvl2][lvl3], dict):
+                                d["lvl4"] = baseline[lvl0][lvl1][lvl2][lvl3]
+                                keys.append(d)
+                            else:
+                                for lvl4 in baseline[lvl0][lvl1][lvl2][lvl3].keys():
+                                    d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4}
+                                    if not isinstance(baseline[lvl0][lvl1][lvl2][lvl3][lvl4], dict):
+                                        d["lvl5"] = baseline[lvl0][lvl1][lvl2][lvl3][lvl4]
+                                        keys.append(d)
+                                    else:
+                                        for lvl5 in baseline[lvl0][lvl1][lvl2][lvl3][lvl4].keys():
+                                            d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5}
+                                            if not isinstance(baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5], dict):
+                                                d["lvl6"] = baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5]
+                                                keys.append(d)
+                                            else:
+                                                for lvl6 in baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5].keys():
+                                                    d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6}
+                                                    if not isinstance(baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6], dict):
+                                                        d["lvl7"] = baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6]
+                                                        keys.append(d)
+                                                    else:
+                                                        for lvl7 in baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6].keys():
+                                                            d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7}
+                                                            if not isinstance(baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7], dict):
+                                                                d["lvl8"] = baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7]
+                                                                keys.append(d)
+                                                            else:
+                                                                for lvl8 in baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7].keys():
+                                                                    d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7, "lvl8" : lvl8}
+                                                                    if not isinstance(baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8], dict):
+                                                                        d["lvl9"] = baseline[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8]
+                                                                        keys.append(d)
+                                                                    else:
+                                                                        print("UNEXPECTED DEPTH")
+
+
+keys_df = pd.DataFrame.from_dict(keys)
+keys_df
+
+set(keys_df.lvl1)
+
+
+if isfloat(baseline[k0][k1][k2][k3][k4][k5][k6][k7]):
+    d = {"lvl0" : k0, "lvl1" : k1, "lvl2" : k2, "lvl3" : k3, "lvl4" : k4, "lvl5" : k5, "lvl6" : k6, "lvl7" : k7, "lvl8" : baseline[k0][k1][k2][k3][k4][k5][k6][k7]}
+    keys.append(d)
+elif baseline[k0][k1][k2][k3][k4][k5][k6][k7] == "NA":
+    d = {"lvl0" : k0, "lvl1" : k1, "lvl2" : k2, "lvl3" : k3, "lvl4" : k4, "lvl5" : k5, "lvl6" : k6, "lvl7" : k7, "lvl8" : np.nan }
+    keys.append(d)
+else:
+    for k8 in baseline[k0][k1][k2][k3][k4][k5][k6][k7].keys():
+        d = {"lvl0" : k0, "lvl1" : k1, "lvl2" : k2, "lvl3" : k3, "lvl4" : k4, "lvl5" : k5, "lvl6" : k6, "lvl7": k7, "lvl8": k8}
+        keys.append(d)
+
+temp = nested_json_to_df(baseline, {})
+list(temp)
+temp
+
+isinstance(baseline, dict)
 
 ################################################################################
 # Explore the base line data
