@@ -158,7 +158,49 @@ def json_to_df_worker(x): #{{{
 def import_ecm_results(path):
     df = json_to_df(path)
     assert any(df.lvl0 == "On-site Generation")
-    return df
+
+    # split the data set into two data frames,
+    # 1. On-site Generation
+    # 2. ECMs
+    on_site_generation = df[df.lvl0 == "On-site Generation"]
+    ecms               = df[df.lvl0 != "On-site Generation"]
+
+    # clean up the on-site generation data frame
+    assert all(on_site_generation.lvl7.isna())
+    assert all(on_site_generation.lvl8.isna())
+    assert all(on_site_generation.lvl9.isna())
+    on_site_generation = on_site_generation.drop(columns = ["lvl0", "lvl7", "lvl8", "lvl9"])
+
+    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl6"] = on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"]
+    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl5"] = on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"]
+
+    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"] = np.nan
+    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"] = np.nan
+
+    # verify that the "Overall" sums are equivalent to the sum over the regions
+    # and building type
+    x = on_site_generation\
+            .groupby(["lvl1", "lvl2", "lvl5"])\
+            .agg({"lvl6" : "sum"})
+    x.reset_index(inplace = True)
+    x = x.pivot(index = ["lvl1", "lvl5"], columns = ["lvl2"], values = ["lvl6"])
+    x.reset_index(inplace = True)
+    assert len(x[(x.lvl6["Overall"].notna()) & (x.lvl6["By Category"] != x.lvl6["Overall"])]) == 0
+
+    # only return the "by category" data as the "overall" is redundant
+    on_site_generation = on_site_generation[on_site_generation.lvl2 == "By Category"]
+    on_site_generation = on_site_generation.drop(columns = ["lvl2"])
+
+    # rename columns in the on_site_generation frame for human ease of use
+    on_site_generation.rename(columns = {
+        "lvl1" : "metric",
+        "lvl3" : "region",
+        "lvl4" : "building_type",
+        "lvl5" : "year",
+        "lvl6" : "value"},
+        inplace = True)
+
+    return on_site_generation, ecms
 
 
 

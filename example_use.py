@@ -20,21 +20,18 @@ from scout_emf_methods import import_ecm_results
 # ecm_results_2 = json_to_df("./Results_Files_3/ecm_results_2.json")
 # ecm_results_3 = json_to_df("./Results_Files_3/ecm_results_3-1.json")
 
-ecm_results_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-ecm_results_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
-ecm_results_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
+on_site_generation_1, ecm_results_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
+on_site_generation_2, ecm_results_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
+on_site_generation_3, ecm_results_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
 
 
-ecm_results_1["lvl3"][0]
+on_site_generation_1
 
-set(ecm_results_2.lvl0)
-set(ecm_results_2.lvl1)
 
-ecm_results_2[ecm_results_2.lvl0 == "On-site Generation"]
-set(ecm_results_2[ecm_results_2.lvl1 == "Energy (MMBtu)"].lvl0)
+ecm_results_1
 
-set(ecm_results_2[ecm_results_2.lvl0 == "On-site Generation"].lvl1)
+
 
 
 ################################################################################
