@@ -23,6 +23,205 @@ import re
 import datetime
 from collections import defaultdict
 
+
+################################################################################
+def depth(x): # {{{
+    """
+    find the depth of dictionary or list
+
+    Args
+      x : a dict or list
+
+    Return and integer
+    """
+
+    if isinstance(x, dict) and x:
+        return 1 + max(depth(x[a]) for a in x)
+    elif isinstance(x, list) and x:
+        return 1 + max(depth(a) for a in x)
+    else:
+        return 0
+#}}}
+
+def unique(list1): # {{{
+    unique_list = []
+    for x in list1:
+        if x not in unique_list:
+            unique_list.append(x)
+
+    for x in unique_list:
+        print(x)
+
+# }}}
+
+def isfloat(x): # {{{
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
+    except TypeError:
+        return False
+
+# }}}
+
+def isyear(x) : # {{{
+    try:
+        l = len(x)
+        f = float(x)
+        i = int(x)
+        if ((int(f) == i) and (l == 4)):
+            return True
+        else :
+            return False
+    except ValueError:
+        return False
+    except TypeError:
+        return False
+# }}}
+
+def json_to_df(path) : # {{{
+    f = open(path, "r")
+    x = json.load(f)
+    f.close()
+
+    try:
+        dpth = depth(x)
+        assert dpth <= 9
+    except AssertionError:
+        print(f"json_to_df has been built to support nested dict to 9 levels of depth, the dict you've passed has a max depth of {dpth}.")
+    else:
+        return json_to_df_worker(x)
+
+# }}}
+
+def json_to_df_worker(x): #{{{
+    keys = []
+    for lvl0 in x.keys():
+        d = {"lvl0" : lvl0}
+        if not isinstance(x[lvl0], dict):
+            d["lvl1"] = x[lvl0]
+            keys.append(d)
+        else:
+            for lvl1 in x[lvl0].keys():
+                d = {"lvl0" : lvl0, "lvl1" : lvl1}
+                if not isinstance(x[lvl0][lvl1], dict):
+                    d["lvl2"] = x[lvl0][lvl1]
+                    keys.append(d)
+                else:
+                    for lvl2 in x[lvl0][lvl1].keys():
+                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2}
+                        if not isinstance(x[lvl0][lvl1][lvl2], dict):
+                            d["lvl3"] = x[lvl0][lvl1][lvl2]
+                            keys.append(d)
+                        else:
+                            for lvl3 in x[lvl0][lvl1][lvl2].keys():
+                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3}
+                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3], dict):
+                                    d["lvl4"] = x[lvl0][lvl1][lvl2][lvl3]
+                                    keys.append(d)
+                                else:
+                                    for lvl4 in x[lvl0][lvl1][lvl2][lvl3].keys():
+                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4}
+                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4], dict):
+                                            d["lvl5"] = x[lvl0][lvl1][lvl2][lvl3][lvl4]
+                                            keys.append(d)
+                                        else:
+                                            for lvl5 in x[lvl0][lvl1][lvl2][lvl3][lvl4].keys():
+                                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5}
+                                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5], dict):
+                                                    d["lvl6"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5]
+                                                    keys.append(d)
+                                                else:
+                                                    for lvl6 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5].keys():
+                                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6}
+                                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6], dict):
+                                                            d["lvl7"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6]
+                                                            keys.append(d)
+                                                        else:
+                                                            for lvl7 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6].keys():
+                                                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7}
+                                                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7], dict):
+                                                                    d["lvl8"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7]
+                                                                    keys.append(d)
+                                                                else:
+                                                                    for lvl8 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7].keys():
+                                                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7, "lvl8" : lvl8}
+                                                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8], dict):
+                                                                            d["lvl9"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8]
+                                                                            keys.append(d)
+                                                                        else:
+                                                                            print("UNEXPECTED DEPTH")
+    return pd.DataFrame.from_dict(keys)
+# }}}
+
+def import_ecm_results(path):
+    df = json_to_df(path)
+    assert any(df.lvl0 == "On-site Generation")
+    return df
+
+
+
+
+
+
+
+
+
+
+
+# lvl0: Region
+# lvl1: building_type
+# lvl2:
+#   one of two things:
+#   1. building type metadata
+#   2. fuel_type
+#
+# lvl3:
+#   if lvl2 is building type metadata then lvl3 the year (lvl4 value)
+#   if lvl2 is fuel type lvl3 is _always_ end_use
+#
+# lvl4:
+#   One of four things:
+#   1. values if lvl2 was building metadata
+#   2. if lvl2 is fuel type then
+#      a. supply/demand key if lvl3 is a heating or cooling end use  (includes secondary heating)
+#      b. technology_type or
+#      c. stock/energy keys
+#
+# lvl5
+#   if (lvl4 = 2a) then technology_type / envelope components
+#   if (lvl4 = 2b) then stock/energy keys
+#   if (lvl4 = 2c) year or NA
+#
+# lvl6
+#   if (lvl4 = 2c) value
+#   if (lvl5 is stock/energy key) then NA or year
+#   if (lvl5 is technology_type / envelope components) then stock/energy key
+#
+# lvl7
+#   values or years
+#
+# lvl8
+#   values
+
+
+
+#keys_df[keys_df.lvl3 == "secondary heating"]
+#
+#keys_df[keys_df.lvl4 == "water services"]
+#keys_df[keys_df.lvl4 == "telecom systems"]
+
+
+
+################################################################################
+#                                 End of File                                  #
+################################################################################
+
+
+
+
+
 ################################################################################
 def convert_energy_to_co2(coefs, verbose = True):                           #{{{
     """
@@ -129,488 +328,6 @@ def import_conversion_coeffs(path, verbose = True):                         #{{{
     return rtn
 
 # }}}
-
-################################################################################
-def import_baseline_energy_data(path, verbose = True):                      #{{{
-    """ Import baseline energy data
-
-    Arguments:
-        path: file path to json file (mseg_res_com_emm_NEW.json)
-        verbose: print time required to import the data
-    """
-    tic = datetime.datetime.now()
-
-    f = open(path, "r")
-    baseline = json.load(f)
-    f.close()
-
-    d = [{"region" : region, "bldg" : bd, "leaf": lf}\
-            for region in list(baseline)\
-            for bd  in list(baseline[region])\
-            for lf  in     [baseline[region][bd]]
-            ]
-
-    # split the work into fuel and non-fuel dictionaries
-    # to return a DataFrame of non-fuels use import_baseline_non_fuel_data
-    fuels = []
-
-    for i in range(len(d)):
-        for l in list(d[i]["leaf"]):
-            if l in ["electricity", "natural gas", "distillate", "other fuel"]:
-                d1 = {"region" : d[i]["region"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
-                fuels.append(d1)
-
-    # build a dictionary for fuels....
-    # Well that mseg_res_com_emm_NEW.json has a unbelievable structure.  Divide
-    # and conquer.
-    fuels = [{
-         "region" : fuels[i]["region"]
-        , "bldg"  : fuels[i]["bldg"]
-        , "fuel"  : fuels[i]["fuel"]
-        , "enduse": eu
-        , "leaf"  : leaf
-        }\
-                for i in range(len(fuels))\
-                for eu in list(fuels[i]["leaf"])\
-                for leaf in   [fuels[i]["leaf"][eu]]
-                ]
-
-    # Next, the leaf can have one of three general concepts for keys:
-    # 1. stock/energy
-    # 2. demand/supply
-    # 3. appliances (including lightbulbs)
-    fuels_2 = []
-
-    for i in range(len(fuels)):
-        for leaf in list(fuels[i]["leaf"]):
-            d1 = {    "region"    : fuels[i]["region"]
-                    , "bldg"      : fuels[i]["bldg"]
-                    , "fuel"      : fuels[i]["fuel"]
-                    , "enduse"    : fuels[i]["enduse"]
-                    , "se"        : None
-                    , "ds"        : None
-                    , "appliance" : None
-                    , "leaf"      : None
-                    }
-            if leaf in ["stock", "energy"]:
-                d1["se"] = leaf
-                d1["leaf"] = fuels[i]["leaf"][leaf]
-            elif leaf in ["demand", "supply"]:
-                d1["ds"] = leaf
-                d1["leaf"] = fuels[i]["leaf"][leaf]
-            else:
-                d1["appliance"] = leaf
-                d1["leaf"] = fuels[i]["leaf"][leaf]
-            fuels_2.append(d1)
-
-    # Next, the leafs could be one of three sets:
-    # 1. year
-    # 2. stock/energy
-    # 3. appliance
-    fuels_3 = []
-    regex = re.compile(r"\d{4}")
-
-    for i in range(len(fuels_2)):
-        for leaf in list(fuels_2[i]["leaf"]):
-            d1 = {    "region"    : fuels_2[i]["region"]
-                    , "bldg"      : fuels_2[i]["bldg"]
-                    , "fuel"      : fuels_2[i]["fuel"]
-                    , "enduse"    : fuels_2[i]["enduse"]
-                    , "se"        : fuels_2[i]["se"]
-                    , "ds"        : fuels_2[i]["ds"]
-                    , "appliance" : fuels_2[i]["appliance"]
-                    , "year"      : None
-                    , "leaf"      : None
-                    , "value"     : np.nan
-                    }
-            if leaf in ["stock", "energy"]:
-                d1["se"] = leaf
-                d1["leaf"] = fuels_2[i]["leaf"][leaf]
-            elif regex.search(leaf):
-                d1["year"] = leaf
-                d1["value"] = fuels_2[i]["leaf"][leaf]
-            elif leaf in ["N", "A"]:
-                d1["value"] = np.nan
-            else:
-                d1["appliance"] = leaf
-                d1["leaf"] = fuels_2[i]["leaf"][leaf]
-            fuels_3.append(d1)
-
-    # Now, if the leaf is not None, then it could be year or energy/stock
-    fuels_4 = []
-
-    for i in range(len(fuels_3)):
-        d1 = {    "region"    : fuels_3[i]["region"]
-                , "bldg"      : fuels_3[i]["bldg"]
-                , "fuel"      : fuels_3[i]["fuel"]
-                , "enduse"    : fuels_3[i]["enduse"]
-                , "se"        : fuels_3[i]["se"]
-                , "ds"        : fuels_3[i]["ds"]
-                , "appliance" : fuels_3[i]["appliance"]
-                , "year"      : fuels_3[i]["year"]
-                , "leaf"      : fuels_3[i]["leaf"]
-                , "value"     : fuels_3[i]["value"]
-                }
-        if fuels_3[i]["leaf"] is not None:
-            for leaf in list(fuels_3[i]["leaf"]):
-                if leaf in ["stock", "energy"]:
-                    d1["se"] = leaf
-                    d1["leaf"] = fuels_3[i]["leaf"][leaf]
-                elif leaf in ["N", "A"]:
-                    d1["leaf"] = None
-                else:
-                    d1["year"] = leaf
-                    d1["value"] = fuels_3[i]["leaf"][leaf]
-                    d1["leaf"] = None
-        fuels_4.append(d1)
-
-    # finally, one more run though to get the yearly data
-    fuels_5 = []
-
-    for i in range(len(fuels_4)):
-        d1 = {    "region"    : fuels_4[i]["region"]
-                , "bldg"      : fuels_4[i]["bldg"]
-                , "fuel"      : fuels_4[i]["fuel"]
-                , "enduse"    : fuels_4[i]["enduse"]
-                , "se"        : fuels_4[i]["se"]
-                , "ds"        : fuels_4[i]["ds"]
-                , "appliance" : fuels_4[i]["appliance"]
-                , "year"      : fuels_4[i]["year"]
-                , "leaf"      : fuels_4[i]["leaf"]
-                , "value"     : fuels_4[i]["value"]
-                }
-        if fuels_4[i]["leaf"] is not None:
-            for leaf in list(fuels_4[i]["leaf"]):
-                if leaf in ["N", "A"]:
-                    d1["leaf"] = None
-                else:
-                    d1["year"] = leaf
-                    d1["value"] = fuels_4[i]["leaf"][leaf]
-                    d1["leaf"] = None
-        fuels_5.append(d1)
-
-    rtn = pd.DataFrame.from_dict(fuels_5)
-    rtn.drop(axis = 1, inplace = True, columns = "leaf")
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
-
-    return rtn
-
-# }}}
-
-################################################################################
-def import_baseline_energy_data2(path, verbose = True):                      #{{{
-    """ Import baseline energy data
-
-    Arguments:
-        path: file path to json file (mseg_res_com_emm_NEW.json)
-        verbose: print time required to import the data
-    """
-    tic = datetime.datetime.now()
-
-    bldg_vars = ["total homes", "new homes"
-            , "total square footage", "new square footage"]
-
-    f = open(path, "r")
-    baseline = json.load(f)
-    f.close()
-
-    fuels = [{"region" : region, "bldg" : bd, "fuel_type": ft, "end_use": eu, "leaf" : l}\
-            for region in list(baseline)\
-            for bd  in list(baseline[region])\
-            for ft  in list(baseline[region][bd]) if ft not in bldg_vars
-            for eu  in list(baseline[region][bd][ft])
-            for l   in     [baseline[region][bd][ft][eu]]
-            ]
-
-    # "flatten" the list of dictionaries to _a_ dictionaries with array entries
-    res = defaultdict(list)
-    {res[key].append(sub[key]) for sub in fuels for key in sub}
-
-    # Next, the leaf can have one of three general concepts for keys:
-    # 1. stock/energy
-    # 2. demand/supply
-    # 3. appliances (including lightbulbs)
-    res2 = defaultdict(list)
-
-    for i in range(len(res["leaf"])):
-        for leaf in list(res["leaf"][i]):
-            res2["region"].append(res["region"][i])
-            res2["bldg"].append(res["bldg"][i])
-            res2["fuel_type"].append(res["fuel_type"][i])
-            res2["end_use"].append(res["end_use"][i])
-            res2["leaf"].append(res["leaf"][i][leaf])
-            if leaf in ["stock", "energy"]:
-                res2["stock_energy"].append(leaf)
-                res2["demand_supply"].append(np.nan)
-                res2["appliance"].append(np.nan)
-            elif leaf in ["demand", "supply"]:
-                res2["stock_energy"].append(np.nan)
-                res2["demand_supply"].append(leaf)
-                res2["appliance"].append(np.nan)
-            else:
-                res2["stock_energy"].append(np.nan)
-                res2["demand_supply"].append(np.nan)
-                res2["appliance"].append(leaf)
-
-    # Next, the leafs could be one of three sets:
-    # 1. year
-    # 2. stock/energy
-    # 3. appliance
-    regex = re.compile(r"\d{4}")
-    res3 = defaultdict(list)
-
-    for i in range(len(res2["leaf"])):
-        for leaf in list(res2["leaf"][i]):
-            res3["region"].append(res2["region"][i])
-            res3["bldg"].append(res2["bldg"][i])
-            res3["fuel_type"].append(res2["fuel_type"][i])
-            res3["end_use"].append(res2["end_use"][i])
-            res3["demand_supply"].append(res2["demand_supply"][i])
-            if leaf in ["N", "A"]:
-                res3["stock_energy"].append(res2["stock_energy"][i])
-                res3["year"].append(np.nan)
-                res3["appliance"].append(res2["appliance"][i])
-                res3["leaf"].append(np.nan)
-            elif leaf in ["stock", "energy"]:
-                res3["stock_energy"].append(leaf)
-                res3["year"].append(np.nan)
-                res3["appliance"].append(res2["appliance"][i])
-                res3["leaf"].append(res2["leaf"][i][leaf])
-            elif regex.search(leaf):
-                res3["stock_energy"].append(res2["stock_energy"][i])
-                res3["year"].append(leaf)
-                res3["appliance"].append(res2["appliance"][i])
-                res3["leaf"].append(res2["leaf"][i][leaf])
-            else:
-                res3["stock_energy"].append(res2["stock_energy"][i])
-                res3["year"].append(np.nan)
-                res3["appliance"].append(leaf)
-                res3["leaf"].append(res2["leaf"][i][leaf])
-
-    # Now, if the leaf is not None, then it could be year or energy/stock
-    res4 = defaultdict(list)
-
-    return(res3)
-
-    for i in range(len(res3["leaf"])):
-
-        for leaf in list(res3["leaf"][i]):
-            if leaf is np.nan:
-                for k in list(res3):
-                    res4[k].append(res3[k][i])
-            else:
-                for k in [k for k in list(res3) if k not in ["stock_energy", "year", "leaf"]]:
-                    res4[k].append(res3[k][i])
-
-                if leaf in ["N", "A"]:
-                    res4["stock_energy"].append(res3["stock_energy"][i])
-                    res4["year"].append(res3["year"][i])
-                    res4["leaf"].append(np.nan)
-                elif leaf in ["stock", "energy"]:
-                    res4["stock_energy"].append(leaf)
-                    res4["year"].append(res3["year"][i])
-                    res4["leaf"].append(res3["leaf"][i][leaf])
-                else:
-                    res4["stock_energy"].append(res3["stock_energy"][i])
-                    res4["year"].append(leaf)
-                    res4["leaf"].append(res3["leaf"][i][leaf])
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
-    return(res4)
-
-    # finally, one more run though to get the yearly data
-    fuels_5 = []
-
-    for i in range(len(fuels_4)):
-        d1 = {    "region"    : fuels_4[i]["region"]
-                , "bldg"      : fuels_4[i]["bldg"]
-                , "fuel"      : fuels_4[i]["fuel"]
-                , "enduse"    : fuels_4[i]["enduse"]
-                , "se"        : fuels_4[i]["se"]
-                , "ds"        : fuels_4[i]["ds"]
-                , "appliance" : fuels_4[i]["appliance"]
-                , "year"      : fuels_4[i]["year"]
-                , "leaf"      : fuels_4[i]["leaf"]
-                , "value"     : fuels_4[i]["value"]
-                }
-        if fuels_4[i]["leaf"] is not None:
-            for leaf in list(fuels_4[i]["leaf"]):
-                if leaf in ["N", "A"]:
-                    d1["leaf"] = None
-                else:
-                    d1["year"] = leaf
-                    d1["value"] = fuels_4[i]["leaf"][leaf]
-                    d1["leaf"] = None
-        fuels_5.append(d1)
-
-    rtn = pd.DataFrame.from_dict(fuels_5)
-    rtn.drop(axis = 1, inplace = True, columns = "leaf")
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
-
-    return rtn
-
-# }}}
-
-################################################################################
-def import_baseline_building_data(path, verbose = True):                    #{{{
-    """
-    Arguments:
-        path: file path to json file (mseg_res_com_emm_NEW.json)
-        verbose: print time required to import the data
-    """
-    tic = datetime.datetime.now()
-
-    f = open(path, "r")
-    baseline = json.load(f)
-    f.close()
-
-    d = [{"region" : region, "bldg" : bd, "leaf": lf}\
-            for region in list(baseline)\
-            for bd  in list(baseline[region])\
-            for lf  in     [baseline[region][bd]]
-            ]
-
-    # split the work into fuel and non-fuel dictionaries
-    fuels = []
-    non_fuels = []
-
-    for i in range(len(d)):
-        for l in list(d[i]["leaf"]):
-            if l in ["electricity", "natural gas", "distillate", "other fuel"]:
-                d1 = {"region" : d[i]["region"], "bldg" : d[i]["bldg"], "fuel" : l, "leaf" : d[i]["leaf"][l]}
-                fuels.append(d1)
-            else:
-                d1 = {"region" : d[i]["region"], "bldg" : d[i]["bldg"], "variable" : l, "leaf" : d[i]["leaf"][l]}
-                non_fuels.append(d1)
-
-    # build a DataFrame for the non-fuels
-    non_fuels = [{
-                  "region"  : non_fuels[i]["region"]
-                , "bldg" : non_fuels[i]["bldg"]
-                , "variable" : non_fuels[i]["variable"]
-                , "year" : yr
-                , "value" : value
-                }\
-                        for i in range(len(non_fuels))\
-                        for yr in list(non_fuels[i]["leaf"])\
-                        for value in  [non_fuels[i]["leaf"][yr]]
-                        ]
-
-    non_fuels = pd.DataFrame.from_dict(non_fuels)
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
-
-    return(non_fuels)
-
-# }}}
-
-################################################################################
-def import_ecm_results(path                                                 #{{{
-        , variables = ["Avoided CO\u2082 Emissions (MMTons)", "Energy Savings (MMBtu)"]
-        , verbose = True):
-    """ Import ECM results
-
-    Arguments:
-        path: file path to a ecm_results.json file
-        variables: arrary of concepts to import, ignore others.
-        verbose : print time required to import the data
-
-    Return:
-        a pandas DataFrame
-    """
-    tic = datetime.datetime.now()
-
-    f = open(path, "r")
-    ecm_results = json.load(f)
-    f.close()
-
-    ecm_results_keys  = list(ecm_results)
-    ecm_results_keys.remove('On-site Generation')
-
-    CMS = "Markets and Savings (by Category)"
-
-    cms = [{
-        'ecm' : ecm
-        , 'adoption_scenario' : ap
-        , 'variable' : v
-        , 'region' : rg
-        , 'building_class' : bg
-        , 'end_use' : eu
-        , 'ftyv' : ftyv # this is a dictionary with possible fuel_type, year, and value
-        }\
-            for ecm in ecm_results_keys\
-            for ap  in list(ecm_results[ecm][CMS])\
-            for v   in list(ecm_results[ecm][CMS][ap]) if v in variables\
-            for rg  in list(ecm_results[ecm][CMS][ap][v])\
-            for bg  in list(ecm_results[ecm][CMS][ap][v][rg])\
-            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg])\
-            for ftyv in   [ecm_results[ecm][CMS][ap][v][rg][bg][eu]]
-            ]
-
-    # "flatten" the list of dictionaries to _a_ dictionary with array entries.
-    res = defaultdict(list)
-    {res[key].append(sub[key]) for sub in cms for key in sub}
-
-    # pull appart the ftyv element in two steps.  First, get the fuel type and
-    # record just the yv.  Second, extract the year and value entries.
-    res2 = defaultdict(list)
-    res3 = defaultdict(list)
-
-    regex = re.compile(r"\d{4}")
-    for i in range(len(res['ftyv'])):
-        k = list(res['ftyv'][i])
-        if all([regex.search(k[j]) is not None for j in range(len(k))]):
-            # no fuel type here
-            res2["ecm"].append(res["ecm"][i])
-            res2['adoption_scenario'].append(res["adoption_scenario"][i])
-            res2['variable'].append(res["variable"][i])
-            res2['region'].append(res["region"][i])
-            res2['building_class'].append(res["building_class"][i])
-            res2['end_use'].append(res["end_use"][i])
-            res2["fuel_type"].append(np.nan)
-            res2["yv"].append(res["ftyv"][i])
-        else:
-            for ft in k:
-                res2["ecm"].append(res["ecm"][i])
-                res2['adoption_scenario'].append(res["adoption_scenario"][i])
-                res2['variable'].append(res["variable"][i])
-                res2['region'].append(res["region"][i])
-                res2['building_class'].append(res["building_class"][i])
-                res2['end_use'].append(res["end_use"][i])
-                res2["fuel_type"].append(ft)
-                res2["yv"].append(res["ftyv"][i][ft])
-
-    for i in range(len(res2["ecm"])):
-        for yr in list(res2["yv"][i]):
-            res3["ecm"].append(res2["ecm"][i])
-            res3['adoption_scenario'].append(res2["adoption_scenario"][i])
-            res3['variable'].append(res2["variable"][i])
-            res3['region'].append(res2["region"][i])
-            res3['building_class'].append(res2["building_class"][i])
-            res3['end_use'].append(res2["end_use"][i])
-            res3["fuel_type"].append(res2["fuel_type"][i])
-            res3['year'].append(yr)
-            res3['value'].append(res2["yv"][i][yr])
-
-    rtn = pd.DataFrame.from_dict(res3)
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"{path} imported and coerced to a DataFrame in {time_delta}")
-
-    return rtn
-
-#}}}
 
 ################################################################################
 def mapping_emf_base_string():                                              #{{{
