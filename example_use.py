@@ -14,23 +14,31 @@ from collections import defaultdict
 from scout_emf_methods import import_ecm_results
 
 ################################################################################
-# from scout_emf_methods import json_to_df
-# baseline_df   = json_to_df(path = "./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
-# ecm_results_1 = json_to_df("./Results_Files_3/ecm_results_1-1.json")
-# ecm_results_2 = json_to_df("./Results_Files_3/ecm_results_2.json")
-# ecm_results_3 = json_to_df("./Results_Files_3/ecm_results_3-1.json")
+on_site_generation_1, filter_variables_1, ecm_results_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 
-on_site_generation_1, ecm_results_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-on_site_generation_2, ecm_results_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
-on_site_generation_3, ecm_results_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
+filter_variables_1
+filter_variables_1.info()
+
+x = filter_variables_1.reset_index(col_level = 1)
+
+x.columns = x.columns.map(lambda t: t[1])
+
+x
+
+x.info()
+x
 
 
+
+ecm_results_1[ecm_results_1.lvl1 == "Filter Variables"]
 
 on_site_generation_1
 
-
 ecm_results_1
 
+
+on_site_generation_2, ecm_results_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
+on_site_generation_3, ecm_results_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
 
 

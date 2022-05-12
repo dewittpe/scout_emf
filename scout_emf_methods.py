@@ -159,12 +159,18 @@ def import_ecm_results(path):
     df = json_to_df(path)
     assert any(df.lvl0 == "On-site Generation")
 
-    # split the data set into two data frames,
+    # split the data set into several smaller data frames,
     # 1. On-site Generation
     # 2. ECMs
+    #    a. Filter Variables
+    #    b.
     on_site_generation = df[df.lvl0 == "On-site Generation"]
     ecms               = df[df.lvl0 != "On-site Generation"]
+    ecms = ecms.rename(columns = {"lvl0" : "ecm"})
+    filter_variables   = ecms[ecms.lvl1 == "Filter Variables"]
+    ecms               = ecms[ecms.lvl1 != "Filter Variables"]
 
+    ############################################################################
     # clean up the on-site generation data frame
     assert all(on_site_generation.lvl7.isna())
     assert all(on_site_generation.lvl8.isna())
@@ -200,7 +206,16 @@ def import_ecm_results(path):
         "lvl6" : "value"},
         inplace = True)
 
-    return on_site_generation, ecms
+    ############################################################################
+    # clean up filter_variables
+    filter_variables = filter_variables.pivot(index = ["ecm"],
+            columns = ["lvl2"],
+            values  = ["lvl3"])
+
+    filter_variables = filter_variables.reset_index(col_level = 1)
+    filter_variables.columns = filter_variables.columns.map(lambda t: t[1])
+
+    return ecms, filter_variables, on_site_generation
 
 
 
