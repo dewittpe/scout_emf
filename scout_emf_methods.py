@@ -1,19 +1,12 @@
 ################################################################################
 # file: scout_emf_methods.py
 #
-# Define methods for simplifing importing the ECM results, baseline values,
-# converstion metrics, and building of graphics for Scout EMF.
+# Define methods for simplifying importing the ECM results, baseline values,
+# conversion metrics, and building of graphics for Scout EMF.
 #
 # Methods Defined herein:
 #
-# * import_baseline_energy_data
-# * import_baseline_building_data
-# * import_conversion_coeffs
-# * import_ecm_results
-#   -- read in the ecm results json and return a DataFrame
 #
-# * aggregate_emf
-# * covert_energy_to_co2
 #
 ################################################################################
 import json
@@ -177,14 +170,14 @@ def import_ecm_results(path):
     assert all(on_site_generation.lvl9.isna())
     on_site_generation = on_site_generation.drop(columns = ["lvl0", "lvl7", "lvl8", "lvl9"])
 
+    # verify that the "Overall" sums are equivalent to the sum over the regions
+    # and building type
     on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl6"] = on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"]
     on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl5"] = on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"]
 
     on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"] = np.nan
     on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"] = np.nan
 
-    # verify that the "Overall" sums are equivalent to the sum over the regions
-    # and building type
     x = on_site_generation\
             .groupby(["lvl1", "lvl2", "lvl5"])\
             .agg({"lvl6" : "sum"})
@@ -206,6 +199,13 @@ def import_ecm_results(path):
         "lvl6" : "value"},
         inplace = True)
 
+    # set data types
+    assert all(on_site_generation.value.apply(isfloat))
+    on_site_generation.value = on_site_generation.value.apply(float)
+
+    assert all(on_site_generation.year.str.contains(r"^\d{4}$"))
+    on_site_generation.year = on_site_generation.year.apply(int)
+
     ############################################################################
     # clean up filter_variables
     filter_variables = filter_variables.pivot(index = ["ecm"],
@@ -215,7 +215,56 @@ def import_ecm_results(path):
     filter_variables = filter_variables.reset_index(col_level = 1)
     filter_variables.columns = filter_variables.columns.map(lambda t: t[1])
 
-    return ecms, filter_variables, on_site_generation
+    ############################################################################
+    # markets_and_savings
+    #
+    # Ignore the Markets and Savings (Overall), no need to import aggregated
+    # data
+    ecm_mas = ecms[ecms.lvl1 == "Markets and Savings (by Category)"]
+    ecm_mas = ecm_mas.drop(columns = ["lvl1"])
+    ecm_mas = ecm_mas.rename(columns = {
+        "lvl2" : "scenario",
+        "lvl3" : "metric",
+        "lvl4" : "region",
+        "lvl5" : "building_class",
+        "lvl6" : "end_use",
+        "lvl7" : "fuel_type",
+        "lvl8" : "year",
+        "lvl9" : "value"
+        })
+
+    # verify assumption that all fuel_types are defined
+    assert all(ecm_mas.fuel_type.notna())
+
+    # move data from one column to another as needed
+    idx = ecm_mas.fuel_type.str.contains("^\d{4}$")
+    ecm_mas.loc[idx, "value"]     = ecm_mas.loc[idx, "year"]
+    ecm_mas.loc[idx, "year"]      = ecm_mas.loc[idx, "fuel_type"]
+    ecm_mas.loc[idx, "fuel_type"] = "Not Applicable"
+
+    # set data types
+    assert all(ecm_mas.value.apply(isfloat))
+    ecm_mas.value = ecm_mas.value.apply(float)
+
+    assert all(ecm_mas.year.str.contains("^\d{4}$"))
+    ecm_mas.year = ecm_mas.year.apply(int)
+
+    ############################################################################
+    # financial_metrics
+    financial_metrics = ecms[ecms.lvl1 == "Financial Metrics"]
+    financial_metrics = financial_metrics[["ecm", "lvl2", "lvl3", "lvl4"]]
+    financial_metrics = financial_metrics.rename(columns = {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
+
+    # set data types
+    assert all(financial_metrics.value.apply(isfloat))
+    financial_metrics.value = financial_metrics.value.apply(float)
+
+    assert all(financial_metrics.year.str.contains("^\d{4}$"))
+    financial_metrics.year = financial_metrics.year.apply(int)
+
+    ############################################################################
+    # return a tuple of data frames
+    return ecms, ecm_mas, financial_metrics, filter_variables, on_site_generation
 
 
 
