@@ -14,6 +14,7 @@ from collections import defaultdict
 from scout_emf_methods import import_ecm_results
 from scout_emf_methods import import_baseline
 from scout_emf_methods import map_building_class
+from scout_emf_methods import ecm_results_to_emf_aggregation
 
 ################################################################################
 # import baseline
@@ -29,20 +30,19 @@ ecm_mas_3, finanical_metrics_3, filter_variables_3, on_site_generation_3 =\
         import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
 ################################################################################
-ecm_mas_1.info()
-
-ecm_mas_1 =\
-        pd.merge(ecm_mas_1, map_building_class()
-        , how = "left"
-        , left_on = "building_class"
-        , right_on = "building_class0")
- 
+# Aggregate ECM Results to EMF summaries
+emf_1 = ecm_results_to_emf_aggregation(ecm_mas_1)
+emf_2 = ecm_results_to_emf_aggregation(ecm_mas_2)
+emf_3 = ecm_results_to_emf_aggregation(ecm_mas_3)
 
 
+set(ecm_mas_2[ecm_mas_2.fuel_type == "Not Applicable"].end_use)
 
+emf_1[0]  # ecm_mas_1 with additional columns
+emf_1[1]  # aggregated results
 
-
-
+emf_2
+emf_3
 
 
 
@@ -50,41 +50,12 @@ ecm_mas_1 =\
 
 
 ################################################################################
+
 #                                  SECTION 1                                   #
 #                                                                              #
 #          Import and Compare aggregation of ecm_results*.json files           #
 #                                                                              #
 ################################################################################
-# Import the example result files
-ecm_1 = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-ecm_2 = import_ecm_results("./Results_Files_3/ecm_results_2.json")
-ecm_3 = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
-
-baseline_energy = import_baseline_energy_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
-baseline_building = import_baseline_building_data("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
-
-baseline_building
-
-ecm_1
-ecm_2
-ecm_3.info()
-baseline_energy.info()
-baseline_energy
-
-ecm_1.info()
-emf_mapping_base_string(ecm_1.variable)
-
-range(len(ecm_1.variable))
-
-set(ecm_1["fuel_type"])
-set(ecm_2["fuel_type"]) 
-set(ecm_3["fuel_type"])
-set(baseline_energy["fuel"])
-
-# aggregate the results
-emf_1 = aggregate_ecm_results(ecm_1)
-emf_2 = aggregate_ecm_results(ecm_2)
-emf_3 = aggregate_ecm_results(ecm_3)
 
 ################################################################################
 # import the original results
@@ -98,9 +69,9 @@ emf_3_orig.rename(columns = {"Unnamed: 0" : "emf_string"}, inplace = True)
 
 ################################################################################
 # compare the refactored work against the original work
-emf_1 = emf_1[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
-emf_2 = emf_2[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
-emf_3 = emf_3[["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
+emf_1 = emf_1[1][["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
+emf_2 = emf_2[1][["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
+emf_3 = emf_3[1][["emf_string", "2025", "2030", "2035", "2040", "2045", "2050"]]
 
 # compare refactor approach to original
 emf_1 = emf_1.merge(emf_1_orig, on = ["emf_string"], how = "outer",

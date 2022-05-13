@@ -12,6 +12,7 @@
 import json
 import pandas as pd
 import numpy as np
+import warnings
 import re
 import datetime
 from collections import defaultdict
@@ -160,7 +161,7 @@ def import_ecm_results(path): # {{{
     # 2. ECMs
     #    a. Filter Variables
     #    b. Markets and Savings
-    #    c. 
+    #    c.
     on_site_generation = df[df.lvl0 == "On-site Generation"]
     ecms               = df[df.lvl0 != "On-site Generation"]
     ecms = ecms.rename(columns = {"lvl0" : "ecm"})
@@ -286,11 +287,11 @@ def import_baseline(path): # {{{
           one of two things:
           1. building type metadata
           2. fuel_type
-        
+
         lvl3:
           if lvl2 is building type metadata then lvl3 the year (lvl4 value)
           if lvl2 is fuel type lvl3 is _always_ end_use
-        
+
         lvl4:
           One of four things:
           1. values if lvl2 was building metadata
@@ -299,21 +300,21 @@ def import_baseline(path): # {{{
                 (includes secondary heating)
              b. technology_type or
              c. stock/energy keys
-        
+
         lvl5
           if (lvl4 = 2a) then technology_type / envelope components
           if (lvl4 = 2b) then stock/energy keys
           if (lvl4 = 2c) year or NA
-        
+
         lvl6
           if (lvl4 = 2c) value
           if (lvl5 is stock/energy key) then NA or year
           if (lvl5 is technology_type / envelope components) then stock/energy
              key
-        
+
         lvl7
           values or years
-        
+
         lvl8
           values
     """
@@ -345,7 +346,7 @@ def import_baseline(path): # {{{
     df = df[~((df.lvl5 == "stock") & (df.lvl6 == "NA")) ]
     df = df[~((df.lvl4 == "stock") & (df.lvl5 == "NA")) ]
 
-    # move values from one column to the next.  
+    # move values from one column to the next.
     # * lvl8 will have all the "values"
     # * lvl7 will have all the years
     # * lvl6 will have all stock_energy indicators
@@ -363,7 +364,7 @@ def import_baseline(path): # {{{
     df.loc[idx, "lvl6"] = df.loc[idx, "lvl5"]
     df.loc[idx, "lvl5"] = np.nan
 
-    # if lvl4 is not demand/supply then it is a technology_type and needs to be 
+    # if lvl4 is not demand/supply then it is a technology_type and needs to be
     # shifted over to lvl5
     idx = (df.lvl4.notna()) & (df.lvl4 != "demand") & (df.lvl4 != "supply")
     df.loc[idx, "lvl5"] = df.loc[idx, "lvl4"]
@@ -395,64 +396,248 @@ def import_baseline(path): # {{{
 # }}}
 
 ################################################################################
-def map_building_class():                                              #{{{
+def map_building_class():                                                   #{{{
     """
     Map for what is really just splitting a string
     """
     d = {
-            "building_class0" : [
-                "Commercial (Existing)",
-                "Commercial (New)",
-                "Residential (Existing)",
-                "Residential (New)"
-                ],
-            "building_class" : [
-                "Commercial", 
-                "Commercial", 
-                "Residential",
-                "Residential"
-                ]
-            , "building_construction" : [
-                "Existing",
-                "New",
-                "Existing",
-                "New"
-                ]
+            "Commercial (Existing)"  : {
+                "building_class" : "Commercial",
+                "building_construction" : "Existing"
+                },
+            "Commercial (New)": {
+                "building_class" : "Commercial",
+                "building_construction" : "New"
+                },
+            "Residential (Existing)" : {
+                "building_class" : "Residential",
+                "building_construction" : "Existing"
+                },
+            "Residential (New)": {
+                "building_class" : "Residential",
+                "building_construction" : "New"
+                }
             }
-    return pd.DataFrame(data = d)
+
+    return pd.DataFrame.from_dict(d, orient = "index")\
+            .reset_index()\
+            .rename(columns = {"index" : "building_class0"})
+
 #}}}
 
 ################################################################################
-def map_direct_fuel():                                                      #{{{
+def map_direct_indirect_fuel():                                             #{{{
     """
     Map for fuel type to direct or indirect
     """
     d = {
-            "fuel" : [
-                'Natural Gas',
-                'Distillate/Other',
-                'Biomass',
-                'Propane',
-                'Electric',
-                'Non-Electric'
-                ]
-            , "(in)direct" : [
-                'Direct',
-                'Direct',
-                'Direct',
-                'Direct',
-                'Indirect',
-                'Direct']
+            "Natural Gas" : "Direct",
+            "Distillate/Other" : "Direct",
+            "Biomass" : "Direct",
+            "Propane" : "Direct",
+            "Electric" : "Indirect",
+            "Non-Electric" : "Indirect"
             }
 
-    #d = {
-    #        "Natural Gas" : "Direct",
-    #        "Distillate/Other" : "Direct"
-    #        "Biomass" : "Direct"
-    #        "Propane" : "Direct"
-    #        :w
-    return pd.DataFrame(data = d)
+    return pd.DataFrame(
+            data = d.items(),
+            columns = ["fuel_type", "direct_indirect_fuel"]
+            )
 #}}}
+
+################################################################################
+def map_emf_base_string():                                              #{{{
+    """
+    A data frame to map variable values to base EMF strings
+
+    Arguments:
+        None
+
+    Return:
+        A pandas DataFrame
+    """
+    d = {
+            "Avoided CO\u2082 Emissions (MMTons)" : "*Emissions|CO2|Energy|Demand|Buildings",
+            "Energy Savings (MMBtu)" : "*Final Energy|Buildings"
+            }
+    return pd.DataFrame(data = d.items(),
+            columns = ["metric", "emf_base_string"]
+            )
+#}}}
+
+################################################################################
+def map_fuel_types():                                                       #{{{
+    """
+    Map for fuel types to emf fuel types
+    """
+    d = {
+            "Natural Gas"      : "Gas",
+            "Propane"          : "Gas",
+            "Distillate/Other" : "Oil",
+            "Biomass"          : "Biomass Solids",
+            "Electric"         : "Electricity",
+            "Electricity"      : "Electricity"
+            }
+    return pd.DataFrame(data = d.items(),
+            columns = ["fuel_type", "emf_fuel_type"]
+            )
+#}}}
+
+################################################################################
+def map_end_uses():                                                         #{{{
+    """
+    Map for end uses
+    """
+    d = {
+              "Cooking"                   : "Appliances"
+            , "Cooling (Env.)"            : np.nan
+            , "Cooling (Equip.)"          : "Cooling"
+            , "Computers and Electronics" : "Other"
+            , "Heating (Env.)"            : np.nan
+            , "Heating (Equip.)"          : "Heating"
+            , "Lighting"                  : "Lighting"
+            , "Other"                     : "Other"
+            , "Refrigeration"             : "Appliances"
+            , "Ventilation"               : np.nan
+            , "Water Heating"             : "Appliances"
+            }
+    return pd.DataFrame(data = d.items(), columns = ["end_use", "emf_end_use"])
+#}}}
+
+
+################################################################################
+def ecm_results_to_emf_aggregation(df):                                    # {{{
+    """
+    Aggregate ECM Results to EMF format
+
+    Args: a data frame that was returned by import_ecm_results
+    """
+
+    # add emf_base_string and subset to only the rows with an emf_base_string
+    df = pd.merge(df, map_emf_base_string(), how = "inner", on = "metric")
+
+    # map building classes
+    df = pd.merge(df, map_building_class(),
+            how = "left",
+            left_on = "building_class",
+            right_on = "building_class0",
+            suffixes = ('_x', '')
+            )
+    df = df.drop(columns = ["building_class0", "building_class_x"])
+
+    # map fuel types
+    df = pd.merge(df, map_fuel_types(), how = "left", on = "fuel_type")
+    if any(df.emf_fuel_type.isna()):
+        not_mapped = set(df[df.emf_fuel_type.isna()]["fuel_type"])
+        msg = ", ".join(not_mapped)
+        warnings.warn("Fuel types not mapped to EMF fuel types: " + msg)
+
+    # map direct_indirect fuel
+    df = pd.merge(df, map_direct_indirect_fuel(), how = "left", on = "fuel_type")
+    if any(df.direct_indirect_fuel.isna()):
+        not_mapped = set(df[df.direct_indirect_fuel.isna()]["fuel_type"])
+        msg = ", ".join(not_mapped)
+        warnings.warn("Fuel Types not mapped to direct/indirect: " + msg)
+
+    # map end uses
+    df = pd.merge(df, map_end_uses(), how = "left", on = "end_use")
+    if any(df.emf_end_use.isna()):
+        not_mapped = set(df[df.emf_end_use.isna()]["end_use"])
+        msg = ", ".join(not_mapped)
+        warnings.warn(f"Unmapped end uses: " + msg)
+
+    # Aggregations
+    a0 = df\
+            .groupby(["emf_base_string", "year"])\
+            .agg(value = ("value", "sum"))
+
+    a1 = df\
+            .groupby(["emf_base_string", "building_class", "year"])\
+            .agg(value = ("value", "sum"))
+
+    a2 = df\
+            .groupby(["emf_base_string", "building_class", "emf_end_use", "year"])\
+            .agg(value = ("value", "sum"))
+
+    a3_0 = df\
+            [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+            .groupby(["emf_base_string", "direct_indirect_fuel", "year"])\
+            .agg(value = ("value", "sum"))
+    a3_1 = df\
+            [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+            .groupby(["emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
+            .agg(value = ("value", "sum"))
+    a3_2 = df\
+            [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+            .groupby(["emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
+            .agg(value = ("value", "sum"))
+
+    a4_0 = df\
+            [df.emf_base_string == "*Final Energy|Buildings"]\
+            .groupby(["emf_base_string", "emf_fuel_type", "year"])\
+            .agg(value = ("value", "sum"))
+    a4_1 = df\
+            [df.emf_base_string == "*Final Energy|Buildings"]\
+            .groupby(["emf_base_string", "building_class", "emf_fuel_type", "year"])\
+            .agg(value = ("value", "sum"))
+    a4_2 = df\
+            [df.emf_base_string == "*Final Energy|Buildings"]\
+            .groupby(["emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
+            .agg(value = ("value", "sum"))
+
+    # Aggregation clean up
+    a0.reset_index(inplace = True)
+    a1.reset_index(inplace = True)
+    a2.reset_index(inplace = True)
+    a3_0.reset_index(inplace = True)
+    a3_1.reset_index(inplace = True)
+    a3_2.reset_index(inplace = True)
+    a4_0.reset_index(inplace = True)
+    a4_1.reset_index(inplace = True)
+    a4_2.reset_index(inplace = True)
+
+    # A multiplicative factor for energy savings
+    a4_0.value *= 1.05505585262e-9
+    a4_1.value *= 1.05505585262e-9
+    a4_2.value *= 1.05505585262e-9
+
+    # build the full emf_string
+    a0["emf_string"] = a0.emf_base_string
+    a1["emf_string"] = a1.emf_base_string + "|" + a1.building_class
+    a2["emf_string"] = a2.emf_base_string + "|" + a2.building_class + "|" + a2.emf_end_use
+
+    a3_0["emf_string"] = a3_0.emf_base_string + "|" + a3_0.direct_indirect_fuel
+    a3_1["emf_string"] = a3_1.emf_base_string + "|" + a3_1.building_class + "|" + a3_1.direct_indirect_fuel
+    a3_2["emf_string"] = a3_2.emf_base_string + "|" + a3_2.building_class + "|" + a3_2.emf_end_use + "|" + a3_2.direct_indirect_fuel
+
+    a4_0["emf_string"] = a4_0.emf_base_string + "|" + a4_0.emf_fuel_type
+    a4_1["emf_string"] = a4_1.emf_base_string + "|" + a4_1.building_class + "|" + a4_1.emf_fuel_type
+    a4_2["emf_string"] = a4_2.emf_base_string + "|" + a4_2.building_class + "|" + a4_2.emf_end_use + "|" + a4_2.emf_fuel_type
+
+    # build one data frame with all the aggregations
+    a = pd.concat([
+        a0[["emf_string", "year", "value"]],
+        a1[["emf_string", "year", "value"]],
+        a2[["emf_string", "year", "value"]],
+        a3_0[["emf_string", "year", "value"]],
+        a3_1[["emf_string", "year", "value"]],
+        a3_2[["emf_string", "year", "value"]],
+        a4_0[["emf_string", "year", "value"]],
+        a4_1[["emf_string", "year", "value"]],
+        a4_2[["emf_string", "year", "value"]]
+        ])
+    a = a.pivot(index = ["emf_string"], columns = ["year"], values = ["value"])
+    #a.columns = a.columns.droplevel(0)
+    a.reset_index(inplace = True)
+
+    return df, a
+
+# }}}
+
+
+
+
+
 
 
 
@@ -568,121 +753,6 @@ def import_conversion_coeffs(path, verbose = True):                         #{{{
 
 # }}}
 
-################################################################################
-def mapping_emf_base_string():                                              #{{{
-    """
-    A data frame to map variable values to base EMF strings
-
-    Arguments:
-        None
-
-    Return:
-        A pandas DataFrame
-    """
-    d = {
-            "variable" : ["Avoided CO\u2082 Emissions (MMTons)"
-                , "Energy Savings (MMBtu)"]
-            , "emf_base_string" : ["*Emissions|CO2|Energy|Demand|Buildings"
-                , "*Final Energy|Buildings"
-                ]
-            }
-    return pd.DataFrame(data = d)
-#}}}
-
-
-
-################################################################################
-def mapping_emf_fuel():                                                     #{{{
-    """
-    Map for fuel types to emf fuel types
-    """
-    d = {
-            "fuel"       : ['Natural Gas', 'Propane', 'Distillate/Other', 'Biomass', 'Electric', 'Electricity']
-            , "emf_fuel" : ['Gas',         'Gas',     'Oil',              'Biomass Solids', 'Electricity', 'Electricity']
-            }
-    return pd.DataFrame(data = d)
-#}}}
-
-################################################################################
-def mapping_end_uses():                                                     #{{{
-    """
-    Map for end uses
-    """
-    d = {
-              "Cooking"                   : "Appliances"
-            , "Cooling (Env.)"            : np.nan
-            , "Cooling (Equip.)"          : "Cooling"
-            , "Computers and Electronics" : "Other"
-            , "Heating (Env.)"            : np.nan
-            , "Heating (Equip.)"          : "Heating"
-            , "Lighting"                  : "Lighting"
-            , "Other"                     : "Other"
-            , "Refrigeration"             : "Appliances"
-            , "Ventilation"               : np.nan
-            , "Water Heating"             : "Appliances"
-            }
-    return pd.DataFrame(data = d.items(), columns = ["end_use0", "end_use"])
-#}}}
-
-################################################################################
-def import_ecm_results_v1(path, verbose = True):                            #{{{
-    """ Import ECM results
-
-     THIS IS VERY FAST BUT REQUIRES A CONSISTENT JSON FORMAT.  SINCE FUEL TYPE
-     MAY NOT ALWAYS EXIST THE LOGIC TO TO BUILD THE NEEDED DATAFRAME WILL SLOW
-     DOWN THE PROCESS
-
-    Arguments:
-        path: file path to a ecm_results.json file
-        verbose : print time required to import the data
-
-    Return:
-        a pandas DataFrame
-    """
-    tic = datetime.datetime.now()
-
-    f = open(path, "r")
-    ecm_results = json.load(f)
-    f.close()
-
-    ecm_results_keys  = list(ecm_results)
-    ecm_results_keys.remove('On-site Generation')
-
-    CMS = "Markets and Savings (by Category)"
-
-    cms = [{
-        'ecm' : ecm
-        , 'adoption_scenario' : ap
-        , 'variable' : v
-        , 'region' : rg
-        , 'building_class' : bg
-        , 'end_use' : eu
-        , 'fuel_type' : fl   # THIS MAY NOT ALWAYS EXIST
-        , 'year'    : yr
-        , 'value'   : value
-        }\
-            for ecm in ecm_results_keys\
-            for ap  in list(ecm_results[ecm][CMS])\
-            for v   in list(ecm_results[ecm][CMS][ap])\
-            for rg  in list(ecm_results[ecm][CMS][ap][v])\
-            for bg  in list(ecm_results[ecm][CMS][ap][v][rg])\
-            for eu  in list(ecm_results[ecm][CMS][ap][v][rg][bg])\
-            for fl  in list(ecm_results[ecm][CMS][ap][v][rg][bg][eu])\
-            for yr  in list(ecm_results[ecm][CMS][ap][v][rg][bg][eu][fl])\
-            for value in   [ecm_results[ecm][CMS][ap][v][rg][bg][eu][fl][yr]]
-            ]
-
-    cms = pd.DataFrame.from_dict(cms)
-
-    cms["cms"] = CMS
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"{path} imported and coerced to a Dataframe in {time_delta}")
-
-    return cms
-
-# }}}
 
 ################################################################################
 def aggregate_ecm_results(df, verbose = True):                              #{{{
