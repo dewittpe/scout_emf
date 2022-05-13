@@ -73,6 +73,7 @@ def isyear(x) : # {{{
         return False
 # }}}
 
+################################################################################
 def json_to_df(path) : # {{{
     f = open(path, "r")
     x = json.load(f)
@@ -88,6 +89,7 @@ def json_to_df(path) : # {{{
 
 # }}}
 
+################################################################################
 def json_to_df_worker(x): #{{{
     keys = []
     for lvl0 in x.keys():
@@ -148,7 +150,8 @@ def json_to_df_worker(x): #{{{
     return pd.DataFrame.from_dict(keys)
 # }}}
 
-def import_ecm_results(path):
+################################################################################
+def import_ecm_results(path): # {{{
     df = json_to_df(path)
     assert any(df.lvl0 == "On-site Generation")
 
@@ -156,7 +159,8 @@ def import_ecm_results(path):
     # 1. On-site Generation
     # 2. ECMs
     #    a. Filter Variables
-    #    b.
+    #    b. Markets and Savings
+    #    c. 
     on_site_generation = df[df.lvl0 == "On-site Generation"]
     ecms               = df[df.lvl0 != "On-site Generation"]
     ecms = ecms.rename(columns = {"lvl0" : "ecm"})
@@ -253,7 +257,8 @@ def import_ecm_results(path):
     # financial_metrics
     financial_metrics = ecms[ecms.lvl1 == "Financial Metrics"]
     financial_metrics = financial_metrics[["ecm", "lvl2", "lvl3", "lvl4"]]
-    financial_metrics = financial_metrics.rename(columns = {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
+    financial_metrics = financial_metrics.rename(columns =
+            {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
 
     # set data types
     assert all(financial_metrics.value.apply(isfloat))
@@ -264,65 +269,193 @@ def import_ecm_results(path):
 
     ############################################################################
     # return a tuple of data frames
-    return ecms, ecm_mas, financial_metrics, filter_variables, on_site_generation
+    return ecm_mas, financial_metrics, filter_variables, on_site_generation
 
-
-
-
-
-
-
-
-
-
-
-# lvl0: Region
-# lvl1: building_type
-# lvl2:
-#   one of two things:
-#   1. building type metadata
-#   2. fuel_type
-#
-# lvl3:
-#   if lvl2 is building type metadata then lvl3 the year (lvl4 value)
-#   if lvl2 is fuel type lvl3 is _always_ end_use
-#
-# lvl4:
-#   One of four things:
-#   1. values if lvl2 was building metadata
-#   2. if lvl2 is fuel type then
-#      a. supply/demand key if lvl3 is a heating or cooling end use  (includes secondary heating)
-#      b. technology_type or
-#      c. stock/energy keys
-#
-# lvl5
-#   if (lvl4 = 2a) then technology_type / envelope components
-#   if (lvl4 = 2b) then stock/energy keys
-#   if (lvl4 = 2c) year or NA
-#
-# lvl6
-#   if (lvl4 = 2c) value
-#   if (lvl5 is stock/energy key) then NA or year
-#   if (lvl5 is technology_type / envelope components) then stock/energy key
-#
-# lvl7
-#   values or years
-#
-# lvl8
-#   values
-
-
-
-#keys_df[keys_df.lvl3 == "secondary heating"]
-#
-#keys_df[keys_df.lvl4 == "water services"]
-#keys_df[keys_df.lvl4 == "telecom systems"]
-
-
+# }}}
 
 ################################################################################
-#                                 End of File                                  #
+def import_baseline(path): # {{{
+    """
+    Import Baseline data
+
+    Per conversation with Chioke this is the outline of the structure of
+    baseline json file
+        lvl0: Region
+        lvl1: building_type
+        lvl2:
+          one of two things:
+          1. building type metadata
+          2. fuel_type
+        
+        lvl3:
+          if lvl2 is building type metadata then lvl3 the year (lvl4 value)
+          if lvl2 is fuel type lvl3 is _always_ end_use
+        
+        lvl4:
+          One of four things:
+          1. values if lvl2 was building metadata
+          2. if lvl2 is fuel type then
+             a. supply/demand key if lvl3 is a heating or cooling end use
+                (includes secondary heating)
+             b. technology_type or
+             c. stock/energy keys
+        
+        lvl5
+          if (lvl4 = 2a) then technology_type / envelope components
+          if (lvl4 = 2b) then stock/energy keys
+          if (lvl4 = 2c) year or NA
+        
+        lvl6
+          if (lvl4 = 2c) value
+          if (lvl5 is stock/energy key) then NA or year
+          if (lvl5 is technology_type / envelope components) then stock/energy
+             key
+        
+        lvl7
+          values or years
+        
+        lvl8
+          values
+    """
+
+    df = json_to_df(path)
+    df = df.rename(columns = {"lvl0" : "region", "lvl1" : "building_type"})
+
+    # split into two data frame
+    bt_metadata = df[df.lvl5.isna()]
+    df = df[df.lvl5.notna()]
+
+    ############################################################################
+    # clean up metadata
+    bt_metadata = bt_metadata[["region", "building_type", "lvl2", "lvl3", "lvl4"]]
+    bt_metadata = bt_metadata.rename(columns =
+            {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
+
+    assert all(bt_metadata.year.str.contains(r"^\d{4}$"))
+    bt_metadata.year = bt_metadata.year.apply(int)
+
+    assert all(bt_metadata.value.apply(isfloat))
+    bt_metadata.value = bt_metadata.value.apply(float)
+
+    ############################################################################
+    # clean up df
+
+    # remove useless rows
+    df = df[~((df.lvl6 == "stock") & (df.lvl7 == "NA")) ]
+    df = df[~((df.lvl5 == "stock") & (df.lvl6 == "NA")) ]
+    df = df[~((df.lvl4 == "stock") & (df.lvl5 == "NA")) ]
+
+    # move values from one column to the next.  
+    # * lvl8 will have all the "values"
+    # * lvl7 will have all the years
+    # * lvl6 will have all stock_energy indicators
+
+    idx = (df.lvl4 == "stock") | (df.lvl4 == "energy")
+    df.loc[idx, "lvl8"] = df.loc[idx, "lvl6"]
+    df.loc[idx, "lvl7"] = df.loc[idx, "lvl5"]
+    df.loc[idx, "lvl6"] = df.loc[idx, "lvl4"]
+    df.loc[idx, "lvl5"] = np.nan
+    df.loc[idx, "lvl4"] = np.nan
+
+    idx = (df.lvl5 == "stock") | (df.lvl5 == "energy")
+    df.loc[idx, "lvl8"] = df.loc[idx, "lvl7"]
+    df.loc[idx, "lvl7"] = df.loc[idx, "lvl6"]
+    df.loc[idx, "lvl6"] = df.loc[idx, "lvl5"]
+    df.loc[idx, "lvl5"] = np.nan
+
+    # if lvl4 is not demand/supply then it is a technology_type and needs to be 
+    # shifted over to lvl5
+    idx = (df.lvl4.notna()) & (df.lvl4 != "demand") & (df.lvl4 != "supply")
+    df.loc[idx, "lvl5"] = df.loc[idx, "lvl4"]
+    df.loc[idx, "lvl4"] = np.nan
+
+    # rename columns to be human useful
+    df = df.rename(columns =
+            {
+                "lvl2" : "fuel_type",
+                "lvl3" : "end_use",
+                "lvl4" : "demand_supply",
+                "lvl5" : "technology_type",
+                "lvl6" : "stock_energy",
+                "lvl7" : "year",
+                "lvl8" : "value"
+                })
+
+    assert all(df.year.str.contains(r"^\d{4}$"))
+    df.year = df.year.apply(int)
+
+    assert all(df.value.apply(isfloat))
+    df.value = df.value.apply(float)
+
+
+    ############################################################################
+    # return tuple of data frames
+    return bt_metadata, df
+
+# }}}
+
 ################################################################################
+def map_building_class():                                              #{{{
+    """
+    Map for what is really just splitting a string
+    """
+    d = {
+            "building_class0" : [
+                "Commercial (Existing)",
+                "Commercial (New)",
+                "Residential (Existing)",
+                "Residential (New)"
+                ],
+            "building_class" : [
+                "Commercial", 
+                "Commercial", 
+                "Residential",
+                "Residential"
+                ]
+            , "building_construction" : [
+                "Existing",
+                "New",
+                "Existing",
+                "New"
+                ]
+            }
+    return pd.DataFrame(data = d)
+#}}}
+
+################################################################################
+def map_direct_fuel():                                                      #{{{
+    """
+    Map for fuel type to direct or indirect
+    """
+    d = {
+            "fuel" : [
+                'Natural Gas',
+                'Distillate/Other',
+                'Biomass',
+                'Propane',
+                'Electric',
+                'Non-Electric'
+                ]
+            , "(in)direct" : [
+                'Direct',
+                'Direct',
+                'Direct',
+                'Direct',
+                'Indirect',
+                'Direct']
+            }
+
+    #d = {
+    #        "Natural Gas" : "Direct",
+    #        "Distillate/Other" : "Direct"
+    #        "Biomass" : "Direct"
+    #        "Propane" : "Direct"
+    #        :w
+    return pd.DataFrame(data = d)
+#}}}
+
+
+
 
 
 
@@ -456,32 +589,7 @@ def mapping_emf_base_string():                                              #{{{
     return pd.DataFrame(data = d)
 #}}}
 
-################################################################################
-def mapping_building_class():                                              #{{{
-    """
-    Map for what is really just splitting a string
-    """
-    d = {
-            "building_class0" : ["Commercial (Existing)", "Commercial (New)"
-                , "Residential (Existing)", "Residential (New)"]
-            , "building_class" : ["Commercial", "Commercial", "Residential",
-            "Residential"]
-            , "building_construction" : ["Existing", "New", "Existing", "New"]
-            }
-    return pd.DataFrame(data = d)
-#}}}
 
-################################################################################
-def mapping_direct_fuel():                                                  #{{{
-    """
-    Map for fuel type to direct or indirect
-    """
-    d = {
-            "fuel"         : ['Natural Gas', 'Distillate/Other', 'Biomass', 'Propane', 'Electric', 'Non-Electric']
-            , "(in)direct" : ['Direct',      'Direct',           'Direct',  'Direct',  'Indirect', 'Direct']
-            }
-    return pd.DataFrame(data = d)
-#}}}
 
 ################################################################################
 def mapping_emf_fuel():                                                     #{{{

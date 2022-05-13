@@ -11,123 +11,36 @@ import re
 import datetime
 import numpy as np
 from collections import defaultdict
-from scout_emf_methods import isfloat
 from scout_emf_methods import import_ecm_results
+from scout_emf_methods import import_baseline
+from scout_emf_methods import map_building_class
 
 ################################################################################
-ecms, ecm_mas, finanical_metrics, filter_variables, on_site_generation = import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-ecm_mas.groupby(["end_use", "fuel_type"]).count()
+# import baseline
+on_site_generation, baseline =\
+        import_baseline("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
-on_site_generation.info()
-on_site_generation
+# import results
+ecm_mas_1, finanical_metrics_1, filter_variables_1, on_site_generation_1 =\
+        import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
+ecm_mas_2, finanical_metrics_2, filter_variables_2, on_site_generation_2 =\
+        import_ecm_results("./Results_Files_3/ecm_results_2.json")
+ecm_mas_3, finanical_metrics_3, filter_variables_3, on_site_generation_3 =\
+        import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
-filter_variables.info()
-filter_variables
+################################################################################
+ecm_mas_1.info()
 
-finanical_metrics.info()
-finanical_metrics
-
-ecm_mas.info()
-ecm_mas
-
-all(on_site_generation.value.apply(isfloat))
-all(on_site_generation.year.str.contains(r"^\d{4}$"))
-
-
-ecms, ecm_mas, finanical_metrics, filter_variables, on_site_generation = import_ecm_results("./Results_Files_3/ecm_results_2.json")
-ecm_mas.groupby(["end_use", "fuel_type"]).count()
-
-ecms, ecm_mas, finanical_metrics, filter_variables, on_site_generation = import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
-ecm_mas.groupby(["end_use", "fuel_type"]).count()
-
-
-ecms
-
-ecm_mas.value = ecm_mas.value.apply(float)
-ecm_mas.value = ecm_mas.value.apply(float)
-ecm_mas.info()
-
-set(ecm_mas.year)
-
-ecm_mas
-
-finanical_metrics
-
-filter_variables
-on_site_generation
-
-[itm[0] for itm in ecm_mas.fuel_type.str.findall("^\d{4}$") if len(itm) > 0]
-
-[ i for i in range(len(ecm_mas)) if ecm_mas.fuel_type[i].str.contains("^\d{4}$") ]
-
-ecm_mas[ecm_mas.fuel_type.str.contains("^\d{4}$")]
-
-set(ecm_mas.electric)
-
-ecm_mas.groupby(["end_use", "electric"]).count()
-
-
-x = ecm_mas[ecm_mas.electric.isna()]\
-        .groupby(["ecm", "scenario", "metric", "region", "building_class", "end_use", "year"])\
-        .agg({"value" : "sum"})
-
-y = ecm_mas[ecm_mas.electric.notna()]\
-        .groupby(["ecm", "scenario", "metric", "region", "building_class", "end_use", "year"])\
-        .agg({"value" : "sum"})
-
-x.reset_index(inplace = True)
-y.reset_index(inplace = True)
-
-len(x)
-len(y)
-
-z = pd.merge(x, y, how = "outer", on = ["ecm", "scenario", "metric", "region", "building_class", "end_use", "year"])
-
-z[
-        (z.scenario == "Max adoption potential") &
-        (z.metric == "Avoided CO\u2082 Emissions (MMTons)") &
-        (z.region == "AIA CZ1") &
-        (z.building_class == "Commercial (Existing)") & 
-        #(z.end_use == "Lighting") &
-        (z.ecm == "Prospective Com. Comfort Ctl. 2030")
-        ]
-
-
-set(
-x[
-        (x.scenario == "Max adoption potential") &
-        (x.metric == "Avoided CO\u2082 Emissions (MMTons)") &
-        (x.region == "AIA CZ1") &
-        (x.building_class == "Commercial (Existing)") & 
-        #(x.end_use == "Lighting") &
-        (x.ecm == "Prospective Com. Comfort Ctl. 2030")
-        ].end_use
-)
-
-set(
-y[
-        #(y.scenario == "Max adoption potential") &
-        #(y.metric == "Avoided CO\u2082 Emissions (MMTons)") &
-        #(y.region == "AIA CZ1") &
-        #(y.building_class == "Commercial (Existing)") & 
-        #(y.end_use == "Lighting") &
-        (y.ecm == "Prospective Com. Comfort Ctl. 2030")
-        ].end_use
-)
-
-[ i for i in set(y.ecm) if i in set(x.ecm)]
-[ i for i in set(x.ecm) if i in set(y.ecm)]
+ecm_mas_1 =\
+        pd.merge(ecm_mas_1, map_building_class()
+        , how = "left"
+        , left_on = "building_class"
+        , right_on = "building_class0")
+ 
 
 
 
-set(ecm_mas.electric)
 
-
-filter_variables
-
-finanical_metrics_1
-
-set(ecms.lvl1)
 
 
 
