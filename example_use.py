@@ -244,6 +244,26 @@ ecm_2[(ecm_2.emf_string == "BASN*Final Energy|Buildings") &
 ################################################################################
 baseline
 
+# emf_fuel_type
+baseline["emf_fuel_type"] = np.nan
+
+baseline.loc[baseline.fuel_type == "natural gas", "emf_fuel_type"] = "Gas"
+
+baseline.loc[
+        (baseline.fuel_type == "natural gas") &
+        (baseline.technology_type.str.contains("LPG")), "emf_fuel_type"] = "Gas_lpg"
+
+
+set(baseline[baseline.fuel_type == "electricity"].end_use)
+
+set(
+baseline[(baseline.technology_type.notna()) & 
+        (baseline.technology_type.str.contains("kerosene"))
+        ].fuel_type)
+
+baseline[baseline.technology_type.isna()]
+
+
 set(baseline.fuel_type)
 set(baseline.end_use)
 set(baseline.demand_supply)
@@ -255,14 +275,17 @@ baseline[
         (baseline.end_use   == "heating")
         ]
 
+set(
 baseline[
-        baseline.end_use.str.contains("cooling")
-        ]
+        baseline.technology_type == "secondary heater (coal)"
+        ].fuel_type
+)
 
+set(
 baseline[
-        (baseline.end_use.str.contains("cooling")) |
-        (baseline.technology_type.str.contains("cooling"))
-        ]
+        (baseline.fuel_type == "other fuel")
+        ].technology_type
+)
 
 
 ################################################################################

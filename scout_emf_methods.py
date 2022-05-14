@@ -671,7 +671,39 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
 
 
 
+################################################################################
+def unit_conversions():                                                    # {{{
+    # MMBtu - Million Metric British Thermal Unit
+    # quad  - quadrilion (1e15) BTU  -- million million metric Btu
+    # EJ    - Exajoule = 1e18 joule
+    # GJ    - gigajoule
+    # kg    - kilograms
+    # t     - metric ton (1000 kg)
+    # Mt    - metric megaton (1,000,000 t)
+    MMBtu_to_EJ = 1.05505585262e-9
+    MMBtu_to_GJ = 1.05505585262
 
+    quad_to_EJ = 1.055
+    EJ_to_quad = 0.94781707774915
+
+    # coversions for different fuels from
+    # https://www.eia.gov/environment/emissions/co2_vol_mass.php
+    #
+    # This web page reports kg CO2 per MMBtu, which is numerically equivlanent
+    # to metric megatons of CO2 per quad:
+    #
+    #   kg CO2                1 Mt            Mt CO2
+    #   ------------ x ----------------- =  ------------
+    #   MMBtu          1000000 x 1000 kg        quad
+    #
+    # propane     : 62.88 kg CO2 per MMBtu
+    # kerosene    : 73.19 kg CO2 per MMBtu
+    # natural gas : 52.91 kg CO2 per MMBtu
+    # diesel and home heating fuel (distillate fuel oil) : 74.14 kg CO2 per MMBtu
+    # 
+    # 95.74, 
+
+# }}}
 
 
 
@@ -695,7 +727,7 @@ def convert_energy_to_co2(coefs, verbose = True):                           #{{{
     # EJ = exajoule = 1e18 joules
     # Mt = megatonne
     MMBtu_to_EJ           = 1.05505585262e-9
-    EJ_to_quad            = 0.9472
+    EJ_to_quad            = 0.9478
     EJ_to_Mt_co2_propane  = EJ_to_quad * 62.88
     EJ_to_Mt_co2_kerosene = EJ_to_quad * 73.38
     EJ_to_Mt_co2_gas      = EJ_to_quad * 53.056
