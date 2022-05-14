@@ -504,6 +504,31 @@ def map_end_uses():                                                         #{{{
     return pd.DataFrame(data = d.items(), columns = ["end_use", "emf_end_use"])
 #}}}
 
+################################################################################
+def map_building_type_to_class():                                           #{{{
+
+    d = {
+            "assembly" : "Commercial",
+            "education" : "Commercial",
+            "food sales" : "Commercial",
+            "food service" : "Commercial",
+            "health care" : "Commercial",
+            "lodging" : "Commercial",
+            "large office" : "Commercial",
+            "small office" : "Commercial",
+            "mercantile/service" : "Commercial",
+            "warehouse" : "Commercial",
+            "other" : "Commercial",
+            "single famile home" : "Residential",
+            "multi famile home" : "Residential",
+            "mobile home" : "Residential"
+            }
+
+    return pd.DataFrame(data = d.items(),
+            columns = ["building_type", "building_class"]
+            )
+
+# }}}
 
 ################################################################################
 def ecm_results_to_emf_aggregation(df):                                    # {{{
@@ -664,6 +689,7 @@ def convert_energy_to_co2(coefs, verbose = True):                           #{{{
     # conversion factors
     # EJ = exajoule = 1e18 joules
     # Mt = megatonne
+    MMBtu_to_EJ           = 1.05505585262e-9
     EJ_to_quad            = 0.9472
     EJ_to_Mt_co2_propane  = EJ_to_quad * 62.88
     EJ_to_Mt_co2_kerosene = EJ_to_quad * 73.38
