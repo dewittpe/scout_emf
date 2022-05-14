@@ -546,43 +546,51 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
         msg = ", ".join(not_mapped)
         warnings.warn(f"Unmapped end uses: " + msg)
 
+    # Convert MMBtu to Exajoules
+    idx = df.metric.str.contains("MMBtu")
+    df.loc[idx, "value"] *= 1.05505585262e-9
+    df.metric = df.metric.str.replace("MMBtu", "EJ")
+
     # Aggregations
+    # NOTE: units for the value column are unique between the emf_base_strings.
+    # This is okay and accounted for since all aggregations are done, in part,
+    # with a groupby emf_base_string.
     a0 = df\
-            .groupby(["emf_base_string", "year"])\
+            .groupby(["region", "emf_base_string", "year"])\
             .agg(value = ("value", "sum"))
 
     a1 = df\
-            .groupby(["emf_base_string", "building_class", "year"])\
+            .groupby(["region", "emf_base_string", "building_class", "year"])\
             .agg(value = ("value", "sum"))
 
     a2 = df\
-            .groupby(["emf_base_string", "building_class", "emf_end_use", "year"])\
+            .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "year"])\
             .agg(value = ("value", "sum"))
 
     a3_0 = df\
             [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
-            .groupby(["emf_base_string", "direct_indirect_fuel", "year"])\
+            .groupby(["region", "emf_base_string", "direct_indirect_fuel", "year"])\
             .agg(value = ("value", "sum"))
     a3_1 = df\
             [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
-            .groupby(["emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
+            .groupby(["region", "emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
             .agg(value = ("value", "sum"))
     a3_2 = df\
             [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
-            .groupby(["emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
+            .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
             .agg(value = ("value", "sum"))
 
     a4_0 = df\
             [df.emf_base_string == "*Final Energy|Buildings"]\
-            .groupby(["emf_base_string", "emf_fuel_type", "year"])\
+            .groupby(["region", "emf_base_string", "emf_fuel_type", "year"])\
             .agg(value = ("value", "sum"))
     a4_1 = df\
             [df.emf_base_string == "*Final Energy|Buildings"]\
-            .groupby(["emf_base_string", "building_class", "emf_fuel_type", "year"])\
+            .groupby(["region", "emf_base_string", "building_class", "emf_fuel_type", "year"])\
             .agg(value = ("value", "sum"))
     a4_2 = df\
             [df.emf_base_string == "*Final Energy|Buildings"]\
-            .groupby(["emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
+            .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
             .agg(value = ("value", "sum"))
 
     # Aggregation clean up
@@ -596,23 +604,18 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
     a4_1.reset_index(inplace = True)
     a4_2.reset_index(inplace = True)
 
-    # A multiplicative factor for energy savings
-    a4_0.value *= 1.05505585262e-9
-    a4_1.value *= 1.05505585262e-9
-    a4_2.value *= 1.05505585262e-9
-
     # build the full emf_string
-    a0["emf_string"] = a0.emf_base_string
-    a1["emf_string"] = a1.emf_base_string + "|" + a1.building_class
-    a2["emf_string"] = a2.emf_base_string + "|" + a2.building_class + "|" + a2.emf_end_use
+    a0["emf_string"] = a0.region + a0.emf_base_string
+    a1["emf_string"] = a0.region + a1.emf_base_string + "|" + a1.building_class
+    a2["emf_string"] = a0.region + a2.emf_base_string + "|" + a2.building_class + "|" + a2.emf_end_use
 
-    a3_0["emf_string"] = a3_0.emf_base_string + "|" + a3_0.direct_indirect_fuel
-    a3_1["emf_string"] = a3_1.emf_base_string + "|" + a3_1.building_class + "|" + a3_1.direct_indirect_fuel
-    a3_2["emf_string"] = a3_2.emf_base_string + "|" + a3_2.building_class + "|" + a3_2.emf_end_use + "|" + a3_2.direct_indirect_fuel
+    a3_0["emf_string"] = a3_0.region + a3_0.emf_base_string + "|" + a3_0.direct_indirect_fuel
+    a3_1["emf_string"] = a3_1.region + a3_1.emf_base_string + "|" + a3_1.building_class + "|" + a3_1.direct_indirect_fuel
+    a3_2["emf_string"] = a3_2.region + a3_2.emf_base_string + "|" + a3_2.building_class + "|" + a3_2.emf_end_use + "|" + a3_2.direct_indirect_fuel
 
-    a4_0["emf_string"] = a4_0.emf_base_string + "|" + a4_0.emf_fuel_type
-    a4_1["emf_string"] = a4_1.emf_base_string + "|" + a4_1.building_class + "|" + a4_1.emf_fuel_type
-    a4_2["emf_string"] = a4_2.emf_base_string + "|" + a4_2.building_class + "|" + a4_2.emf_end_use + "|" + a4_2.emf_fuel_type
+    a4_0["emf_string"] = a4_0.region + a4_0.emf_base_string + "|" + a4_0.emf_fuel_type
+    a4_1["emf_string"] = a4_1.region + a4_1.emf_base_string + "|" + a4_1.building_class + "|" + a4_1.emf_fuel_type
+    a4_2["emf_string"] = a4_2.region + a4_2.emf_base_string + "|" + a4_2.building_class + "|" + a4_2.emf_end_use + "|" + a4_2.emf_fuel_type
 
     # build one data frame with all the aggregations
     a = pd.concat([
@@ -626,8 +629,9 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
         a4_1[["emf_string", "year", "value"]],
         a4_2[["emf_string", "year", "value"]]
         ])
-    a = a.pivot(index = ["emf_string"], columns = ["year"], values = ["value"])
-    #a.columns = a.columns.droplevel(0)
+    a.year = a.year.apply(str) # this is needed so the column names post pivot are strings
+    a = a.pivot_table(index = ["emf_string"], columns = ["year"], values = ["value"])
+    a.columns = a.columns.droplevel(0)
     a.reset_index(inplace = True)
 
     return df, a
@@ -752,111 +756,6 @@ def import_conversion_coeffs(path, verbose = True):                         #{{{
     return rtn
 
 # }}}
-
-
-################################################################################
-def aggregate_ecm_results(df, verbose = True):                              #{{{
-    """ Aggregate results for EMF
-
-    Arguments:
-        df: a pandas DataFrame returned from import_ecm_results
-        verbose: report progress and timing to the user
-
-    Return:
-        a pandas DataFrame
-    """
-    tic = datetime.datetime.now()
-
-    a0 = df\
-            .groupby(['emf_string', 'year'])\
-            .agg(value=('value','sum'))
-
-    a1 = df\
-            .groupby(['emf_string', 'building_class', 'year'])\
-            .agg(value=('value','sum'))
-
-    a2 = df\
-            .groupby(['emf_string', 'building_class', 'end_use2', 'year'])\
-            .agg(value=('value','sum'))
-
-    a3_a0 = df[df.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
-            .groupby(['emf_string', 'building_class', 'end_use2', 'direct_fuel', 'year'])\
-            .agg(value=('value','sum'))
-
-    a3_a1 = df[df.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
-            .groupby(['emf_string', 'direct_fuel', 'year'])\
-            .agg(value=('value','sum'))
-
-    a3_a2 = df[df.variable == "Avoided CO\u2082 Emissions (MMTons)"]\
-            .groupby(['emf_string', 'building_class', 'direct_fuel', 'year'])\
-            .agg(value=('value','sum'))
-
-
-    a3_e0 = df[df.variable == "Energy Savings (MMBtu)"]\
-            .groupby(['emf_string', 'building_class', 'end_use2', 'fuel_type2', 'year'])\
-            .agg(value=('value','sum'))
-
-    a3_e1 = df[df.variable == "Energy Savings (MMBtu)"]\
-            .groupby(['emf_string', 'building_class', 'fuel_type2', 'year'])\
-            .agg(value=('value','sum'))
-
-    a3_e2 = df[df.variable == "Energy Savings (MMBtu)"]\
-            .groupby(['emf_string', 'fuel_type2', 'year'])\
-            .agg(value=('value','sum'))
-
-    a0.reset_index(inplace = True)
-    a1.reset_index(inplace = True)
-    a2.reset_index(inplace = True)
-
-    a3_a0.reset_index(inplace = True)
-    a3_a1.reset_index(inplace = True)
-    a3_a2.reset_index(inplace = True)
-
-    a3_e0.reset_index(inplace = True)
-    a3_e1.reset_index(inplace = True)
-    a3_e2.reset_index(inplace = True)
-
-    # A multiplicative factor for energy savings
-    a3_e0.value *= 1.05505585262e-9
-    a3_e1.value *= 1.05505585262e-9
-    a3_e2.value *= 1.05505585262e-9
-
-    a1.emf_string = a1.emf_string + "|" + a1.building_class
-    a2.emf_string = a2.emf_string + "|" + a2.building_class + "|" + a2.end_use2
-
-    a3_a0.emf_string = a3_a0.emf_string + "|" + a3_a0.building_class + "|" + a3_a0.end_use2 + "|" + a3_a0.direct_fuel
-    a3_a1.emf_string = a3_a1.emf_string + "|" + a3_a1.direct_fuel
-    a3_a2.emf_string = a3_a2.emf_string + "|" + a3_a2.building_class + "|" + a3_a2.direct_fuel
-
-    a3_e0.emf_string = a3_e0.emf_string + "|" + a3_e0.building_class + "|" + a3_e0.end_use2 + "|" + a3_e0.fuel_type2
-    a3_e1.emf_string = a3_e1.emf_string + "|" + a3_e1.building_class + "|" + a3_e1.fuel_type2
-    a3_e2.emf_string = a3_e2.emf_string + "|" + a3_e2.fuel_type2
-
-    # one date frame
-    a = pd.concat([
-                a0[["emf_string", "year", "value"]],
-                a1[["emf_string", "year", "value"]],
-                a2[["emf_string", "year", "value"]],
-
-                a3_a0[["emf_string", "year", "value"]],
-                a3_a1[["emf_string", "year", "value"]],
-                a3_a2[["emf_string", "year", "value"]],
-
-                a3_e0[["emf_string", "year", "value"]],
-                a3_e1[["emf_string", "year", "value"]],
-                a3_e2[["emf_string", "year", "value"]]
-            ])
-    a = a.pivot(index = ["emf_string"], columns = ["year"], values = ["value"])
-    a.columns = a.columns.droplevel(0)
-    a.reset_index(inplace = True)
-
-    if verbose:
-        time_delta = datetime.datetime.now() - tic
-        print(f"Aggregation completed in {time_delta}")
-
-    return a
-
-# end of aggregate_emf }}}
 
 ################################################################################
 #                                 End of File                                  #
