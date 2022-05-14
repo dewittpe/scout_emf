@@ -321,6 +321,11 @@ def import_baseline(path): # {{{
 
     df = json_to_df(path)
     df = df.rename(columns = {"lvl0" : "region", "lvl1" : "building_type"})
+    df = pd.merge(df, map_building_type_to_class(),
+            how = "left",
+            on = "building_type")
+
+    assert all(df.building_class.notna())
 
     # split into two data frame
     bt_metadata = df[df.lvl5.isna()]
@@ -328,7 +333,7 @@ def import_baseline(path): # {{{
 
     ############################################################################
     # clean up metadata
-    bt_metadata = bt_metadata[["region", "building_type", "lvl2", "lvl3", "lvl4"]]
+    bt_metadata = bt_metadata[["region", "building_type", "building_class", "lvl2", "lvl3", "lvl4"]]
     bt_metadata = bt_metadata.rename(columns =
             {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
 
@@ -347,7 +352,7 @@ def import_baseline(path): # {{{
     df = df[~((df.lvl4 == "stock") & (df.lvl5 == "NA")) ]
 
     # move values from one column to the next.
-    # * lvl8 will have all the "values"
+    # * lvl8 will have all the "values" __ALL Exajoule__
     # * lvl7 will have all the years
     # * lvl6 will have all stock_energy indicators
 
@@ -379,14 +384,14 @@ def import_baseline(path): # {{{
                 "lvl5" : "technology_type",
                 "lvl6" : "stock_energy",
                 "lvl7" : "year",
-                "lvl8" : "value"
+                "lvl8" : "Exajoules"
                 })
 
     assert all(df.year.str.contains(r"^\d{4}$"))
     df.year = df.year.apply(int)
 
-    assert all(df.value.apply(isfloat))
-    df.value = df.value.apply(float)
+    assert all(df.Exajoules.apply(isfloat))
+    df.Exajoules = df.Exajoules.apply(float)
 
 
     ############################################################################
@@ -519,8 +524,8 @@ def map_building_type_to_class():                                           #{{{
             "mercantile/service" : "Commercial",
             "warehouse" : "Commercial",
             "other" : "Commercial",
-            "single famile home" : "Residential",
-            "multi famile home" : "Residential",
+            "single family home" : "Residential",
+            "multi family home" : "Residential",
             "mobile home" : "Residential"
             }
 
