@@ -15,7 +15,6 @@ import numpy as np
 import warnings
 import re
 import datetime
-from itertools import chain, starmap
 from collections import defaultdict
 
 
@@ -76,38 +75,80 @@ def isyear(x) : # {{{
 # }}}
 
 ################################################################################
-def json_to_df(x): #{{{
+def json_to_df(path) : # {{{
+    f = open(path, "r")
+    x = json.load(f)
+    f.close()
 
-    adhoc_deliminator = "___"
+    try:
+        dpth = depth(x)
+        assert dpth <= 9
+    except AssertionError:
+        print(f"json_to_df has been built to support nested dict to 9 levels of depth, the dict you've passed has a max depth of {dpth}.")
+    else:
+        return json_to_df_worker(x)
 
-    # define method for unpacking one level of the json at a time
-    def unpack(parent_key, parent_value):
-        if isinstance(parent_value, dict):
-            for key, value in parent_value.items():
-                temp_key_1 = parent_key + adhoc_deliminator + key
-                yield temp_key_1, value
-        elif isinstance(parent_key, list):
-            i = 0
-            for value in parent_value:
-                temp_key_2 = parent_key + adhoc_deliminator + str(i)
-                i += 1
-                yield temp_key_2, value
+# }}}
+
+################################################################################
+def json_to_df_worker(x): #{{{
+    keys = []
+    for lvl0 in x.keys():
+        d = {"lvl0" : lvl0}
+        if not isinstance(x[lvl0], dict):
+            d["lvl1"] = x[lvl0]
+            keys.append(d)
         else:
-            yield parent_key, parent_value
-
-
-    # Iterate until fully unpacked
-    while True:
-        if any((isinstance(value, dict) or isinstance(value, list)) for value in x.values()):
-               x = dict(chain.from_iterable(starmap(unpack, x.items())))
-        else:
-            break
-
-    df = pd.DataFrame.from_dict(x.items(), orient = "columns")
-
-    return (df[0] + adhoc_deliminator + df[1].apply(str))\
-            .str.split(adhoc_deliminator, expand = True)
-
+            for lvl1 in x[lvl0].keys():
+                d = {"lvl0" : lvl0, "lvl1" : lvl1}
+                if not isinstance(x[lvl0][lvl1], dict):
+                    d["lvl2"] = x[lvl0][lvl1]
+                    keys.append(d)
+                else:
+                    for lvl2 in x[lvl0][lvl1].keys():
+                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2}
+                        if not isinstance(x[lvl0][lvl1][lvl2], dict):
+                            d["lvl3"] = x[lvl0][lvl1][lvl2]
+                            keys.append(d)
+                        else:
+                            for lvl3 in x[lvl0][lvl1][lvl2].keys():
+                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3}
+                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3], dict):
+                                    d["lvl4"] = x[lvl0][lvl1][lvl2][lvl3]
+                                    keys.append(d)
+                                else:
+                                    for lvl4 in x[lvl0][lvl1][lvl2][lvl3].keys():
+                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4}
+                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4], dict):
+                                            d["lvl5"] = x[lvl0][lvl1][lvl2][lvl3][lvl4]
+                                            keys.append(d)
+                                        else:
+                                            for lvl5 in x[lvl0][lvl1][lvl2][lvl3][lvl4].keys():
+                                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5}
+                                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5], dict):
+                                                    d["lvl6"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5]
+                                                    keys.append(d)
+                                                else:
+                                                    for lvl6 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5].keys():
+                                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6}
+                                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6], dict):
+                                                            d["lvl7"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6]
+                                                            keys.append(d)
+                                                        else:
+                                                            for lvl7 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6].keys():
+                                                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7}
+                                                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7], dict):
+                                                                    d["lvl8"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7]
+                                                                    keys.append(d)
+                                                                else:
+                                                                    for lvl8 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7].keys():
+                                                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7, "lvl8" : lvl8}
+                                                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8], dict):
+                                                                            d["lvl9"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8]
+                                                                            keys.append(d)
+                                                                        else:
+                                                                            print("UNEXPECTED DEPTH")
+    return pd.DataFrame.from_dict(keys)
 # }}}
 
 ################################################################################
@@ -659,8 +700,8 @@ def unit_conversions():                                                    # {{{
     # kerosene    : 73.19 kg CO2 per MMBtu
     # natural gas : 52.91 kg CO2 per MMBtu
     # diesel and home heating fuel (distillate fuel oil) : 74.14 kg CO2 per MMBtu
-    #
-    # 95.74,
+    # 
+    # 95.74, 
 
 # }}}
 
