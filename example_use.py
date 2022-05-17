@@ -13,6 +13,8 @@ import numpy as np
 from collections import defaultdict
 from scout_emf_methods import import_ecm_results
 from scout_emf_methods import import_baseline
+from scout_emf_methods import json_to_df
+
 from scout_emf_methods import ecm_results_to_emf_aggregation
 
 tic0 = datetime.datetime.now()
@@ -27,6 +29,9 @@ baseline.info()
 
 
 # import results
+df = json_to_df("./Results_Files_3/ecm_results_1-1.json")
+df
+
 ecm_mas_1, finanical_metrics_1, filter_variables_1, on_site_generation_1 =\
         import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
 ecm_mas_2, finanical_metrics_2, filter_variables_2, on_site_generation_2 =\

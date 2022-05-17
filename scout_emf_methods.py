@@ -75,80 +75,31 @@ def isyear(x) : # {{{
 # }}}
 
 ################################################################################
-def json_to_df(path) : # {{{
+def json_to_df(path): #{{{
     f = open(path, "r")
     x = json.load(f)
     f.close()
 
-    try:
-        dpth = depth(x)
-        assert dpth <= 9
-    except AssertionError:
-        print(f"json_to_df has been built to support nested dict to 9 levels of depth, the dict you've passed has a max depth of {dpth}.")
-    else:
-        return json_to_df_worker(x)
-
+    x = flatten_dict(x)
+    x = [(*a, str(b)) for a,b in x.items()]
+    x = pd.DataFrame(x)
+    x.columns = ["lvl" + str(i) for i in range(len(x.columns))]
+    return x
 # }}}
 
 ################################################################################
-def json_to_df_worker(x): #{{{
-    keys = []
-    for lvl0 in x.keys():
-        d = {"lvl0" : lvl0}
-        if not isinstance(x[lvl0], dict):
-            d["lvl1"] = x[lvl0]
-            keys.append(d)
-        else:
-            for lvl1 in x[lvl0].keys():
-                d = {"lvl0" : lvl0, "lvl1" : lvl1}
-                if not isinstance(x[lvl0][lvl1], dict):
-                    d["lvl2"] = x[lvl0][lvl1]
-                    keys.append(d)
-                else:
-                    for lvl2 in x[lvl0][lvl1].keys():
-                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2}
-                        if not isinstance(x[lvl0][lvl1][lvl2], dict):
-                            d["lvl3"] = x[lvl0][lvl1][lvl2]
-                            keys.append(d)
-                        else:
-                            for lvl3 in x[lvl0][lvl1][lvl2].keys():
-                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3}
-                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3], dict):
-                                    d["lvl4"] = x[lvl0][lvl1][lvl2][lvl3]
-                                    keys.append(d)
-                                else:
-                                    for lvl4 in x[lvl0][lvl1][lvl2][lvl3].keys():
-                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4}
-                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4], dict):
-                                            d["lvl5"] = x[lvl0][lvl1][lvl2][lvl3][lvl4]
-                                            keys.append(d)
-                                        else:
-                                            for lvl5 in x[lvl0][lvl1][lvl2][lvl3][lvl4].keys():
-                                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5}
-                                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5], dict):
-                                                    d["lvl6"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5]
-                                                    keys.append(d)
-                                                else:
-                                                    for lvl6 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5].keys():
-                                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6}
-                                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6], dict):
-                                                            d["lvl7"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6]
-                                                            keys.append(d)
-                                                        else:
-                                                            for lvl7 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6].keys():
-                                                                d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7}
-                                                                if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7], dict):
-                                                                    d["lvl8"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7]
-                                                                    keys.append(d)
-                                                                else:
-                                                                    for lvl8 in x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7].keys():
-                                                                        d = {"lvl0" : lvl0, "lvl1" : lvl1, "lvl2" : lvl2, "lvl3" : lvl3, "lvl4": lvl4, "lvl5" : lvl5, "lvl6" : lvl6, "lvl7" : lvl7, "lvl8" : lvl8}
-                                                                        if not isinstance(x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8], dict):
-                                                                            d["lvl9"] = x[lvl0][lvl1][lvl2][lvl3][lvl4][lvl5][lvl6][lvl7][lvl8]
-                                                                            keys.append(d)
-                                                                        else:
-                                                                            print("UNEXPECTED DEPTH")
-    return pd.DataFrame.from_dict(keys)
+def flatten_dict(nested_dict): #{{{
+    res = {}
+    if isinstance(nested_dict, dict):
+        for k in nested_dict:
+            flattened_dict = flatten_dict(nested_dict[k])
+            for key, val in flattened_dict.items():
+                key = list(key)
+                key.insert(0, k)
+                res[tuple(key)] = val
+    else:
+        res[()] = nested_dict
+    return res
 # }}}
 
 ################################################################################
@@ -180,8 +131,10 @@ def import_ecm_results(path): # {{{
     on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl6"] = on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"]
     on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl5"] = on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"]
 
-    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"] = np.nan
-    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"] = np.nan
+    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl4"] = None
+    on_site_generation.loc[on_site_generation.lvl2 == "Overall", "lvl3"] = None
+
+    on_site_generation.lvl6 = on_site_generation.lvl6.apply(float)
 
     x = on_site_generation\
             .groupby(["lvl1", "lvl2", "lvl5"])\
@@ -189,7 +142,12 @@ def import_ecm_results(path): # {{{
     x.reset_index(inplace = True)
     x = x.pivot(index = ["lvl1", "lvl5"], columns = ["lvl2"], values = ["lvl6"])
     x.reset_index(inplace = True)
-    assert len(x[(x.lvl6["Overall"].notna()) & (x.lvl6["By Category"] != x.lvl6["Overall"])]) == 0
+    x["abs_delta"] = abs(x.lvl6["By Category"] - x.lvl6["Overall"])
+
+    #print(x[x.abs_delta > 1e-8])
+    #assert all(x["abs_delta"] < 1e-8)
+    if any(x.abs_delta < 1e-8):
+        warnings.warn("At least one on_site_generation aggregation differs from 'Overall' value.")
 
     # only return the "by category" data as the "overall" is redundant
     on_site_generation = on_site_generation[on_site_generation.lvl2 == "By Category"]
