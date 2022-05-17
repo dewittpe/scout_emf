@@ -104,6 +104,23 @@ def flatten_dict(nested_dict): #{{{
 # }}}
 
 ################################################################################
+class ecm_results:                                                         # {{{
+    def __init__(self, path): # {{{
+        self.basename = os.path.basename(path)
+        self.path = path
+        self.df = json_to_df(path)
+    # }}}
+
+    def info(self): #{{{
+        print(f"path:                           {self.path}")
+        print(f"basename:                       {self.basename}")
+    #}}}
+
+#}}}
+
+
+
+################################################################################
 def import_ecm_results(path): # {{{
     df = json_to_df(path)
     assert any(df.lvl0 == "On-site Generation")
@@ -630,8 +647,9 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
 
 
 
-class conversion_data:
-    def __init__(self, path):
+################################################################################
+class conversion_data: # {{{
+    def __init__(self, path): # {{{
         self.basename = os.path.basename(path)
 
         assert self.basename in [
@@ -661,8 +679,9 @@ class conversion_data:
         self.data.columns = ["fuel", "metric", "rescom", "year", "value"]
         self.data.value = self.data.value.apply(float)
         self.data.year  = self.data.year.apply(int)
+    # }}}
 
-    def info(self):
+    def info(self): # {{{
         print(f"path:                           {self.path}")
         print(f"basename:                       {self.basename}")
         print(f"aeo_year:                       {self.aeo_year}")
@@ -670,6 +689,8 @@ class conversion_data:
         print(f"site-source calculation method: {self.calc_method}")
         print(f"units_sources:                  a DataFrame")
         print(f"data:                           a DataFrame")
+    # }}}
+# }}}
 
 
 
