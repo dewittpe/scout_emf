@@ -15,6 +15,7 @@ import numpy as np
 import warnings
 import re
 import datetime
+import os
 from collections import defaultdict
 
 
@@ -625,6 +626,61 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
     return df, a
 
 # }}}
+
+
+
+
+class conversion_data:
+    def __init__(self, path):
+        self.basename = os.path.basename(path)
+
+        assert self.basename in [
+                "site_source_co2_conversions-ce.json",
+                "site_source_co2_conversions-decarb.json",
+                "site_source_co2_conversions-decarb_lite.json",
+                "site_source_co2_conversions-gsref.json",
+                "site_source_co2_conversions.json",
+                ]
+
+        self.path = path
+        df = json_to_df(path)
+        self.aeo_year = int(df.lvl1[df.lvl0 == "updated_to_aeo_year"].values[0])
+        self.aeo_case = str(df.lvl1[df.lvl0 == "updated_to_aeo_case"].values[0])
+        self.calc_method = str(df.lvl1[df.lvl0 == "site-source calculation method"].values[0])
+        #
+        self.units_sources = df[(df.lvl1 == "units") | (df.lvl1 == "source") | (df.lvl2 == "units") | (df.lvl2 == "source")][["lvl0", "lvl1", "lvl2", "lvl3"]]
+        self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl3"] = self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl2"]
+        self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl2"] = self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl1"]
+        self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl1"] = None
+        #
+        self.data = df.loc[df.lvl2 == "data"][["lvl0", "lvl1", "lvl3", "lvl4", "lvl5"]]
+        idx = ~((self.data.lvl3 == "residential") | (self.data.lvl3 == "commercial"))
+        self.data.loc[idx, "lvl5"] = self.data.loc[idx, "lvl4"]
+        self.data.loc[idx, "lvl4"] = self.data.loc[idx, "lvl3"]
+        self.data.loc[idx, "lvl3"] = None
+        self.data.columns = ["fuel", "metric", "rescom", "year", "value"]
+        self.data.value = self.data.value.apply(float)
+        self.data.year  = self.data.year.apply(int)
+
+    def info(self):
+        print(f"path:                           {self.path}")
+        print(f"basename:                       {self.basename}")
+        print(f"aeo_year:                       {self.aeo_year}")
+        print(f"aeo_case:                       {self.aeo_case}")
+        print(f"site-source calculation method: {self.calc_method}")
+        print(f"units_sources:                  a DataFrame")
+        print(f"data:                           a DataFrame")
+
+
+
+
+
+
+
+
+
+
+
 
 
 
