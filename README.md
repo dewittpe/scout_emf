@@ -31,7 +31,7 @@ and packages for working on scout and this possible emf extension.
     # export an active environment (do this if you add or update packages)
     # __NOTE:__  The following will include a `prefix:` line that should be
     # manually removed from environment.yml
-    conda env export --from-history > environment.yml
+    conda env export --no-builds > environment.yml
 
     # updating requirements.txt
     pip freeze > requirements.txt
