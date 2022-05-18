@@ -32,3 +32,5 @@ dependencies:
   - pyarrow
   - plotly
   - matplotlib
+  - pip:
+    - -r requirements.txt

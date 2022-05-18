@@ -33,6 +33,9 @@ and packages for working on scout and this possible emf extension.
     # manually removed from environment.yml
     conda env export --from-history > environment.yml
 
+    # updating requirements.txt
+    pip freeze > requirements.txt
+
 ## Example Use
 
 TODO: build examples
