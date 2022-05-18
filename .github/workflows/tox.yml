@@ -1,0 +1,38 @@
+name: scout-package-tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  scout-package-tests:
+    runs-on: ${{ maxtrix.config.os }}
+    name: ${{ maxtrix.config.os }} (${{ maxtrix.config.py }})
+
+    strategy:
+      matrix:
+        config:
+          - {os: ubuntu-latest, py: "3.6"}
+          - {os: ubuntu-latest, py: "3.7"}
+          - {os: ubuntu-latest, py: "3.8"}
+          - {os: ubuntu-latest, py: "3.9"}
+
+    steps:
+      - name: Get contents from tip of branch on push
+        uses: actions/checkout@v2
+      
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.config.py }}
+
+      - name: Install dependencies
+        run: |
+          $CONDA/bin/condaa env update --file environment.yml --name base
+
+      - name: tox
+        run: |
+          tox
+
