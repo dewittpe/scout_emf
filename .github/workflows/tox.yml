@@ -8,7 +8,7 @@ on:
 
 jobs:
   scout-package-tests:
-    runs-on: ${{ matrixos }}
+    runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} (${{ matrix.python-version }})
 
     strategy:
