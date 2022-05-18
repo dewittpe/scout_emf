@@ -29,8 +29,9 @@ jobs:
         run: |
           cd scout_package
           coverage run -m unittest discover
+          coverage json
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          files: scout_package/.coverage
+          files: scout_package/coverage.json
 
