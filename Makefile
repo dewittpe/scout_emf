@@ -5,7 +5,7 @@ JSONS += supporting_data/convert_data/emm_region_emissions_prices.json
 JSONS += supporting_data/convert_data/site_source_co2_conversions.json
 JSONS += supporting_data/stock_energy_tech_data/mseg_res_com_emm
 
-.PHONY: all
+.PHONY: all test coverage
 
 all: EMF_Scout_output/EMF_Scout.py.log example_use.py.log
 
@@ -19,3 +19,10 @@ EMF_Scout_output/EMF_Scout.py.log : EMF_Scout.py $(JSONS)
 
 example_use.py.log : example_use.py $(JSONS) scout_emf_methods.py
 	python $< > $@
+
+test : 
+	tox
+
+coverage :
+	coverage run --include="scout/*" -m unittest discover
+	coverage report

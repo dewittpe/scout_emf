@@ -13,4 +13,5 @@ setuptools.setup(
         url = "https://github.com/dewittpe/scout_emf",
         packages = setuptools.find_packages(),
         python_requires = '>=3.6',
+        package_data = {'': ['supporting_data/*']},
         )
