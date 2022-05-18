@@ -27,7 +27,7 @@ jobs:
       - run: which python
       - name: Generate coverage report
         run: |
-          coverage run -m unittest discover
+          coverage run --include="scout/*" -m unittest discover
           coverage xml
           coverage json
       - name: Upload coverage to Codecov
