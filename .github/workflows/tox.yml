@@ -28,6 +28,5 @@ jobs:
       - run: which python
       - name: tox
         run: |
-          cd scout_package
           tox
 
