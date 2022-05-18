@@ -13,25 +13,21 @@ jobs:
 
     strategy:
       matrix:
-        config:
-          - {os: ubuntu-latest, py: "3.6"}
-          - {os: ubuntu-latest, py: "3.7"}
-          - {os: ubuntu-latest, py: "3.8"}
-          - {os: ubuntu-latest, py: "3.9"}
+        os: ubuntu-latest
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
-      - name: Get contents from tip of branch on push
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
         with:
-          python-version: ${{ matrix.config.py }}
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          active-environment: scout
-          environment-file: environment.yml
-          python-version: ${{ matrix.config.py }}
+          update-conda: true
+          python-version: ${{ matrix.python-version }}
+          conda-channels: anaconda, conda-forge
+
+      - run: conda --version
+      - run: which python
       - name: tox
         run: |
           tox
