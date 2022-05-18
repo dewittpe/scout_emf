@@ -9,6 +9,10 @@ on:
 jobs:
   scout-package-tests:
     runs-on: macOS-latest
+    
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
       - uses: actions/checkout@v2
