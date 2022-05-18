@@ -8,8 +8,8 @@ on:
 
 jobs:
   scout-package-tests:
-    runs-on: ${{ maxtrix.config.os }}
-    name: ${{ maxtrix.config.os }} (${{ maxtrix.config.py }})
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (${{ matrix.config.py }})
 
     strategy:
       matrix:
@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Get contents from tip of branch on push
         uses: actions/checkout@v2
-      
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
