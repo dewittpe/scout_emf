@@ -3,6 +3,7 @@ Possible extension/refactor for [scout](https://github.com/trynthink/scout)
 
 ## A python package
 [![scout-package-tests](https://github.com/dewittpe/scout_emf/actions/workflows/tox.yml/badge.svg?branch=main)](https://github.com/dewittpe/scout_emf/actions/workflows/tox.yml)
+[![codecov](https://codecov.io/gh/dewittpe/scout_emf/branch/main/graph/badge.svg?token=zUXw1hToQa)](https://codecov.io/gh/dewittpe/scout_emf)
 
 Within the `scout_package` a package as been built to give end users access to
 the tools needed to estimate the impacts of various energy
