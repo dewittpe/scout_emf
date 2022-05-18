@@ -19,12 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup conda
-        uses: s-weigand/setup-conda@v1
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          update-conda: true
           python-version: ${{ matrix.python-version }}
-          conda-channels: anaconda, conda-forge
           environment-file: environment.yml
           activate-environment: scout
           auto-activate-base: false
