@@ -93,6 +93,7 @@ dependencies:
   - zlib=1.2.11
   - zstd=1.4.9
   - pip:
+    - coverage==6.3.3
     - distlib==0.3.4
     - filelock==3.7.0
     - platformdirs==2.5.2
