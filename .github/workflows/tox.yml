@@ -25,6 +25,9 @@ jobs:
           update-conda: true
           python-version: ${{ matrix.python-version }}
           conda-channels: anaconda, conda-forge
+          environment-file: environment.yml
+          activate-environment: scout
+          auto-activate-base: false
 
       - run: conda --version
       - run: which python
