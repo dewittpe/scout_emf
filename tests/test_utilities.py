@@ -2,6 +2,7 @@
 import scout
 import unittest
 import pandas as pd
+import numpy as np
 import json
 
 class TestUtilities(unittest.TestCase):
@@ -60,6 +61,26 @@ class TestUtilities(unittest.TestCase):
                     , columns = ["building_type", "building_class"])
         df = scout.mapping_variables()
         self.assertTrue(all(df.building_type_to_class == expected))
+
+    def test_mapping_end_uses(self):
+        expected = \
+                pd.DataFrame(data = {
+                      "Cooking"                   : "Appliances"
+                    , "Cooling (Env.)"            : np.nan
+                    , "Cooling (Equip.)"          : "Cooling"
+                    , "Computers and Electronics" : "Other"
+                    , "Heating (Env.)"            : np.nan
+                    , "Heating (Equip.)"          : "Heating"
+                    , "Lighting"                  : "Lighting"
+                    , "Other"                     : "Other"
+                    , "Refrigeration"             : "Appliances"
+                    , "Ventilation"               : np.nan
+                    , "Water Heating"             : "Appliances"
+                    }.items(),
+                    columns = ["end_use", "emf_end_use"]
+                    )
+        df = scout.mapping_variables()
+        self.assertTrue(all(df.end_uses == expected))
 
 if __name__ == "__main__":
     unittest.main()

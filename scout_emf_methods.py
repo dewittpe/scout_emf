@@ -286,28 +286,6 @@ def map_fuel_types():                                                       #{{{
 #}}}
 
 ################################################################################
-def map_end_uses():                                                         #{{{
-    """
-    Map for end uses
-    """
-    d = {
-              "Cooking"                   : "Appliances"
-            , "Cooling (Env.)"            : np.nan
-            , "Cooling (Equip.)"          : "Cooling"
-            , "Computers and Electronics" : "Other"
-            , "Heating (Env.)"            : np.nan
-            , "Heating (Equip.)"          : "Heating"
-            , "Lighting"                  : "Lighting"
-            , "Other"                     : "Other"
-            , "Refrigeration"             : "Appliances"
-            , "Ventilation"               : np.nan
-            , "Water Heating"             : "Appliances"
-            }
-    return pd.DataFrame(data = d.items(), columns = ["end_use", "emf_end_use"])
-#}}}
-
-
-################################################################################
 def ecm_results_to_emf_aggregation(df):                                    # {{{
     """
     Aggregate ECM Results to EMF format

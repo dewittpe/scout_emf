@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+import numpy as np
 
 ################################################################################
 def isfloat(x): # {{{
@@ -51,26 +52,45 @@ class mapping_variables: # {{{
     def __init__(self):
         self.building_type_to_class =\
                 pd.DataFrame(data = {
-                    "assembly" : "Commercial",
-                    "education" : "Commercial",
-                    "food sales" : "Commercial",
-                    "food service" : "Commercial",
-                    "health care" : "Commercial",
-                    "lodging" : "Commercial",
-                    "large office" : "Commercial",
-                    "small office" : "Commercial",
-                    "mercantile/service" : "Commercial",
-                    "warehouse" : "Commercial",
-                    "other" : "Commercial",
-                    "single family home" : "Residential",
-                    "multi family home" : "Residential",
-                    "mobile home" : "Residential"
+                      "assembly"           : "Commercial"
+                    , "education"          : "Commercial"
+                    , "food sales"         : "Commercial"
+                    , "food service"       : "Commercial"
+                    , "health care"        : "Commercial"
+                    , "lodging"            : "Commercial"
+                    , "large office"       : "Commercial"
+                    , "small office"       : "Commercial"
+                    , "mercantile/service" : "Commercial"
+                    , "warehouse"          : "Commercial"
+                    , "other"              : "Commercial"
+                    , "single family home" : "Residential"
+                    , "multi family home"  : "Residential"
+                    , "mobile home"        : "Residential"
                     }.items(),
                     columns = ["building_type", "building_class"]
                     )
 
+        self.end_uses =\
+                pd.DataFrame(data = {
+                      "Cooking"                   : "Appliances"
+                    , "Cooling (Env.)"            : np.nan
+                    , "Cooling (Equip.)"          : "Cooling"
+                    , "Computers and Electronics" : "Other"
+                    , "Heating (Env.)"            : np.nan
+                    , "Heating (Equip.)"          : "Heating"
+                    , "Lighting"                  : "Lighting"
+                    , "Other"                     : "Other"
+                    , "Refrigeration"             : "Appliances"
+                    , "Ventilation"               : np.nan
+                    , "Water Heating"             : "Appliances"
+                    }.items(),
+                    columns = ["end_use", "emf_end_use"]
+                    )
+
+
     def info(self):
         print("A collection of DataFrames to map one set of variable values to another.\n" +
               " * building_type_to_class"
+              " * end_uses"
                 )
 # }}}
