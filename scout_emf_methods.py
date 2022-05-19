@@ -38,18 +38,6 @@ def depth(x): # {{{
         return 0
 #}}}
 
-def unique(list1): # {{{
-    unique_list = []
-    for x in list1:
-        if x not in unique_list:
-            unique_list.append(x)
-
-    for x in unique_list:
-        print(x)
-
-# }}}
-
-
 ################################################################################
 class ecm_results:                                                         # {{{
     def __init__(self, path): # {{{
@@ -64,8 +52,6 @@ class ecm_results:                                                         # {{{
     #}}}
 
 #}}}
-
-
 
 ################################################################################
 def import_ecm_results(path): # {{{
@@ -196,7 +182,6 @@ def import_ecm_results(path): # {{{
     return ecm_mas, financial_metrics, filter_variables, on_site_generation
 
 # }}}
-
 
 ################################################################################
 def ecm_results_to_emf_aggregation(df):                                    # {{{
@@ -331,9 +316,6 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
 
 # }}}
 
-
-
-
 ################################################################################
 class conversion_data: # {{{
     def __init__(self, path): # {{{
@@ -379,20 +361,6 @@ class conversion_data: # {{{
     # }}}
 # }}}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
 def unit_conversions():                                                    # {{{
     # MMBtu - Million Metric British Thermal Unit
@@ -426,13 +394,6 @@ def unit_conversions():                                                    # {{{
     # 95.74, 
 
 # }}}
-
-
-
-
-
-
-
 
 ################################################################################
 def convert_energy_to_co2(coefs, verbose = True):                           #{{{
