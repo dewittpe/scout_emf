@@ -109,11 +109,45 @@ class mapping_variables: # {{{
                             .reset_index()\
                             .rename(columns = {"index" : "building_class0"})
 
+        self.direct_indirect_fuel =\
+                pd.DataFrame(data = {
+                    "Natural Gas"      : "Direct",
+                    "Distillate/Other" : "Direct",
+                    "Biomass"          : "Direct",
+                    "Propane"          : "Direct",
+                    "Electric"         : "Indirect",
+                    "Non-Electric"     : "Indirect"
+                    }.items(),
+                    columns = ["fuel_type", "direct_indirect_fuel"]
+                    )
+
+        self.emf_base_string =\
+                pd.DataFrame(data = {
+                    "Avoided CO\u2082 Emissions (MMTons)" : "*Emissions|CO2|Energy|Demand|Buildings",
+                    "Energy Savings (MMBtu)"              : "*Final Energy|Buildings"
+                    }.items(),
+                    columns = ["metric", "emf_base_string"]
+                    )
+
+        self.fuel_types =\
+                pd.DataFrame(data = {
+                    "Natural Gas"      : "Gas",
+                    "Propane"          : "Gas",
+                    "Distillate/Other" : "Oil",
+                    "Biomass"          : "Biomass Solids",
+                    "Electric"         : "Electricity",
+                    "Electricity"      : "Electricity"
+                    }.items(),
+                    columns = ["fuel_type", "emf_fuel_type"]
+                    )
 
     def info(self):
         print("A collection of DataFrames to map one set of variable values to another.\n" +
-              " * building_type_to_class"
-              " * building_class_construction"
-              " * end_uses"
+              " * building_type_to_class" +
+              " * building_class_construction" +
+              " * direct_indirect_fuel" +
+              " * end_uses" +
+              " * emf_base_string " +
+              " * fuel_types "
                 )
 # }}}

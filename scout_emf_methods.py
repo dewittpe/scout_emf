@@ -197,63 +197,6 @@ def import_ecm_results(path): # {{{
 
 # }}}
 
-################################################################################
-def map_direct_indirect_fuel():                                             #{{{
-    """
-    Map for fuel type to direct or indirect
-    """
-    d = {
-            "Natural Gas" : "Direct",
-            "Distillate/Other" : "Direct",
-            "Biomass" : "Direct",
-            "Propane" : "Direct",
-            "Electric" : "Indirect",
-            "Non-Electric" : "Indirect"
-            }
-
-    return pd.DataFrame(
-            data = d.items(),
-            columns = ["fuel_type", "direct_indirect_fuel"]
-            )
-#}}}
-
-################################################################################
-def map_emf_base_string():                                              #{{{
-    """
-    A data frame to map variable values to base EMF strings
-
-    Arguments:
-        None
-
-    Return:
-        A pandas DataFrame
-    """
-    d = {
-            "Avoided CO\u2082 Emissions (MMTons)" : "*Emissions|CO2|Energy|Demand|Buildings",
-            "Energy Savings (MMBtu)" : "*Final Energy|Buildings"
-            }
-    return pd.DataFrame(data = d.items(),
-            columns = ["metric", "emf_base_string"]
-            )
-#}}}
-
-################################################################################
-def map_fuel_types():                                                       #{{{
-    """
-    Map for fuel types to emf fuel types
-    """
-    d = {
-            "Natural Gas"      : "Gas",
-            "Propane"          : "Gas",
-            "Distillate/Other" : "Oil",
-            "Biomass"          : "Biomass Solids",
-            "Electric"         : "Electricity",
-            "Electricity"      : "Electricity"
-            }
-    return pd.DataFrame(data = d.items(),
-            columns = ["fuel_type", "emf_fuel_type"]
-            )
-#}}}
 
 ################################################################################
 def ecm_results_to_emf_aggregation(df):                                    # {{{

@@ -110,6 +110,44 @@ class TestUtilities(unittest.TestCase):
         df = scout.mapping_variables()
         self.assertTrue(all(df.building_class_construction == expected))
 
+    def test_mapping_direct_indirect_fuel(self):
+        expected = pd.DataFrame(
+                data = {
+                    "Natural Gas" : "Direct",
+                    "Distillate/Other" : "Direct",
+                    "Biomass" : "Direct",
+                    "Propane" : "Direct",
+                    "Electric" : "Indirect",
+                    "Non-Electric" : "Indirect"
+                    }.items(),
+                columns = ["fuel_type", "direct_indirect_fuel"]
+                )
+        df = scout.mapping_variables()
+        self.assertTrue(all(df.direct_indirect_fuel == expected))
+
+    def test_mapping_emf_base_string(self):
+        expected = pd.DataFrame(data = {
+            "Avoided CO\u2082 Emissions (MMTons)" : "*Emissions|CO2|Energy|Demand|Buildings",
+            "Energy Savings (MMBtu)" : "*Final Energy|Buildings"
+            }.items(),
+            columns = ["metric", "emf_base_string"]
+            )
+        df = scout.mapping_variables()
+        self.assertTrue(all(df.emf_base_string == expected))
+
+    def test_mapping_fuel_types(self):
+        expected = pd.DataFrame(data = {
+            "Natural Gas"      : "Gas",
+            "Propane"          : "Gas",
+            "Distillate/Other" : "Oil",
+            "Biomass"          : "Biomass Solids",
+            "Electric"         : "Electricity",
+            "Electricity"      : "Electricity"
+            }.items(),
+            columns = ["fuel_type", "emf_fuel_type"]
+            )
+        df = scout.mapping_variables()
+        self.assertTrue(all(df.fuel_types == expected))
 
 if __name__ == "__main__":
     unittest.main()
