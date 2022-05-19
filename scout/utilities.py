@@ -151,3 +151,46 @@ class mapping_variables: # {{{
               " * fuel_types "
                 )
 # }}}
+
+################################################################################
+class conversion_data: # {{{
+    def __init__(self, version = ""): # {{{
+
+        assert version in ["", "ce", "gsref", "decarb", "decarb_lite"]
+
+        self.path = "supporting_data/convert_data/site_source_co2_conversions" + version + ".json"
+        df = json_to_df(path = self.path)
+        self.aeo_year = int(df.lvl1[df.lvl0 == "updated_to_aeo_year"].values[0])
+        self.aeo_case = str(df.lvl1[df.lvl0 == "updated_to_aeo_case"].values[0])
+        self.calc_method = str(df.lvl1[df.lvl0 == "site-source calculation method"].values[0])
+        #
+        self.units_sources = df[(df.lvl1 == "units") | (df.lvl1 == "source") | (df.lvl2 == "units") | (df.lvl2 == "source")][["lvl0", "lvl1", "lvl2", "lvl3"]]
+        self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl3"] = self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl2"]
+        self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl2"] = self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl1"]
+        self.units_sources.loc[self.units_sources.lvl0 == "CO2 price", "lvl1"] = np.nan
+        #
+        self.data = df.loc[df.lvl2 == "data"][["lvl0", "lvl1", "lvl3", "lvl4", "lvl5"]]
+        idx = ~((self.data.lvl3 == "residential") | (self.data.lvl3 == "commercial"))
+        self.data.loc[idx, "lvl5"] = self.data.loc[idx, "lvl4"]
+        self.data.loc[idx, "lvl4"] = self.data.loc[idx, "lvl3"]
+        self.data.loc[idx, "lvl3"] = np.nan
+        self.data.columns = ["fuel", "metric", "rescom", "year", "value"]
+        self.data.value = self.data.value.apply(float)
+        self.data.year  = self.data.year.apply(int)
+    # }}}
+
+    def info(self): # {{{
+        print(f"path:                           {self.path}")
+        print(f"basename:                       {self.basename}")
+        print(f"aeo_year:                       {self.aeo_year}")
+        print(f"aeo_case:                       {self.aeo_case}")
+        print(f"site-source calculation method: {self.calc_method}")
+        print(f"units_sources:                  a DataFrame")
+        print(f"data:                           a DataFrame")
+    # }}}
+# }}}
+
+################################################################################
+#                                 End of File                                  #
+################################################################################
+

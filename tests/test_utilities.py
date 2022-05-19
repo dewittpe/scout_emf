@@ -149,6 +149,11 @@ class TestUtilities(unittest.TestCase):
         df = scout.mapping_variables()
         self.assertTrue(all(df.fuel_types == expected))
 
+    def test_conversion_data_0(self):
+        cd = scout.conversion_data()
+        self.assertIsInstance(cd.data, pd.DataFrame)
+
+
 if __name__ == "__main__":
     unittest.main()
 
