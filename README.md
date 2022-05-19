@@ -34,7 +34,8 @@ and packages for working on scout and this possible emf extension.
     # manually removed from environment.yml
     conda env export --no-builds > environment.yml
 
-    # updating requirements.txt
+    # updating requirements.txt, if needed/wanted, the conda env export is
+    # sufficient.
     pip freeze > requirements.txt
 
 ## Example Use
