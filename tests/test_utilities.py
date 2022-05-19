@@ -82,6 +82,35 @@ class TestUtilities(unittest.TestCase):
         df = scout.mapping_variables()
         self.assertTrue(all(df.end_uses == expected))
 
+
+    def test_mapping_builing_class_to_class_and_construction(self):
+        d = {
+                "Commercial (Existing)"  : {
+                    "building_class" : "Commercial",
+                    "building_construction" : "Existing"
+                    },
+                "Commercial (New)": {
+                    "building_class" : "Commercial",
+                    "building_construction" : "New"
+                    },
+                "Residential (Existing)" : {
+                    "building_class" : "Residential",
+                    "building_construction" : "Existing"
+                    },
+                "Residential (New)": {
+                    "building_class" : "Residential",
+                    "building_construction" : "New"
+                    }
+                }
+
+        expected = pd.DataFrame.from_dict(d, orient = "index")\
+                .reset_index()\
+                .rename(columns = {"index" : "building_class0"})
+
+        df = scout.mapping_variables()
+        self.assertTrue(all(df.building_class_construction == expected))
+
+
 if __name__ == "__main__":
     unittest.main()
 

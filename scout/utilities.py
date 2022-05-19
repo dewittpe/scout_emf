@@ -87,10 +87,33 @@ class mapping_variables: # {{{
                     columns = ["end_use", "emf_end_use"]
                     )
 
+        self.building_class_construction =\
+                pd.DataFrame.from_dict(data = {
+                    "Commercial (Existing)"  : {
+                        "building_class" : "Commercial",
+                        "building_construction" : "Existing"
+                        },
+                    "Commercial (New)": {
+                        "building_class" : "Commercial",
+                        "building_construction" : "New"
+                        },
+                    "Residential (Existing)" : {
+                        "building_class" : "Residential",
+                        "building_construction" : "Existing"
+                        },
+                    "Residential (New)": {
+                        "building_class" : "Residential",
+                        "building_construction" : "New"
+                        }
+                    }, orient = "index")\
+                            .reset_index()\
+                            .rename(columns = {"index" : "building_class0"})
+
 
     def info(self):
         print("A collection of DataFrames to map one set of variable values to another.\n" +
               " * building_type_to_class"
+              " * building_class_construction"
               " * end_uses"
                 )
 # }}}

@@ -198,36 +198,6 @@ def import_ecm_results(path): # {{{
 # }}}
 
 ################################################################################
-def map_building_class():                                                   #{{{
-    """
-    Map for what is really just splitting a string
-    """
-    d = {
-            "Commercial (Existing)"  : {
-                "building_class" : "Commercial",
-                "building_construction" : "Existing"
-                },
-            "Commercial (New)": {
-                "building_class" : "Commercial",
-                "building_construction" : "New"
-                },
-            "Residential (Existing)" : {
-                "building_class" : "Residential",
-                "building_construction" : "Existing"
-                },
-            "Residential (New)": {
-                "building_class" : "Residential",
-                "building_construction" : "New"
-                }
-            }
-
-    return pd.DataFrame.from_dict(d, orient = "index")\
-            .reset_index()\
-            .rename(columns = {"index" : "building_class0"})
-
-#}}}
-
-################################################################################
 def map_direct_indirect_fuel():                                             #{{{
     """
     Map for fuel type to direct or indirect
