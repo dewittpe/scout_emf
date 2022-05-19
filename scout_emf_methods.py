@@ -49,20 +49,6 @@ def unique(list1): # {{{
 
 # }}}
 
-def isyear(x) : # {{{
-    try:
-        l = len(x)
-        f = float(x)
-        i = int(x)
-        if ((int(f) == i) and (l == 4)):
-            return True
-        else :
-            return False
-    except ValueError:
-        return False
-    except TypeError:
-        return False
-# }}}
 
 ################################################################################
 class ecm_results:                                                         # {{{
