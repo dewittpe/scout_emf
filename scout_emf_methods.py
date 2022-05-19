@@ -306,31 +306,6 @@ def map_end_uses():                                                         #{{{
     return pd.DataFrame(data = d.items(), columns = ["end_use", "emf_end_use"])
 #}}}
 
-################################################################################
-def map_building_type_to_class():                                           #{{{
-
-    d = {
-            "assembly" : "Commercial",
-            "education" : "Commercial",
-            "food sales" : "Commercial",
-            "food service" : "Commercial",
-            "health care" : "Commercial",
-            "lodging" : "Commercial",
-            "large office" : "Commercial",
-            "small office" : "Commercial",
-            "mercantile/service" : "Commercial",
-            "warehouse" : "Commercial",
-            "other" : "Commercial",
-            "single family home" : "Residential",
-            "multi family home" : "Residential",
-            "mobile home" : "Residential"
-            }
-
-    return pd.DataFrame(data = d.items(),
-            columns = ["building_type", "building_class"]
-            )
-
-# }}}
 
 ################################################################################
 def ecm_results_to_emf_aggregation(df):                                    # {{{
