@@ -40,6 +40,11 @@ class TestUtilities(unittest.TestCase):
         df = scout.json_to_df(data = d)
         self.assertIsInstance(df, pd.DataFrame)
 
+    def test_json_to_df_3(self):
+        # test .json.gz to DataFrame
+        df = scout.json_to_df(path = "Results_Files_3/ecm_results_1-1.json.gz")
+        self.assertIsInstance(df, pd.DataFrame)
+
     def test_mapping_blg_type_to_class(self):
         expected = \
                 pd.DataFrame(data = {

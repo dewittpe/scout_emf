@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import numpy as np
+import gzip
 
 ################################################################################
 def isfloat(x): # {{{
@@ -20,9 +21,15 @@ def json_to_df(data = None, path = None): #{{{
     assert bool(data is not None) ^ bool(path is not None)
 
     if path is not None:
-        f = open(path, "r")
-        data = json.load(f)
-        f.close()
+        if path.endswith(".gz"):
+            with gzip.open(path, 'r') as f:
+                file_content = f.read()
+            json_str = file_content.decode("utf-8")
+            data = json.loads(json_str)
+        else:
+            f = open(path, "r")
+            data = json.load(f)
+            f.close()
 
     x = flatten_dict(data)
     x = [(*a, str(b)) for a,b in x.items()]
