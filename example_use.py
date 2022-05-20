@@ -22,14 +22,17 @@ class Timer:
 
 ################################################################################
 # ECM Results
+#
+# Can provide path to a .json file _or_ a .gz file containing the needed json.
+# Performance difference is negligable.
 with Timer(name = "Import ecm_results_1-1.json"):
-    results_1 = scout.ecm_results("./Results_Files_3/ecm_results_1-1.json")
+    results_1 = scout.ecm_results(path = "./Results_Files_3/ecm_results_1-1.json.gz")
 
 with Timer(name = "Import ecm_results_2.json"):
-    results_2 = scout.ecm_results("./Results_Files_3/ecm_results_2.json")
+    results_2 = scout.ecm_results(path = "./Results_Files_3/ecm_results_2.json.gz")
 
 with Timer(name = "Import ecm_results_3-1.json"):
-    results_3 = scout.ecm_results("./Results_Files_3/ecm_results_3-1.json")
+    results_3 = scout.ecm_results(path = "./Results_Files_3/ecm_results_3-1.json.gz")
 
 # An info method is provided
 results_1.info()
@@ -47,6 +50,36 @@ print("  - Markets and Savings")
 print(d1["Markets and Savings"])
 print("\n\n  - On-site Generation")
 print(d1["On-site Generation"])
+
+print("For results_2")
+print("  - Markets and Savings")
+print(d2["Markets and Savings"])
+print(f"min delta: {min(d2['Markets and Savings'].delta)}")
+print(f"max delta: {max(d2['Markets and Savings'].delta)}")
+print("\n\n  - On-site Generation")
+print(d2["On-site Generation"])
+print(f"min delta: {min(d2['On-site Generation'].delta)}")
+print(f"max delta: {max(d2['On-site Generation'].delta)}")
+
+print("For results_3")
+print("  - Markets and Savings")
+print(d3["Markets and Savings"])
+print("\n\n  - On-site Generation")
+print(d3["On-site Generation"])
+
+################################################################################
+# Aggregate ECM Results to EMF summaries
+ecm_mas_1_modified, emf_1 = ecm_results_to_emf_aggregation(ecm_mas_1)
+ecm_mas_2_modified, emf_2 = ecm_results_to_emf_aggregation(ecm_mas_2)
+ecm_mas_3_modified, emf_3 = ecm_results_to_emf_aggregation(ecm_mas_3)
+
+print(emf_1)
+print(emf_2)
+print(emf_3)
+
+
+
+
 
 
 
