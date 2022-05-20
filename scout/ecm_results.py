@@ -2,10 +2,10 @@ import os
 import warnings
 import numpy as np
 import pandas as pd
+import plotly.express as px
 from scout.utilities import json_to_df
 from scout.utilities import isfloat
 from scout.utilities import mapping_variables
-
 
 ################################################################################
 class ecm_results:                                                         # {{{
@@ -36,7 +36,7 @@ class ecm_results:                                                         # {{{
         # steps into _by_category and _overall
 
         ########################################################################
-        # clean up the on-site generation data frame
+        # clean up the on-site generation data frame # {{{
         assert all(osg.lvl7.isna())
         assert all(osg.lvl8.isna())
         assert all(osg.lvl9.isna())
@@ -69,9 +69,10 @@ class ecm_results:                                                         # {{{
 
         self.osg_by_category = osg[osg.lvl2 == "By Category"].drop(columns = ["lvl2"])
         self.osg_overall     = osg[osg.lvl2 != "By Category"].drop(columns = ["lvl2", "region", "building_type"])
+        # }}}
 
         ########################################################################
-        # clean up filter_variables
+        # clean up filter_variables # {{{
         filter_variables = filter_variables.pivot(index = ["ecm"],
                 columns = ["lvl2"],
                 values  = ["lvl3"])
@@ -80,9 +81,10 @@ class ecm_results:                                                         # {{{
         filter_variables.columns = filter_variables.columns.map(lambda t: t[1])
 
         self.filter_variables = filter_variables
+        # }}}
 
         ########################################################################
-        # markets_and_savings
+        # markets_and_savings # {{{
         #
         #mas = ecms[ecms.lvl1 == "Markets and Savings (by Category)"]
         #mas = mas.drop(columns = ["lvl1"])
@@ -128,9 +130,10 @@ class ecm_results:                                                         # {{{
 
         self.mas_by_category = mas[mas.lvl1 == "Markets and Savings (by Category)"].drop(columns = ["lvl1"])
         self.mas_overall     = mas[mas.lvl1 == "Markets and Savings (Overall)"].drop(columns = ["lvl1", "region", "building_class", "end_use", "fuel_type"])
+        # }}}
 
         ########################################################################
-        # clean up financial_metrics
+        # clean up financial_metrics  # {{{
         financial_metrics = financial_metrics[["ecm", "lvl2", "lvl3", "lvl4"]]
         financial_metrics = financial_metrics.rename(columns =
                 {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
@@ -142,8 +145,9 @@ class ecm_results:                                                         # {{{
         assert all(financial_metrics.year.str.contains("^\d{4}$"))
         financial_metrics.year = financial_metrics.year.apply(int)
 
-        self.financial_metrics = financial_metrics
-
+        self.financial_metrics =\
+                financial_metrics.sort_values(by = ["ecm", "metric", "year"])
+        # }}}
 
     # }}}
 
@@ -305,6 +309,76 @@ class ecm_results:                                                         # {{{
             self.emf_aggregation = a
     # }}}
 
+    def generate_plots(self, plot_dir): # {{{
+        if not os.path.isdir(plot_dir):
+            os.mkdir(plot_dir)
+
+        if not os.path.isdir(os.path.join(plot_dir, "financial_metrics")):
+            os.mkdir(os.path.join(plot_dir, "financial_metrics"))
+
+        if not os.path.isdir(os.path.join(plot_dir, "financial_metrics", "each_ecm")):
+            os.mkdir(os.path.join(plot_dir, "financial_metrics", "each_ecm"))
+
+        # Financial Metrics # {{{
+        # plot 1: aggregated for the year
+        fig = px.line(
+                data_frame = self.financial_metrics\
+                        .groupby(["metric", "year"])\
+                        .value\
+                        .agg(["mean"])
+                        .reset_index()
+                , x = "year"
+                , y = "mean"
+                , title = "Mean Financial Metrics by Year"
+                , facet_row = "metric")
+        fig.update_yaxes(matches = None, exponentformat = "e")
+        fig.for_each_annotation(lambda a: a.update(text = a.text.split("=")[-1]))
+        fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
+        fig.write_html(os.path.join(plot_dir, "financial_metrics", "aggregated.html"))
+
+        # plot 2: all ecms on one plot
+        fig = px.line(
+                data_frame = self.financial_metrics
+                , x = "year"
+                , y = "value"
+                , color = "ecm"
+                , facet_row = "metric")
+        fig.update_yaxes(matches = None, exponentformat = "e")
+        fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+        fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
+        fig.write_html(os.path.join(plot_dir, "financial_metrics", "all_ecms.html"))
+
+        # plot 3a, b, ... one file for each ecm
+        for ecm in set(self.financial_metrics.ecm):
+            fig = px.line(
+                    data_frame = self.financial_metrics[self.financial_metrics.ecm == ecm]
+                    , x = "year"
+                    , y = "value"
+                    , color = "ecm"
+                    , facet_row = "metric")
+            fig.update_yaxes(matches = None, exponentformat = "e")
+            fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+            fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
+            fig.write_html(os.path.join(plot_dir, "financial_metrics", "each_ecm", ecm + ".html"))
+
+        with open(os.path.join(plot_dir, "financial_metrics", "each_ecm.js"), "w") as f:
+            f.write('var all_fm_ecm_select_list = document.createElement("select");\n')
+            f.write('var all_fm_ecms =' + "['--', '" + "', '".join(sorted(set(list(self.financial_metrics["ecm"])))) + "']\n")
+            f.write('all_fm_ecm_select_list.setAttribute("id", "all_fm_ecm_select");\n')
+            f.write('all_fm_ecm_select_list.setAttribute("onchange", "if (this.selectedIndex) get_fm_ecm();");\n')
+            f.write('document.getElementById("all_fm_ecms_div").appendChild(all_fm_ecm_select_list);\n')
+            f.write('for (var i = 0; i < all_fm_ecms.length; i++) {\n')
+            f.write('\tvar option = document.createElement("option");\n')
+            f.write('\toption.setAttribute("value", all_fm_ecms[i]);\n')
+            f.write('\toption.text = all_fm_ecms[i];\n')
+            f.write('\tall_fm_ecm_select_list.appendChild(option);\n')
+            f.write('}')
+            f.close()
+        # }}}
+
+
+    # }}}
+
     def info(self): #{{{
         print(f"path:     {self.path}")
         print(f"basename: {self.basename}")
@@ -322,6 +396,8 @@ class ecm_results:                                                         # {{{
         print("      - returns DataFrames showing the differences between the 'By Category' and 'Overall' exceeding the tol(erance).")
         print("  * emf_aggregation:")
         print("      - returns DataFrames for EMF reporting")
+        print("  * generate_plots(plot_dir):")
+        print("      - create _a lot_ of graphics, all in plotly, and easily explored in via a local html page <plot_dir>/ecm_results.html")
     #}}}
 
 #}}}
