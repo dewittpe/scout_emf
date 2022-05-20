@@ -32,6 +32,8 @@ and packages for working on scout and this possible emf extension.
     # export an active environment (do this if you add or update packages)
     # __NOTE:__  The following will include a `prefix:` line that should be
     # manually removed from environment.yml
+    # versions should be set to >= or removed from the file so that the
+    # environment will build on mutlple platforms.
     conda env export --no-builds > environment.yml
 
     # updating requirements.txt, if needed/wanted, the conda env export is
