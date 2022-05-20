@@ -69,18 +69,27 @@ print(d3["On-site Generation"])
 
 ################################################################################
 # Aggregate ECM Results to EMF summaries
-ecm_mas_1_modified, emf_1 = ecm_results_to_emf_aggregation(ecm_mas_1)
-ecm_mas_2_modified, emf_2 = ecm_results_to_emf_aggregation(ecm_mas_2)
-ecm_mas_3_modified, emf_3 = ecm_results_to_emf_aggregation(ecm_mas_3)
+assert results_1.emf_aggregation is None
+assert results_2.emf_aggregation is None
+assert results_3.emf_aggregation is None
 
-print(emf_1)
-print(emf_2)
-print(emf_3)
+with Timer(name = "aggregate results_1 for emf"):
+    results_1.aggregate_for_emf()
+
+with Timer(name = "aggregate results_2 for emf"):
+    results_2.aggregate_for_emf()
+
+with Timer(name = "aggregate results_3 for emf"):
+    results_3.aggregate_for_emf()
 
 
+assert isinstance(results_1.emf_aggregation, pd.DataFrame)
+assert isinstance(results_2.emf_aggregation, pd.DataFrame)
+assert isinstance(results_3.emf_aggregation, pd.DataFrame)
 
-
-
+print(results_1.emf_aggregation)
+print(results_2.emf_aggregation)
+print(results_3.emf_aggregation)
 
 
 ################################################################################

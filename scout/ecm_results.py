@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from scout.utilities import json_to_df
 from scout.utilities import isfloat
+from scout.utilities import mapping_variables
 
 
 ################################################################################
@@ -12,6 +13,11 @@ class ecm_results:                                                         # {{{
         self.basename = os.path.basename(path)
         self.path = path
 
+        self.emf_aggregation = None
+        self.by_category_aggreation_vs_overall = None
+
+        ########################################################################
+        # import and format results
         df = json_to_df(path = path)
 
         # build individual DataFrames - start by splitting up the df
@@ -167,7 +173,136 @@ class ecm_results:                                                         # {{{
         osg["delta"] = osg.value_aggregated - osg.value_overall
         osg = osg[osg.delta > tol]
 
-        return {"Markets and Savings" : mas, "On-site Generation"  : osg}
+        self.by_category_aggreation_vs_overall = {"Markets and Savings" : mas, "On-site Generation"  : osg}
+    # }}}
+
+    def aggregate_for_emf(self):                                         # {{{
+
+        if self.emf_aggregation is None:
+
+            maps = mapping_variables()
+
+            df = self.mas_by_category\
+                    .merge(maps.emf_base_string, how = "inner", on = "metric")
+            df = df.merge(maps.building_class_construction,
+                    how = "left",
+                    left_on = "building_class",
+                    right_on = "building_class0",
+                    suffixes = ("_x", "")
+                    )
+            df = df.drop(columns = ["building_class0", "building_class_x"])
+
+            # map fuel types
+            df = df.merge(maps.fuel_types, how = "left", on = "fuel_type")
+            not_mapped = set(df[((df.emf_fuel_type.isna()) & (df.fuel_type.notna()))]["fuel_type"])
+            if len(not_mapped):
+                msg = ", ".join(not_mapped)
+                warnings.warn("Fuel types not mapped to EMF fuel types: " + msg)
+
+            # map direct_indirect fuel
+            df = df.merge(maps.direct_indirect_fuel, how = "left", on = "fuel_type")
+            not_mapped = set(df[((df.direct_indirect_fuel.isna()) & (df.fuel_type.notna()))]["fuel_type"])
+            if len(not_mapped):
+                print(not_mapped)
+                msg = ", ".join(not_mapped)
+                warnings.warn("Fuel Types not mapped to direct/indirect: " + msg)
+
+            # map end uses
+            df = df.merge(maps.end_uses, how = "left", on = "end_use")
+            not_mapped = set(df[df.emf_end_use.isna()]["end_use"])
+            if len(not_mapped):
+                msg = ", ".join(not_mapped)
+                warnings.warn(f"Unmapped end uses: " + msg)
+
+            # Convert MMBtu to Exajoules
+            idx = df.metric.str.contains("MMBtu")
+            df.loc[idx, "value"] *= 1.05505585262e-9
+            df.metric = df.metric.str.replace("MMBtu", "EJ")
+
+            # Aggregations
+            # NOTE: units for the value column are unique between the
+            # emf_base_strings. This is okay and accounted for since all
+            # aggregations are done, in part, with a groupby emf_base_string.
+            a0 = df\
+                    .groupby(["region", "emf_base_string", "year"])\
+                    .agg(value = ("value", "sum"))
+
+            a1 = df\
+                    .groupby(["region", "emf_base_string", "building_class", "year"])\
+                    .agg(value = ("value", "sum"))
+
+            a2 = df\
+                    .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "year"])\
+                    .agg(value = ("value", "sum"))
+
+            a3_0 = df\
+                    [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+                    .groupby(["region", "emf_base_string", "direct_indirect_fuel", "year"])\
+                    .agg(value = ("value", "sum"))
+            a3_1 = df\
+                    [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+                    .groupby(["region", "emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
+                    .agg(value = ("value", "sum"))
+            a3_2 = df\
+                    [df.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+                    .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
+                    .agg(value = ("value", "sum"))
+
+            a4_0 = df\
+                    [df.emf_base_string == "*Final Energy|Buildings"]\
+                    .groupby(["region", "emf_base_string", "emf_fuel_type", "year"])\
+                    .agg(value = ("value", "sum"))
+            a4_1 = df\
+                    [df.emf_base_string == "*Final Energy|Buildings"]\
+                    .groupby(["region", "emf_base_string", "building_class", "emf_fuel_type", "year"])\
+                    .agg(value = ("value", "sum"))
+            a4_2 = df\
+                    [df.emf_base_string == "*Final Energy|Buildings"]\
+                    .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
+                    .agg(value = ("value", "sum"))
+
+            # Aggregation clean up
+            a0.reset_index(inplace = True)
+            a1.reset_index(inplace = True)
+            a2.reset_index(inplace = True)
+            a3_0.reset_index(inplace = True)
+            a3_1.reset_index(inplace = True)
+            a3_2.reset_index(inplace = True)
+            a4_0.reset_index(inplace = True)
+            a4_1.reset_index(inplace = True)
+            a4_2.reset_index(inplace = True)
+
+            # build the full emf_string
+            a0["emf_string"] = a0.region + a0.emf_base_string
+            a1["emf_string"] = a0.region + a1.emf_base_string + "|" + a1.building_class
+            a2["emf_string"] = a0.region + a2.emf_base_string + "|" + a2.building_class + "|" + a2.emf_end_use
+
+            a3_0["emf_string"] = a3_0.region + a3_0.emf_base_string + "|" + a3_0.direct_indirect_fuel
+            a3_1["emf_string"] = a3_1.region + a3_1.emf_base_string + "|" + a3_1.building_class + "|" + a3_1.direct_indirect_fuel
+            a3_2["emf_string"] = a3_2.region + a3_2.emf_base_string + "|" + a3_2.building_class + "|" + a3_2.emf_end_use + "|" + a3_2.direct_indirect_fuel
+
+            a4_0["emf_string"] = a4_0.region + a4_0.emf_base_string + "|" + a4_0.emf_fuel_type
+            a4_1["emf_string"] = a4_1.region + a4_1.emf_base_string + "|" + a4_1.building_class + "|" + a4_1.emf_fuel_type
+            a4_2["emf_string"] = a4_2.region + a4_2.emf_base_string + "|" + a4_2.building_class + "|" + a4_2.emf_end_use + "|" + a4_2.emf_fuel_type
+
+            # build one data frame with all the aggregations
+            a = pd.concat([
+                a0[["emf_string", "year", "value"]],
+                a1[["emf_string", "year", "value"]],
+                a2[["emf_string", "year", "value"]],
+                a3_0[["emf_string", "year", "value"]],
+                a3_1[["emf_string", "year", "value"]],
+                a3_2[["emf_string", "year", "value"]],
+                a4_0[["emf_string", "year", "value"]],
+                a4_1[["emf_string", "year", "value"]],
+                a4_2[["emf_string", "year", "value"]]
+                ])
+            a.year = a.year.apply(str) # this is needed so the column names post pivot are strings
+            a = a.pivot_table(index = ["emf_string"], columns = ["year"], values = ["value"])
+            a.columns = a.columns.droplevel(0)
+            a.reset_index(inplace = True)
+
+            self.emf_aggregation = a
     # }}}
 
     def info(self): #{{{
@@ -185,6 +320,8 @@ class ecm_results:                                                         # {{{
         print("Methods")
         print("  * by_category_vs_overall(tol = 1e-8):")
         print("      - returns DataFrames showing the differences between the 'By Category' and 'Overall' exceeding the tol(erance).")
+        print("  * emf_aggregation:")
+        print("      - returns DataFrames for EMF reporting")
     #}}}
 
 #}}}

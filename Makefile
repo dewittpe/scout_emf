@@ -24,6 +24,10 @@ test :
 	tox
 
 coverage :
-	coverage run --include="scout/*" -m unittest discover
+	@echo "Previous Coverage"
 	coverage report
+	coverage run --include="scout/*" -m unittest discover
+	@echo "Current Coverage"
+	coverage report
+	coverage html
 
