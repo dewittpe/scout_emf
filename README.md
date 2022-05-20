@@ -40,4 +40,5 @@ and packages for working on scout and this possible emf extension.
 
 ## Example Use
 
-TODO: build examples
+See `example_use.py`
+

@@ -1,23 +1,54 @@
 ################################################################################
-#
-# purpose: using the refactored functions defined in import_ecm_results.py
-# compare DeWitt's refactored results to the results of the original work done
-# via the EMF_Scout.py script.
-#
+# Example use, with timing, for scout package
 ################################################################################
+import scout
 import json
 import pandas as pd
 import re
 import datetime
 import numpy as np
-from collections import defaultdict
-from scout_emf_methods import import_ecm_results
-from scout_emf_methods import import_baseline
-from scout_emf_methods import json_to_df
 
-from scout_emf_methods import ecm_results_to_emf_aggregation
+class Timer:
+    def __init__(self, name = None):
+        self.name = name
+    
+    def __enter__(self):
+        self.tic = datetime.datetime.now()
 
-tic0 = datetime.datetime.now()
+    def __exit__(self, type, value, traceback):
+        if self.name:
+            print('[%s]' % self.name,)
+        print('Elapsed: %s' % (datetime.datetime.now() - self.tic))
+
+################################################################################
+# ECM Results
+with Timer(name = "Import ecm_results_1-1.json"):
+    results_1 = scout.ecm_results("./Results_Files_3/ecm_results_1-1.json")
+
+with Timer(name = "Import ecm_results_2.json"):
+    results_2 = scout.ecm_results("./Results_Files_3/ecm_results_2.json")
+
+with Timer(name = "Import ecm_results_3-1.json"):
+    results_3 = scout.ecm_results("./Results_Files_3/ecm_results_3-1.json")
+
+# An info method is provided
+results_1.info()
+
+# The by_category_vs_overall returns a dict of DataFrames for where the
+# aggregated "By Category" values differs from the "Overall" by more than a
+# given tol(erance), the default is tol = 1e-8
+with Timer("compare aggrgated 'By Category' to 'Overall' values"):
+    d1 = results_1.by_category_vs_overall()
+    d2 = results_2.by_category_vs_overall()
+    d3 = results_3.by_category_vs_overall()
+
+print("For results_1")
+print("  - Markets and Savings")
+print(d1["Markets and Savings"])
+print("\n\n  - On-site Generation")
+print(d1["On-site Generation"])
+
+
 
 ################################################################################
 # import baseline
@@ -262,7 +293,7 @@ baseline.loc[
 set(baseline[baseline.fuel_type == "electricity"].end_use)
 
 set(
-baseline[(baseline.technology_type.notna()) & 
+baseline[(baseline.technology_type.notna()) &
         (baseline.technology_type.str.contains("kerosene"))
         ].fuel_type)
 
@@ -272,8 +303,8 @@ baseline[baseline.technology_type.isna()]
 set(baseline.fuel_type)
 set(baseline.end_use)
 set(baseline.demand_supply)
-set(baseline.technology_type)  #  THIS MIGHT NEED TO BE 
-set(baseline.stock_energy) 
+set(baseline.technology_type)  #  THIS MIGHT NEED TO BE
+set(baseline.stock_energy)
 
 baseline[
         (baseline.fuel_type == "natural gas") &

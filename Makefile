@@ -26,3 +26,4 @@ test :
 coverage :
 	coverage run --include="scout/*" -m unittest discover
 	coverage report
+
