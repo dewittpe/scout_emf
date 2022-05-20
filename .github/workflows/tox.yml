@@ -10,7 +10,7 @@ jobs:
   scout-package-tests:
     runs-on: ${{ matrix.os }}
 
-    name : $${{ matrix.os }} - py $${{ matrix.python-version }}
+    name : ${{ matrix.os }} - py ${{ matrix.python-version }}
 
     strategy:
       matrix:
@@ -30,6 +30,14 @@ jobs:
           environment-file: environment.yml
           activate-environment: scout
           auto-activate-base: false
+          python-version: ${{ matrix.python-version }}
+
+      - name: Conda Info
+        run: conda info
+
+      - name: py-version
+        run : python --version
+
       - name: tox
         run: |
           tox
