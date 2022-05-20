@@ -34,7 +34,10 @@ and packages for working on scout and this possible emf extension.
     # manually removed from environment.yml
     # versions should be set to >= or removed from the file so that the
     # environment will build on mutlple platforms.
-    conda env export --no-builds > environment.yml
+    # 
+    # It would be best to just list the packages you explicitly need in the
+    # environment.yml file.
+    conda env export --no-builds
 
     # updating requirements.txt, if needed/wanted, the conda env export is
     # sufficient.
