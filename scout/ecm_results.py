@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import shutil
 from scout.utilities import json_to_df
 from scout.utilities import isfloat
 from scout.utilities import mapping_variables
@@ -313,13 +314,15 @@ class ecm_results:                                                         # {{{
         if not os.path.isdir(plot_dir):
             os.mkdir(plot_dir)
 
+        shutil.copy("./templates/plots.html", plot_dir)
+
+        # Financial Metrics # {{{
         if not os.path.isdir(os.path.join(plot_dir, "financial_metrics")):
             os.mkdir(os.path.join(plot_dir, "financial_metrics"))
 
         if not os.path.isdir(os.path.join(plot_dir, "financial_metrics", "each_ecm")):
             os.mkdir(os.path.join(plot_dir, "financial_metrics", "each_ecm"))
 
-        # Financial Metrics # {{{
         # plot 1: aggregated for the year
         fig = px.line(
                 data_frame = self.financial_metrics\
@@ -372,52 +375,9 @@ class ecm_results:                                                         # {{{
             f.write('\toption.setAttribute("value", all_fm_ecms[i]);\n')
             f.write('\toption.text = all_fm_ecms[i];\n')
             f.write('\tall_fm_ecm_select_list.appendChild(option);\n')
-            f.write('}')
+            f.write('}\n\n')
             f.close()
         # }}}
-
-        # define a set of "variables of interest", and output directories.
-        #vois =\
-        #        [
-        #          {
-        #            "voi" :  "Avoided CO\u2082 Emissions (MMTons)",
-        #            "dir" : os.path.join(plot_dir, "cost_effective_carbon_savings")
-        #          },
-        #          {
-        #            "voi": "Energy Cost Savings (USD)",
-        #            "dir" : os.path.join(plot_dir, "cost_effective_operation_cost_savings")
-        #          },
-        #          {
-        #            "voi" : "Energy Savings (MMBtu)",
-        #            "dir" : os.path.join(plot_dir, "cost_effective_energy_savings")
-        #          }
-        #         ]
-
-        #if arg == "carbon":
-        #    VOI = "Avoided CO\u2082 Emissions (MMTons)"
-        #    plot_path = "./results/plots/cost_effective_carbon_savings/"
-        #elif arg == "cost":
-        #    VOI = "Energy Cost Savings (USD)"
-        #    plot_path = "./results/plots/cost_effective_operation_cost_savings/"
-        #elif arg == "energy":
-        #    VOI = "Energy Savings (MMBtu)"
-        #    plot_path = "./results/plots/cost_effective_energy_savings/"
-        #else:
-        #    print("unknown arg value")
-        #    exit(1)
-
-        #if arg == "carbon":
-        #    VOI = "CO\u2082 Emissions (MMTons)"
-        #    plot_path = "./results/plots/total_carbon/"
-        #elif arg == "cost":
-        #    VOI = "Cost (USD)"
-        #    plot_path = "./results/plots/total_cost/"
-        #elif arg == "energy":
-        #    VOI = "Energy Use (MMBtu)"
-        #    plot_path = "./results/plots/total_energy/"
-        #else:
-        #    print("unknown arg value")
-        #    exit(1)
 
         def unique_strings(l):
             list_set = set(l)
@@ -450,15 +410,15 @@ class ecm_results:                                                         # {{{
 
 
         # Cost Effective Plots # {{{
-        if not os.path.isdir(os.path.join(plot_dir, "cost_effective")):
-            os.mkdir(os.path.join(plot_dir, "cost_effective"))
+        if not os.path.isdir(os.path.join(plot_dir, "cost_effectiveness")):
+            os.mkdir(os.path.join(plot_dir, "cost_effectiveness"))
 
         for v in [{"carbon" : "Avoided CO\u2082 Emissions (MMTons)"},
                         {"cost"   : "Energy Cost Savings (USD)"},
                         {"energy" : "Energy Savings (MMBtu)"}]:
             n, voi = list(v.items())[0]
-            if not os.path.isdir(os.path.join(plot_dir, "cost_effective", n)):
-                os.mkdir(os.path.join(plot_dir, "cost_effective", n))
+            if not os.path.isdir(os.path.join(plot_dir, "cost_effectiveness", n)):
+                os.mkdir(os.path.join(plot_dir, "cost_effectiveness", n))
 
             for yr in set(plot_data.year):
                 fig = px.scatter(
@@ -483,7 +443,22 @@ class ecm_results:                                                         # {{{
                 fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
                 fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
 
-                fig.write_html(os.path.join(plot_dir, "cost_effective", n, str(yr) + ".html"))
+                fig.write_html(os.path.join(plot_dir, "cost_effectiveness", n, str(yr) + ".html"))
+
+        with open(os.path.join(plot_dir, "cost_effectiveness", "years.js"), "w") as f:
+            for v in ["carbon", "cost", "energy"]:
+                f.write('var ce_' + v + '_select_list = document.createElement("select");\n')
+                f.write('var ce_' + v + '=' + "['--', '" + "', '".join(sorted(set(list(plot_data["year"].apply(str))))) + "']\n")
+                f.write('ce_' + v + '_select_list.setAttribute("id", "ce_' + v + '_select");\n')
+                f.write('ce_' + v + '_select_list.setAttribute("onchange", "if (this.selectedIndex) get_cost_effectiveness(\'' + v + '\');");\n')
+                f.write('document.getElementById("ce_' + v + '_div").appendChild(ce_' + v + '_select_list);\n')
+                f.write('for (var i = 0; i < ce_' + v + '.length; i++) {\n')
+                f.write('\tvar option = document.createElement("option");\n')
+                f.write('\toption.setAttribute("value", ce_' + v + '[i]);\n')
+                f.write('\toption.text = ce_' + v + '[i];\n')
+                f.write('\tce_' + v + '_select_list.appendChild(option);\n')
+                f.write('}\n\n')
+            f.close()
 
         # }}}
 

@@ -5,46 +5,18 @@
     <title>Scout Graphics</title>
 
     <script type="text/javascript">
-      function get_cost_effective_carbon_savings() {
-              var e = document.getElementById("cost_effective_carbon_savings_select");
-              var newSrc = e.options[e.selectedIndex].value;
-              document.getElementById("cost_effective_carbon_savings_div").data=newSrc;
-            }
-
-      function get_cost_effective_operation_cost_savings() {
-              var e = document.getElementById("cost_effective_operation_cost_savings_select");
-              var newSrc = e.options[e.selectedIndex].value;
-              document.getElementById("cost_effective_operation_cost_savings_div").data=newSrc;
-            }
-
-      function get_cost_effective_energy_savings() {
-              var e = document.getElementById("cost_effective_energy_savings_select");
-              var newSrc = e.options[e.selectedIndex].value;
-              document.getElementById("cost_effective_energy_savings_div").data=newSrc;
-            }
-
       function get_fm_ecm() {
               var e = document.getElementById("all_fm_ecm_select");
               var new_data = "./financial_metrics/each_ecm/" + e.options[e.selectedIndex].value + ".html";
               document.getElementById("fm_ecm_plot").data = new_data;
             }
 
-      function get_total_carbon_ecm() {
-              var e = document.getElementById("total_carbon_ecm_select");
-              var new_data = "./total_carbon/" + e.options[e.selectedIndex].value + ".html";
-              document.getElementById("total_carbon_ecm_plot").data = new_data;
-            }
-
-      function get_total_cost_ecm() {
-              var e = document.getElementById("total_cost_ecm_select");
-              var new_data = "./total_cost/" + e.options[e.selectedIndex].value + ".html";
-              document.getElementById("total_cost_ecm_plot").data = new_data;
-            }
-
-      function get_total_energy_ecm() {
-              var e = document.getElementById("total_energy_ecm_select");
-              var new_data = "./total_energy/" + e.options[e.selectedIndex].value + ".html";
-              document.getElementById("total_energy_ecm_plot").data = new_data;
+      function get_cost_effectiveness(v) {
+              s = "ce_".concat(v).concat("_select");
+              d = "ce_".concat(v).concat("_plot");
+              var e = document.getElementById(s);
+              var newSrc = "./cost_effectiveness/" + v + "/" + e.options[e.selectedIndex].value + ".html";
+              document.getElementById(d).data=newSrc;
             }
 
       function openGraphicsSet(evt, gset) {
@@ -109,8 +81,6 @@
         document.getElementById(gset).style.display = "block";
         evt.currentTarget.className += " active";
       }
-
-
     </script>
 
     <style type="text/css">
@@ -219,18 +189,7 @@
   <!-- Tab Links -->
   <div class='tab'>
     <button class="tablinks" onclick="openGraphicsSet(event, 'Financial_Metrics')">Financial Metrics </button>
-
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Cost_Effective_Carbon_Savings')">Cost Effective CO<sub>2</sub> Savings </button>
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Total_Carbon_Savings')">Total CO<sub>2</sub> Savings </button>
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Total_Carbon_Emission')">Total CO<sub>2</sub> Emissions </button>
-
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Cost_Effective_Operation_Cost_Savings')">Cost Effective Operation Cost Savings </button>
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Total_Cost_Savings')">Total Cost Savings</button>
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Total_Cost')">Total Cost </button>
-
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Cost_Effective_Energy_Savings')">Cost Effective Energy Savings </button>
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Total_Energy_Savings')">Total Energy Savings</button>
-    <button class="tablinks" onclick="openGraphicsSet(event, 'Total_Energy')">Total Energy </button>
+    <button class="tablinks" onclick="openGraphicsSet(event, 'Cost_Effectiveness')">Cost Effectiveness</button>
   </div>
 
   <!-- Tab Content -->
@@ -255,537 +214,28 @@
     </div>
   </div>
 
-  <div id="Cost_Effective_Carbon_Savings" class="tabcontent">
-    <p> Select Year </p>
-    <select id="cost_effective_carbon_savings_select" onchange="if (this.selectedIndex) get_cost_effective_carbon_savings()">
-      <option >--</option>
-      <option value="./cost_effective_carbon_savings/2050.html">2050</option>
-      <option value="./cost_effective_carbon_savings/2049.html">2049</option>
-      <option value="./cost_effective_carbon_savings/2048.html">2048</option>
-      <option value="./cost_effective_carbon_savings/2047.html">2047</option>
-      <option value="./cost_effective_carbon_savings/2046.html">2046</option>
-      <option value="./cost_effective_carbon_savings/2045.html">2045</option>
-      <option value="./cost_effective_carbon_savings/2044.html">2044</option>
-      <option value="./cost_effective_carbon_savings/2043.html">2043</option>
-      <option value="./cost_effective_carbon_savings/2042.html">2042</option>
-      <option value="./cost_effective_carbon_savings/2041.html">2041</option>
-      <option value="./cost_effective_carbon_savings/2040.html">2040</option>
-      <option value="./cost_effective_carbon_savings/2039.html">2039</option>
-      <option value="./cost_effective_carbon_savings/2038.html">2038</option>
-      <option value="./cost_effective_carbon_savings/2037.html">2037</option>
-      <option value="./cost_effective_carbon_savings/2036.html">2036</option>
-      <option value="./cost_effective_carbon_savings/2035.html">2035</option>
-      <option value="./cost_effective_carbon_savings/2034.html">2034</option>
-      <option value="./cost_effective_carbon_savings/2033.html">2033</option>
-      <option value="./cost_effective_carbon_savings/2032.html">2032</option>
-      <option value="./cost_effective_carbon_savings/2031.html">2031</option>
-      <option value="./cost_effective_carbon_savings/2030.html">2030</option>
-      <option value="./cost_effective_carbon_savings/2029.html">2029</option>
-      <option value="./cost_effective_carbon_savings/2028.html">2028</option>
-      <option value="./cost_effective_carbon_savings/2027.html">2027</option>
-      <option value="./cost_effective_carbon_savings/2026.html">2026</option>
-      <option value="./cost_effective_carbon_savings/2025.html">2025</option>
-      <option value="./cost_effective_carbon_savings/2024.html">2024</option>
-      <option value="./cost_effective_carbon_savings/2023.html">2023</option>
-      <option value="./cost_effective_carbon_savings/2022.html">2022</option>
-    </select>
-    <div>
-      <object type = "text/html" style="width:99%;height:800px;overflow:scroll;" id="cost_effective_carbon_savings_div">
-      </object>
+  <div id="Cost_Effectiveness" class="tabcontent">
+    <p> Plots ... </p>
+    <div class='subtab'>
+      <button class="subtablinks" onclick="openSubGraphicsSet(event, 'ce_carbon')">Carbon</button>
+      <button class="subtablinks" onclick="openSubGraphicsSet(event, 'ce_cost')">Cost</button>
+      <button class="subtablinks" onclick="openSubGraphicsSet(event, 'ce_energy')">Energy</button>
     </div>
-  </div>
-
-  <div id="Total_Carbon_Savings" class="tabcontent">
-
-    <p>Select plot by region, building class, or end use.  Each plot will have
-    a cumulative total line which, due to scale, will make the other traces
-    difficult to see.  Double click on the "cumulative total" in the legend of
-    the plotly object to turn off that trace and the y-axis will auto-rescale
-    making it easier to view the other traces.
-    </p>
-
-    <div class = 'subtab'>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_carbon_savings_by_region')">By Region</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_carbon_savings_by_building_class')">By Building Class</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_carbon_savings_by_end_use')">By End Use</button>
+    <div id='ce_carbon' class='subtabcontent'>
+      <p> Select Year </p>
+      <p> <div id="ce_carbon_div"></div> </p>
+      <object id = 'ce_carbon_plot' type = "text/html" style="width:99%;height:800px;"></object>
     </div>
-
-    <div id='total_carbon_savings_by_region' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_carbon_savings/by_region.html" style="width:99%;height:800px;overflow:scroll;"> </object>
+    <div id='ce_cost' class='subtabcontent'>
+      <p>cost</p>
+      <p> <div id="ce_cost_div"></div> </p>
+      <object id = 'ce_cost_plot' type = "text/html" style="width:99%;height:800px;"></object>
     </div>
-
-    <div id='total_carbon_savings_by_building_class' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_carbon_savings/by_building_class.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-
-    <div id='total_carbon_savings_by_end_use' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_carbon_savings/by_end_use.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-
-  </div>
-
-  <div id="Total_Carbon_Emission" class="tabcontent">
-
-    <div class="subtab">
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_carbon_ecms')">Select an ECM </button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_carbon_map')">Max Adoption Potential</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_carbon_tp')">Technical Potential</button>
-    </div>
-
-    <div id='total_carbon_ecms' class = 'subtabcontent'>
-      <p> Select an ECM to plot <div id="total_carbon_ecms_div"></div> </p>
-      <object id = 'total_carbon_ecm_plot' type = "text/html" style="width:99%;height:800px;"></object>
-    </div>
-
-    <div id = 'total_carbon_map' class = 'subtabcontent'>
-
-      <div class = 'subsubtab'>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_all_ecms')">All ECMs</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_commerical')">Commerical Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_residential')">Residential Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_hvac')">End Use: HVAC</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_envelope')">End Use: Envelope</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_lighting')">End Use: Lighting</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_waterheating')">End Use: Water heating</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_refrigeration')">End Use: Refrigeration</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_cooking')">End Use: Cooking</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_eletronics')">End Use: Eletronics</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_map_other')">End Use: Other</button>
-      </div>
-
-      <div id = 'total_carbon_map_all_ecms' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_commerical' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_commercial.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_residential' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_residential.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_hvac' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_HVAC.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_envelope' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Envelope.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_lighting' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Lighting.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_waterheating' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Water Heating.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_refrigeration' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Refrigeration.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_cooking' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Cooking.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_eletronics' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Electronics.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_map_other' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_MAP_Other.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-
-    </div>
-
-    <div id = 'total_carbon_tp' class = 'subtabcontent'>
-      <div class = 'subsubtab'>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_all_ecms')">All ECMs</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_commerical')">Commerical Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_residential')">Residential Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_hvac')">End Use: HVAC</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_envelope')">End Use: Envelope</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_lighting')">End Use: Lighting</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_waterheating')">End Use: Water heating</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_refrigeration')">End Use: Refrigeration</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_cooking')">End Use: Cooking</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_eletronics')">End Use: Eletronics</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_carbon_tp_other')">End Use: Other</button>
-      </div>
-
-      <div id = 'total_carbon_tp_all_ecms' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_commerical' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_commercial.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_residential' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_residential.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_hvac' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_HVAC.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_envelope' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Envelope.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_lighting' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Lighting.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_waterheating' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Water Heating.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_refrigeration' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Refrigeration.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_cooking' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Cooking.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_eletronics' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Electronics.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_carbon_tp_other' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_carbon/_TP_Other.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div id="Cost_Effective_Operation_Cost_Savings" class="tabcontent">
-    <p> Select Year </p>
-    <select id="cost_effective_operation_cost_savings_select" onchange="if (this.selectedIndex) get_cost_effective_operation_cost_savings()">
-      <option >--</option>
-      <option value="./cost_effective_operation_cost_savings/2050.html">2050</option>
-      <option value="./cost_effective_operation_cost_savings/2049.html">2049</option>
-      <option value="./cost_effective_operation_cost_savings/2048.html">2048</option>
-      <option value="./cost_effective_operation_cost_savings/2047.html">2047</option>
-      <option value="./cost_effective_operation_cost_savings/2046.html">2046</option>
-      <option value="./cost_effective_operation_cost_savings/2045.html">2045</option>
-      <option value="./cost_effective_operation_cost_savings/2044.html">2044</option>
-      <option value="./cost_effective_operation_cost_savings/2043.html">2043</option>
-      <option value="./cost_effective_operation_cost_savings/2042.html">2042</option>
-      <option value="./cost_effective_operation_cost_savings/2041.html">2041</option>
-      <option value="./cost_effective_operation_cost_savings/2040.html">2040</option>
-      <option value="./cost_effective_operation_cost_savings/2039.html">2039</option>
-      <option value="./cost_effective_operation_cost_savings/2038.html">2038</option>
-      <option value="./cost_effective_operation_cost_savings/2037.html">2037</option>
-      <option value="./cost_effective_operation_cost_savings/2036.html">2036</option>
-      <option value="./cost_effective_operation_cost_savings/2035.html">2035</option>
-      <option value="./cost_effective_operation_cost_savings/2034.html">2034</option>
-      <option value="./cost_effective_operation_cost_savings/2033.html">2033</option>
-      <option value="./cost_effective_operation_cost_savings/2032.html">2032</option>
-      <option value="./cost_effective_operation_cost_savings/2031.html">2031</option>
-      <option value="./cost_effective_operation_cost_savings/2030.html">2030</option>
-      <option value="./cost_effective_operation_cost_savings/2029.html">2029</option>
-      <option value="./cost_effective_operation_cost_savings/2028.html">2028</option>
-      <option value="./cost_effective_operation_cost_savings/2027.html">2027</option>
-      <option value="./cost_effective_operation_cost_savings/2026.html">2026</option>
-      <option value="./cost_effective_operation_cost_savings/2025.html">2025</option>
-      <option value="./cost_effective_operation_cost_savings/2024.html">2024</option>
-      <option value="./cost_effective_operation_cost_savings/2023.html">2023</option>
-      <option value="./cost_effective_operation_cost_savings/2022.html">2022</option>
-    </select>
-    <div>
-      <object type = "text/html" style="width:99%;height:800px;overflow:scroll;" id="cost_effective_operation_cost_savings_div">
-      </object>
-    </div>
-  </div>
-
-  <div id="Total_Cost_Savings" class="tabcontent">
-    <div class="subtab">
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_cost_savings_by_region')">By Region</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_cost_savings_by_building_class')">By Building Class</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_cost_savings_by_end_use')">By End Use</button>
-    </div>
-
-    <div id='total_cost_savings_by_region' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_cost_savings/by_region.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-
-    <div id='total_cost_savings_by_building_class' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_cost_savings/by_building_class.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-
-    <div id='total_cost_savings_by_end_use' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_cost_savings/by_end_use.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-  </div>
-
-  <div id="Total_Cost" class="tabcontent">
-    <div class="subtab">
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_cost_ecms')">Select an ECM </button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_cost_map')">Max Adoption Potential</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_cost_tp')">Technical Potential</button>
-    </div>
-
-    <div id='total_cost_ecms' class = 'subtabcontent'>
-      <p> Select an ECM to plot <div id="total_cost_ecms_div"></div> </p>
-      <object id = 'total_cost_ecm_plot' type = "text/html" style="width:99%;height:800px;"></object>
-    </div>
-
-    <div id = 'total_cost_map' class = 'subtabcontent'>
-      <div class = 'subsubtab'>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_all_ecms')">All ECMs</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_commerical')">Commerical Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_residential')">Residential Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_hvac')">End Use: HVAC</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_envelope')">End Use: Envelope</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_lighting')">End Use: Lighting</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_waterheating')">End Use: Water heating</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_refrigeration')">End Use: Refrigeration</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_cooking')">End Use: Cooking</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_eletronics')">End Use: Eletronics</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_map_other')">End Use: Other</button>
-      </div>
-
-      <div id = 'total_cost_map_all_ecms' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_commerical' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_commercial.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_residential' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_residential.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_hvac' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_HVAC.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_envelope' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Envelope.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_lighting' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Lighting.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_waterheating' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Water Heating.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_refrigeration' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Refrigeration.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_cooking' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Cooking.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_eletronics' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Electronics.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_map_other' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_MAP_Other.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-    </div>
-
-    <div id = 'total_cost_tp' class = 'subtabcontent'>
-      <div class = 'subsubtab'>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_all_ecms')">All ECMs</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_commerical')">Commerical Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_residential')">Residential Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_hvac')">End Use: HVAC</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_envelope')">End Use: Envelope</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_lighting')">End Use: Lighting</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_waterheating')">End Use: Water heating</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_refrigeration')">End Use: Refrigeration</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_cooking')">End Use: Cooking</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_eletronics')">End Use: Eletronics</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_cost_tp_other')">End Use: Other</button>
-      </div>
-
-      <div id = 'total_cost_tp_all_ecms' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_commerical' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_commercial.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_residential' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_residential.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_hvac' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_HVAC.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_envelope' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Envelope.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_lighting' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Lighting.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_waterheating' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Water Heating.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_refrigeration' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Refrigeration.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_cooking' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Cooking.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_eletronics' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Electronics.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_cost_tp_other' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_cost/_TP_Other.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-    </div>
-  </div>
-
-  <div id="Cost_Effective_Energy_Savings" class="tabcontent">
-    <p> Select Year </p>
-    <select id="cost_effective_energy_savings_select" onchange="if (this.selectedIndex) get_cost_effective_energy_savings()">
-      <option >--</option>
-      <option value="./cost_effective_energy_savings/2050.html">2050</option>
-      <option value="./cost_effective_energy_savings/2049.html">2049</option>
-      <option value="./cost_effective_energy_savings/2048.html">2048</option>
-      <option value="./cost_effective_energy_savings/2047.html">2047</option>
-      <option value="./cost_effective_energy_savings/2046.html">2046</option>
-      <option value="./cost_effective_energy_savings/2045.html">2045</option>
-      <option value="./cost_effective_energy_savings/2044.html">2044</option>
-      <option value="./cost_effective_energy_savings/2043.html">2043</option>
-      <option value="./cost_effective_energy_savings/2042.html">2042</option>
-      <option value="./cost_effective_energy_savings/2041.html">2041</option>
-      <option value="./cost_effective_energy_savings/2040.html">2040</option>
-      <option value="./cost_effective_energy_savings/2039.html">2039</option>
-      <option value="./cost_effective_energy_savings/2038.html">2038</option>
-      <option value="./cost_effective_energy_savings/2037.html">2037</option>
-      <option value="./cost_effective_energy_savings/2036.html">2036</option>
-      <option value="./cost_effective_energy_savings/2035.html">2035</option>
-      <option value="./cost_effective_energy_savings/2034.html">2034</option>
-      <option value="./cost_effective_energy_savings/2033.html">2033</option>
-      <option value="./cost_effective_energy_savings/2032.html">2032</option>
-      <option value="./cost_effective_energy_savings/2031.html">2031</option>
-      <option value="./cost_effective_energy_savings/2030.html">2030</option>
-      <option value="./cost_effective_energy_savings/2029.html">2029</option>
-      <option value="./cost_effective_energy_savings/2028.html">2028</option>
-      <option value="./cost_effective_energy_savings/2027.html">2027</option>
-      <option value="./cost_effective_energy_savings/2026.html">2026</option>
-      <option value="./cost_effective_energy_savings/2025.html">2025</option>
-      <option value="./cost_effective_energy_savings/2024.html">2024</option>
-      <option value="./cost_effective_energy_savings/2023.html">2023</option>
-      <option value="./cost_effective_energy_savings/2022.html">2022</option>
-    </select>
-    <div>
-      <object type = "text/html" style="width:99%;height:800px;overflow:scroll;" id="cost_effective_energy_savings_div">
-      </object>
-    </div>
-  </div>
-
-  <div id="Total_Energy_Savings" class="tabcontent">
-    <div class="subtab">
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_energy_savings_by_region')">By Region</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_energy_savings_by_building_class')">By Building Class</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_energy_savings_by_end_use')">By End Use</button>
-    </div>
-
-    <div id='total_energy_savings_by_region' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_energy_savings/by_region.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-
-    <div id='total_energy_savings_by_building_class' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_energy_savings/by_building_class.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-
-    <div id='total_energy_savings_by_end_use' class = 'subtabcontent'>
-      <object type = "text/html" data="./total_energy_savings/by_end_use.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-    </div>
-  </div>
-
-  <div id="Total_Energy" class="tabcontent">
-    <div class="subtab">
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_energy_ecms')">Select an ECM </button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_energy_map')">Max Adoption Potential</button>
-      <button class="subtablinks" onclick = "openSubGraphicsSet(event, 'total_energy_tp')">Technical Potential</button>
-    </div>
-
-    <div id='total_energy_ecms' class = 'subtabcontent'>
-      <p> Select an ECM to plot <div id="total_energy_ecms_div"></div> </p>
-      <object id = 'total_energy_ecm_plot' type = "text/html" style="width:99%;height:800px;"></object>
-    </div>
-
-    <div id = 'total_energy_map' class = 'subtabcontent'>
-      <div class = 'subsubtab'>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_all_ecms')">All ECMs</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_commerical')">Commerical Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_residential')">Residential Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_hvac')">End Use: HVAC</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_envelope')">End Use: Envelope</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_lighting')">End Use: Lighting</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_waterheating')">End Use: Water heating</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_refrigeration')">End Use: Refrigeration</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_cooking')">End Use: Cooking</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_eletronics')">End Use: Eletronics</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_map_other')">End Use: Other</button>
-      </div>
-
-      <div id = 'total_energy_map_all_ecms' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_commerical' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_commercial.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_residential' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_residential.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_hvac' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_HVAC.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_envelope' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Envelope.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_lighting' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Lighting.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_waterheating' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Water Heating.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_refrigeration' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Refrigeration.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_cooking' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Cooking.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_eletronics' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Electronics.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_map_other' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_MAP_Other.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-    </div>
-    </div>
-
-    <div id = 'total_energy_tp' class = 'subtabcontent'>
-      <div class = 'subsubtab'>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_all_ecms')">All ECMs</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_commerical')">Commerical Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_residential')">Residential Buildings</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_hvac')">End Use: HVAC</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_envelope')">End Use: Envelope</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_lighting')">End Use: Lighting</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_waterheating')">End Use: Water heating</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_refrigeration')">End Use: Refrigeration</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_cooking')">End Use: Cooking</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_eletronics')">End Use: Eletronics</button>
-        <button class="subsubtablinks" onclick = "openSubSubGraphicsSet(event, 'total_energy_tp_other')">End Use: Other</button>
-      </div>
-
-      <div id = 'total_energy_tp_all_ecms' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_commerical' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_commercial.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_residential' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_residential.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_hvac' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_HVAC.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_envelope' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Envelope.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_lighting' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Lighting.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_waterheating' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Water Heating.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_refrigeration' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Refrigeration.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_cooking' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Cooking.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_eletronics' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Electronics.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
-      <div id = 'total_energy_tp_other' class = 'subsubtabcontent'>
-        <object type = "text/html" data="./total_energy/_TP_Other.html" style="width:99%;height:800px;overflow:scroll;"> </object>
-      </div>
+    <div id='ce_energy' class='subtabcontent'>
+      <p>energy</p>
+      <p> Select Year </p>
+      <p> <div id="ce_energy_div"></div> </p>
+      <object id = 'ce_energy_plot' type = "text/html" style="width:99%;height:800px;"></object>
     </div>
   </div>
 
@@ -793,8 +243,6 @@
 
 
   <script src="./financial_metrics/each_ecm.js"> </script>
-  <script src="./total_carbon/each_ecm.js"> </script>
-  <script src="./total_cost/each_ecm.js"> </script>
-  <script src="./total_energy/each_ecm.js"> </script>
+  <script src="./cost_effectiveness/years.js"> </script>
 
 </html>
