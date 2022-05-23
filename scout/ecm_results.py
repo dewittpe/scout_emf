@@ -379,6 +379,7 @@ class ecm_results:                                                         # {{{
             f.close()
         # }}}
 
+        # Cost Effective Plots # {{{
         def unique_strings(l):
             list_set = set(l)
             ul = (list(list_set))
@@ -406,10 +407,6 @@ class ecm_results:                                                         # {{{
                         on = ["ecm", "year"]
                         )
 
-        #return plot_data
-
-
-        # Cost Effective Plots # {{{
         if not os.path.isdir(os.path.join(plot_dir, "cost_effectiveness")):
             os.mkdir(os.path.join(plot_dir, "cost_effectiveness"))
 
@@ -462,26 +459,53 @@ class ecm_results:                                                         # {{{
 
         # }}}
 
-        # Total CO2 Savings # {{{
+        # Total Savings Plots # {{{
+        total_savings = self.mas_by_category\
+                .groupby(["scenario", "metric", "year"])\
+                .agg({"value" : "sum"})\
+                .reset_index()
+        total_savings2 = self.mas_by_category\
+                .groupby(["scenario", "metric", "year"])\
+                .agg({"value" : "sum"})\
+                .groupby(level = ["scenario", "metric"])\
+                .cumsum()\
+                .reset_index()
+
+        # Overall
+        #fig = px.scatter(
+        #        cms_by_region,
+        #        x = "year",
+        #        y = "value",
+        #        color = "region",
+        #        facet_col = "adoption_scenario")
+        #fig.update_traces(mode = "lines+markers")
+        #fig.update_yaxes(exponentformat = "e", title = VOI)
+        #fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+        #print("Writing " + plot_path + "by_region.html")
+        #fig.write_html(plot_path + "by_region.html")
+
+
+
+
+        if not os.path.isdir(os.path.join(plot_dir, "total_savings")):
+            os.mkdir(os.path.join(plot_dir, "total_savings"))
+
+
+
         # }}}
+
+
+
 
         # Total CO2 Emissions # {{{
         # }}}
 
-        # Cost Effective Operation Cost Savings # {{{
-        # }}}
 
-        # Total Cost Savings # {{{
-        # }}}
 
         # Total Cost # {{{
         # }}}
 
-        # Cost Effective Energy Savings # {{{
-        # }}}
 
-        # Total Energy Savings # {{{
-        # }}}
 
         # Total Energy # {{{
         # }}}
