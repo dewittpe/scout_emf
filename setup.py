@@ -13,5 +13,5 @@ setuptools.setup(
         url = "https://github.com/dewittpe/scout_emf",
         packages = setuptools.find_packages(),
         python_requires = '>=3.6',
-        package_data = {'': ['supporting_data/convert_data/*.json', 'supporting_data/stock_energy_tech_data/*.gz', 'Results_Files_3/*.gz']},
+        package_data = {'': ['supporting_data/convert_data/*.json', 'supporting_data/stock_energy_tech_data/*.gz', 'Results_Files_3/*.gz', "templates/*"]},
         )
