@@ -4,9 +4,8 @@ channels:
 dependencies:
   - numpy
   - pandas
+  - plotly
   - pip
   - pip:
     - coverage
-    - plotly
-    - plotly_express
     - tox
