@@ -376,6 +376,142 @@ class ecm_results:                                                         # {{{
             f.close()
         # }}}
 
+        # define a set of "variables of interest", and output directories.
+        #vois =\
+        #        [
+        #          {
+        #            "voi" :  "Avoided CO\u2082 Emissions (MMTons)",
+        #            "dir" : os.path.join(plot_dir, "cost_effective_carbon_savings")
+        #          },
+        #          {
+        #            "voi": "Energy Cost Savings (USD)",
+        #            "dir" : os.path.join(plot_dir, "cost_effective_operation_cost_savings")
+        #          },
+        #          {
+        #            "voi" : "Energy Savings (MMBtu)",
+        #            "dir" : os.path.join(plot_dir, "cost_effective_energy_savings")
+        #          }
+        #         ]
+
+        #if arg == "carbon":
+        #    VOI = "Avoided CO\u2082 Emissions (MMTons)"
+        #    plot_path = "./results/plots/cost_effective_carbon_savings/"
+        #elif arg == "cost":
+        #    VOI = "Energy Cost Savings (USD)"
+        #    plot_path = "./results/plots/cost_effective_operation_cost_savings/"
+        #elif arg == "energy":
+        #    VOI = "Energy Savings (MMBtu)"
+        #    plot_path = "./results/plots/cost_effective_energy_savings/"
+        #else:
+        #    print("unknown arg value")
+        #    exit(1)
+
+        #if arg == "carbon":
+        #    VOI = "CO\u2082 Emissions (MMTons)"
+        #    plot_path = "./results/plots/total_carbon/"
+        #elif arg == "cost":
+        #    VOI = "Cost (USD)"
+        #    plot_path = "./results/plots/total_cost/"
+        #elif arg == "energy":
+        #    VOI = "Energy Use (MMBtu)"
+        #    plot_path = "./results/plots/total_energy/"
+        #else:
+        #    print("unknown arg value")
+        #    exit(1)
+
+        def unique_strings(l):
+            list_set = set(l)
+            ul = (list(list_set))
+            return '; '.join(ul)
+
+        # build one data set for plotting
+        plot_data =\
+                self.mas_by_category\
+                .groupby(["scenario", "ecm", "metric", "year"])\
+                .agg({
+                    "value" : "sum",
+                    "building_class" : unique_strings,
+                    "region" : unique_strings,
+                    "end_use" : unique_strings
+                    })\
+                .reset_index()\
+                .pivot_table(
+                        values = "value",
+                        index = ["scenario", "ecm", "building_class", "end_use", "year"],
+                        columns = ["metric"]
+                )\
+                .reset_index()\
+                .merge(self.financial_metrics,
+                        how = "left",
+                        on = ["ecm", "year"]
+                        )
+
+        #return plot_data
+
+
+        # Cost Effective Plots # {{{
+        if not os.path.isdir(os.path.join(plot_dir, "cost_effective")):
+            os.mkdir(os.path.join(plot_dir, "cost_effective"))
+
+        for v in [{"carbon" : "Avoided CO\u2082 Emissions (MMTons)"},
+                        {"cost"   : "Energy Cost Savings (USD)"},
+                        {"energy" : "Energy Savings (MMBtu)"}]:
+            n, voi = list(v.items())[0]
+            if not os.path.isdir(os.path.join(plot_dir, "cost_effective", n)):
+                os.mkdir(os.path.join(plot_dir, "cost_effective", n))
+
+            for yr in set(plot_data.year):
+                fig = px.scatter(
+                        plot_data[(plot_data["year"] == yr)]
+                        , x = voi
+                        , y = "value"
+                        , symbol = "building_class"
+                        , color = "end_use"
+                        , facet_col = "scenario"
+                        , facet_row = "metric"
+                        , title = "Calendar Year " + str(yr)
+                        , hover_data = {
+                            "ecm": True,
+                            voi : True,
+                            "value": True,
+                            "end_use": True,
+                            "building_class": True
+                            }
+                        )
+                fig.update_yaxes(title_text = "", matches = None, exponentformat = "e")
+                fig.update_xaxes(exponentformat = "e")
+                fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+                fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
+
+                fig.write_html(os.path.join(plot_dir, "cost_effective", n, str(yr) + ".html"))
+
+        # }}}
+
+        # Total CO2 Savings # {{{
+        # }}}
+
+        # Total CO2 Emissions # {{{
+        # }}}
+
+        # Cost Effective Operation Cost Savings # {{{
+        # }}}
+
+        # Total Cost Savings # {{{
+        # }}}
+
+        # Total Cost # {{{
+        # }}}
+
+        # Cost Effective Energy Savings # {{{
+        # }}}
+
+        # Total Energy Savings # {{{
+        # }}}
+
+        # Total Energy # {{{
+        # }}}
+
+        return plot_data
 
     # }}}
 
