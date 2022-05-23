@@ -5,8 +5,8 @@ dependencies:
   - numpy
   - pandas
   - pip
-  - plotly
-  - plotly_express
   - pip:
     - coverage
+    - plotly
+    - plotly_express
     - tox
