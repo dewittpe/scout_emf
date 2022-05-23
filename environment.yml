@@ -6,6 +6,7 @@ dependencies:
   - pandas
   - pip
   - plotly
+  - plotly_express
   - pip:
     - coverage
     - tox
