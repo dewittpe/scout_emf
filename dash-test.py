@@ -8,11 +8,7 @@ from dash import dcc
 from dash import html
 
 results_1 = scout.ecm_results(path = "./Results_Files_3/ecm_results_1-1.json.gz")
-
-
-
-
-
+ecms = [{"label" : l, "value" : l} for l in set(results_1.financial_metrics.ecm)]
 
 app = dash.Dash(external_stylesheets = [dbc.themes.BOOTSTRAP])
 
@@ -60,15 +56,19 @@ app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 
 fm = html.Div([
     html.H1("Financial Metrics"),
-    html.H2("Controls"),
-    dcc.Dropdown(id = "dropdown01",
-        options = [
-            {"label" : "Aggregated by Year", "value" : "agg_year"},
-            {"label" : "All ECMS", "value" : "all_ecms"},
-            {"label" : "Select an ECM", "value" : "each_ecms"}],
-        value = "Aggregated by Year"),
-    html.Div(id = "fm-output-container", 
-        style = {'width' : '50%', 'height': '900px'})
+    html.Div([
+        dcc.Dropdown(id = "fm_dropdown",
+            options = [
+                {"label" : "Aggregated by Year", "value" : "agg_year"},
+                {"label" : "All ECMS", "value" : "all_ecms"},
+                {"label" : "Select an ECM:", "value" : "each_ecm"}],
+            value = "agg_year",
+            clearable = False
+            )],
+        style = {"width" : "25%", "display" : "inline-block"}
+        ),
+    html.Div([dcc.Dropdown(id = "ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "none"}),
+    html.Div(id = "fm-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -76,7 +76,7 @@ def render_page_content(pathname):
     if pathname == "/":
         return html.P("This is the content of the home page!  A overview of what this application does goes here.")
     elif pathname == "/fm":
-        return fm#html.P("Financial Metrics")
+        return fm
     elif pathname == "/ces":
         return html.P("Cost Effective Savings")
     # If the user tries to reach a different page, return a 404 message
@@ -89,12 +89,22 @@ def render_page_content(pathname):
     )
 
 @app.callback(
-        Output('fm-output-container', 'children'),
-        Input('dropdown01', 'value')
+        Output(component_id = 'ecm_dropdown_div', component_property = "style"),
+        Input(component_id = 'fm_dropdown', component_property = 'value')
         )
+def show_hide_ecm_dropdown(value):
+    if value == "each_ecm":
+        return {"display" : "block"}
+    else:
+        return {"display" : "none"}
 
-def update_output(value):
-    if value == "agg_year":
+@app.callback(
+        Output('fm-output-container', 'children'),
+        Input('fm_dropdown', 'value'),
+        Input('ecm_dropdown', 'value')
+        )
+def update_output(fm_dropdown_value, ecm_dropdown_value):
+    if fm_dropdown_value == "agg_year":
         fig = px.line(
                 data_frame = results_1.financial_metrics\
                         .groupby(["metric", "year"])\
@@ -112,7 +122,7 @@ def update_output(value):
         fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
         fig.update_layout(autosize = False, width = 900, height = 900)
         return dcc.Graph(figure = fig)
-    elif value == "all_ecms":
+    elif fm_dropdown_value == "all_ecms":
         fig = px.line(
                 data_frame = results_1.financial_metrics
                 , x = "year"
@@ -126,8 +136,25 @@ def update_output(value):
         fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
         fig.update_layout(autosize = False, width = 900, height = 900)
         return dcc.Graph(figure = fig)
+    elif fm_dropdown_value == "each_ecm":
+        fig = px.line(
+                data_frame = results_1.financial_metrics[results_1.financial_metrics.ecm == ecm_dropdown_value]
+                , x = "year"
+                , y = "value"
+                #, color = "ecm"
+                , facet_col = "metric"
+                , facet_col_wrap = 2
+                )
+        fig.update_yaxes(matches = None, exponentformat = "e")
+        fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+        fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
+        fig.update_layout(autosize = False, width = 900, height = 900)
+        fm_each_ecm = html.Div([
+            dcc.Graph(figure = fig)
+            ])
+        return fm_each_ecm
     else:
-        return f"you selected {value}"
+        return f"impressive, everything you did is wrong"
 
 
 
