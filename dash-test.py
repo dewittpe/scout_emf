@@ -87,6 +87,7 @@ sidebar = html.Div(
                 dbc.NavLink("Financial Metrics", href="/fm", active="exact"),
                 dbc.NavLink("Cost Effective Savings", href="/ces", active="exact"),
                 dbc.NavLink("Total Savings", href="/savings", active="exact"),
+                dbc.NavLink("(Un)Competed Totals", href="/totals", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -186,6 +187,10 @@ savings = html.Div([
     html.Div(id = "savings-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
 
+totals = html.Div([
+    html.H1("Competed and Uncompeted Totals")
+    ])
+
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
@@ -196,6 +201,8 @@ def render_page_content(pathname):
         return ces
     elif pathname == "/savings":
         return savings
+    elif pathname == "/totals":
+        return totals
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
