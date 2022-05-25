@@ -1,6 +1,7 @@
 import scout
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import dash
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
@@ -21,6 +22,7 @@ ecms = [{"label" : l, "value" : l} for l in set(results_1.financial_metrics.ecm)
 years = [y for y in set(results_1.mas_by_category.year)]
 years.sort()
 
+################################################################################
 # plotting data sets
 ces_plot_data =\
     results_1.mas_by_category\
@@ -43,9 +45,14 @@ ces_plot_data = \
                 how = "left",
                 on = ["ecm", "year"])
 
-ces_plot_data
+################################################################################
+# build useful things for ui
+ecms = [{"label" : l, "value" : l} for l in set(results_1.financial_metrics.ecm)]
+years = [y for y in set(results_1.mas_by_category.year)]
+years.sort()
 
-        
+################################################################################
+# dash application
 
 app = dash.Dash(external_stylesheets = [dbc.themes.BOOTSTRAP])
 
@@ -79,6 +86,7 @@ sidebar = html.Div(
                 dbc.NavLink("Home", href="/", active="exact"),
                 dbc.NavLink("Financial Metrics", href="/fm", active="exact"),
                 dbc.NavLink("Cost Effective Savings", href="/ces", active="exact"),
+                dbc.NavLink("Total Savings", href="/savings", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -105,13 +113,16 @@ fm = html.Div([
             )],
         style = {"width" : "25%", "display" : "inline-block"}
         ),
-    html.Div([dcc.Dropdown(id = "ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "none"}),
+    html.Div([
+        html.Label("ECM:"),
+        dcc.Dropdown(id = "ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "none"}),
     html.Div(id = "fm-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
 
 ces = html.Div([
     html.H1("Cost Effective Savings"),
     html.Div([
+        html.Label("Metric:"),
         dcc.Dropdown(id = "ces_cce_dropdown",
             options = [
                 {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
@@ -123,8 +134,56 @@ ces = html.Div([
             )],
         style = {"width" : "25%", "display" : "inline-block"}
         ),
-    html.Div([dcc.Dropdown(id = "year_dropdown", options = years, value = years[0], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "inline-block"}),
+    html.Div([
+        html.Label("Year:"),
+        dcc.Dropdown(id = "year_dropdown", options = years, value = years[0], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "inline-block"}),
     html.Div(id = "ces-output-container", style = {'width' : '90%', 'height': '900px'})
+])
+
+savings = html.Div([
+    html.H1("Total Savings"),
+    html.Div([
+        html.Label("Metric:"),
+        dcc.Dropdown(id = "savings_dropdown",
+            options = [
+                {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
+                {"label" : "Energy Cost Savings (USD)",           "value" : "cost"},
+                {"label" : "Energy Savings (MMBtu)",              "value" : "energy"}
+                ],
+            value = "carbon",
+            clearable = False
+            )],
+        style = {"width" : "25%", "display" : "inline-block"}
+        ),
+    html.Div([
+        html.Label("Aggregate by:"),
+        dcc.Dropdown(id = "savings_by_dropdown",
+        options = [
+            {"label" : "Overall",           "value" : "overall"},
+            {"label" : "By Region ",        "value" : "region"},
+            {"label" : "By Building Class", "value" : "building_class"},
+            {"label" : "By End Use",        "value" : "end_use"}
+            ],
+        value = "overall",
+        clearable = False
+        )],
+        id = "savings_by_dropdown_div",
+        style = {"min-width" : "400px", "display" : "inline-block"}
+        ),
+    html.Div([
+        html.Label("Annual or Cumulative Totals?"),
+        dcc.Dropdown(id = "savings_annual_cumulative_dropdown",
+        options = [
+            {"label" : "Annual Totals",           "value" : "annual"},
+            {"label" : "Cumulative Totals",        "value" : "cumulative"}
+            ],
+        value = "annual",
+        clearable = False
+        )],
+        id = "savings_annual_cumulative_dropdown_div",
+        style = {"min-width" : "400px", "display" : "inline-block"}
+        ),
+    html.Div(id = "savings-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -135,6 +194,8 @@ def render_page_content(pathname):
         return fm
     elif pathname == "/ces":
         return ces
+    elif pathname == "/savings":
+        return savings
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -143,6 +204,10 @@ def render_page_content(pathname):
             html.P(f"The pathname {pathname} was not recognised..."),
         ]
     )
+
+###
+### Financial Metrics
+###
 
 @app.callback(
         Output(component_id = 'ecm_dropdown_div', component_property = "style"),
@@ -213,6 +278,10 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
         return "impressive, everything you did is wrong"
 
 
+###
+### Cost Effective Savings
+###
+
 @app.callback(
         Output('ces-output-container', 'children'),
         Input('ces_cce_dropdown', 'value'),
@@ -252,10 +321,82 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
     return dcc.Graph(figure = fig)
 
 
+###
+### Savings
+### 
+@app.callback(
+        Output("savings-output-container", 'children'),
+        Input("savings_dropdown", "value"),
+        Input("savings_by_dropdown", "value"),
+        Input("savings_annual_cumulative_dropdown", "value")
+        )
+def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, savings_annual_cumulative_dropdown):
+    if savings_dropdown_value == "carbon":
+        m = "Avoided CO\u2082 Emissions (MMTons)"
+    elif savings_dropdown_value == "cost":
+        m = "Energy Cost Savings (USD)"
+    elif savings_dropdown_value == "energy":
+        m = "Energy Savings (MMBtu)"
+    else: 
+        m = None
+
+    if savings_by_dropdown_value == "overall":
+        savings_by_dropdown_value = None
+
+    a_data = results_1.mas_by_category\
+        .sort_values(by = ["scenario", "metric", "year"])\
+        .groupby([j for j in ["scenario", "metric", "year", savings_by_dropdown_value] if j is not None])\
+        .agg({"value" : "sum"})\
+        .reset_index()
+
+
+    c_data = results_1.mas_by_category\
+        .sort_values(by = ["scenario", "metric", "year"])\
+        .groupby([j for j in ["scenario", "metric", "year", savings_by_dropdown_value] if j is not None])\
+        .agg({"value" : "sum"})\
+        .groupby(level = [j for j in ["scenario", "metric", savings_by_dropdown_value] if j is not None])\
+        .cumsum()\
+        .reset_index()
+
+    a_data["total"] = "annual"
+    c_data["total"] = "cumulative"
+    plot_data = pd.concat([a_data, c_data])
+
+    fig = px.line(
+              plot_data[((plot_data.metric == m) & (plot_data.total == savings_annual_cumulative_dropdown))]
+            , x = "year"
+            , y = "value"
+            , color = savings_by_dropdown_value
+            , facet_col = "scenario"
+            , markers = True
+            )
+    fig.update_traces(mode = "lines+markers")
+    fig.update_yaxes(exponentformat = "e", title = m)
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
+    fig.update_layout(autosize = False, width = 1200, height = 800)
+
+    return dcc.Graph(figure = fig)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     app.run_server(port=8050)
 
 
-
+################################################################################
+#                                 end of file                                  #
+################################################################################
 
