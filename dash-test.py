@@ -100,7 +100,7 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 
-fm = html.Div([
+fm = html.Div([ # {{{
     html.H1("Financial Metrics"),
     html.Div([
         dcc.Dropdown(id = "fm_dropdown",
@@ -119,8 +119,9 @@ fm = html.Div([
         dcc.Dropdown(id = "ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "none"}),
     html.Div(id = "fm-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
+# }}}
 
-ces = html.Div([
+ces = html.Div([ # {{{
     html.H1("Cost Effective Savings"),
     html.Div([
         html.Label("Metric:"),
@@ -140,8 +141,9 @@ ces = html.Div([
         dcc.Dropdown(id = "year_dropdown", options = years, value = years[0], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "inline-block"}),
     html.Div(id = "ces-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
+# }}}
 
-savings = html.Div([
+savings = html.Div([  # {{{
     html.H1("Total Savings"),
     html.Div([
         html.Label("Metric:"),
@@ -186,10 +188,28 @@ savings = html.Div([
         ),
     html.Div(id = "savings-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
+# }}}
 
-totals = html.Div([
-    html.H1("Competed and Uncompeted Totals")
-    ])
+totals = html.Div([ # {{{
+    html.H1("Competed and Uncompeted Totals"),
+    html.Div([
+        html.Label("By ECM or Adoption Scenario?:"),
+        dcc.Dropdown(id = "totals_dropdown",
+            options = [
+                {"label" : "ECM", "value" : "ecm"},
+                {"label" : "Adoption Scenario", "value" : "scenario"},
+                ],
+            value = "ecm",
+            clearable = False
+            )],
+        style = {"width" : "15%", "display" : "block"}
+        ),
+    html.Div([
+        html.Label("Select an ECM to plot:"),
+        dcc.Dropdown(id = "totals_by_ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "totals_ecm_dropdown_div", style = {"width" : "600px", "display" : "none"}),
+    html.Div(id = "totals-output-container", style = {'width' : '90%', 'height': '900px'})
+])
+# }}}
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
@@ -213,7 +233,7 @@ def render_page_content(pathname):
     )
 
 ###
-### Financial Metrics
+### Financial Metrics # {{{
 ###
 
 @app.callback(
@@ -284,9 +304,10 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
     else:
         return "impressive, everything you did is wrong"
 
+# }}}
 
 ###
-### Cost Effective Savings
+### Cost Effective Savings # {{{
 ###
 
 @app.callback(
@@ -327,9 +348,10 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
     fig.update_layout(autosize = False, width = 1200, height = 800)
     return dcc.Graph(figure = fig)
 
+# }}}
 
 ###
-### Savings
+### Savings # {{{
 ### 
 @app.callback(
         Output("savings-output-container", 'children'),
@@ -385,9 +407,33 @@ def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, sav
 
     return dcc.Graph(figure = fig)
 
+# }}}
+
+###
+### (un)competed totals # {{{
+###
+
+@app.callback(
+        Output('totals-output-container', 'children'),
+        Input('totals_dropdown', 'value')
+        )
+def update_totals_output(totals_dropdown_value):
+    if totals_dropdown_value == "ecm":
+        return totals_dropdown_value
+    else:
+        return totals_dropdown_value
 
 
-
+@app.callback(
+        Output(component_id = 'totals_ecm_dropdown_div', component_property = "style"),
+        Input(component_id = 'totals_dropdown', component_property = 'value')
+        )
+def show_hide_totals_ecm_dropdown(value):
+    if value == "ecm":
+        return {"display" : "block"}
+    else:
+        return {"display" : "none"}
+# }}}
 
 
 
