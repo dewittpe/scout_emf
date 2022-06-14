@@ -21,19 +21,49 @@ class ecm_prep:                                                            # {{{
         data = json.load(f)
         f.close()
 
-        dfs = []
+        markets = []
         for i in range(len(data)):
-            dfs.append( scout.json_to_df(data[i]["markets"]) )
-            dfs[i]["ecm"] = data[i]["name"]
+            markets.append( json_to_df(data[i]["markets"]) )
+            markets[i]["ecm"] = data[i]["name"]
 
-        df = pd.concat(dfs)
-        df = df.rename(columns =
-                {"lvl0" : "scenario",
-                 "lvl1" : "mseg"}
-                )
-        df
+        markets = pd.concat(markets)
+        markets = markets.rename(columns = {"lvl0" : "scenario", "lvl1" : "mseg"})
 
+        # split the data into several subsets
+        self.lifetime_baseline = markets[(markets.lvl2 == "lifetime") & (markets.lvl3 == "baseline")]
+        markets = markets[~((markets.lvl2 == "lifetime") & (markets.lvl3 == "baseline"))]
 
+        self.lifetime_measure = markets[(markets.lvl2 == "lifetime") & (markets.lvl3 == "measure")]
+        markets = markets[~((markets.lvl2 == "lifetime") & (markets.lvl3 == "measure"))]
+
+        self.stock = markets[markets.lvl2 == "stock"]
+        markets = markets[markets.lvl2 != "stock"]
+
+        # clean up lifetime_baseline
+        self.lifetime_baseline =\
+                self.lifetime_baseline\
+                .drop(columns = ["lvl2", "lvl3", "lvl6", "lvl7", "lvl8"])\
+                .rename(columns = {"lvl4" : "year", "lvl5" : "value"})
+
+        # clean up lifetime_measure
+        self.lifetime_measure =\
+                self.lifetime_measure\
+                .drop(columns = ["lvl2", "lvl3", "lvl5", "lvl6", "lvl7", "lvl8"])\
+                .rename(columns = {"lvl4" : "value"})
+
+        # clean up stock
+        self.stock = \
+                self.stock\
+                .drop(columns = ["lvl2", "lvl7", "lvl8"])\
+                .rename(columns = {
+                    "lvl3" : "total_or_competed",
+                    "lvl4" : "measure_or_all",
+                    "lvl5" : "year",
+                    "lvl6" : "value"})
+
+        # Clean up markets
+
+        self.markets = markets
     # }}}
 
     def info(self): #{{{
