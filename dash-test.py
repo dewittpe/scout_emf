@@ -14,9 +14,11 @@ def unique_strings(l):
     return '; '.join(ul)
 
 
+################################################################################
 # import data
 results_1 = scout.ecm_results(path = "./Results_Files_3/ecm_results_1-1.json.gz")
 
+################################################################################
 # build useful things for ui
 ecms = [{"label" : l, "value" : l} for l in set(results_1.financial_metrics.ecm)]
 years = [y for y in set(results_1.mas_by_category.year)]
@@ -45,11 +47,6 @@ ces_plot_data = \
                 how = "left",
                 on = ["ecm", "year"])
 
-################################################################################
-# build useful things for ui
-ecms = [{"label" : l, "value" : l} for l in set(results_1.financial_metrics.ecm)]
-years = [y for y in set(results_1.mas_by_category.year)]
-years.sort()
 
 ################################################################################
 # dash application
