@@ -8,6 +8,29 @@ from scout.utilities import json_to_df
 from scout.utilities import isfloat
 from scout.utilities import mapping_variables
 
+# SOME NOTES ON LEVELS FOR MARKETS
+# under scenario
+#
+# under master_mseg there will be a different structure than mseg_out_break
+#
+# master_mseg are "totals"
+#
+# mseg_out_break are disaggregated by climiate zone, building type, end use,
+# etc.
+#
+# lvl2 == metrics/parameters/impact
+#
+# lvl2 = energy and carbon have same structure
+#
+# lvl2 = cost ---->>>> cost + lvl3 value define the "cost"
+#    lvl3 = stock  === capital
+#    lvl3 = energy === utility bill
+#    lvl3 = carbon === social cost
+#
+#
+#
+
+
 ################################################################################
 class ecm_prep:                                                            # {{{
     def __init__(self, path): # {{{
