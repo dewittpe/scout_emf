@@ -62,6 +62,11 @@ class ecm_prep:                                                            # {{{
         self.stock = markets[markets.lvl2 == "stock"]
         markets = markets[markets.lvl2 != "stock"]
 
+        self.master_mseg      = markets[(markets.mseg == "master_mseg") & (markets.lvl2 != "cost")]
+        self.master_mseg_cost = markets[(markets.mseg == "master_mseg") & (markets.lvl2 == "cost")]
+
+        self.mseg_out_break = markets[markets.mseg == "mseg_out_break"]
+
         # clean up lifetime_baseline
         self.lifetime_baseline =\
                 self.lifetime_baseline\
@@ -86,7 +91,36 @@ class ecm_prep:                                                            # {{{
 
         # Clean up markets
 
-        self.markets = markets
+        self.master_mseg = \
+                self.master_mseg\
+                .drop(columns = ["mseg", "lvl7", "lvl8"])\
+                .rename(columns = {
+                    "lvl3" : "total_or_competed",
+                    "lvl5" : "year",
+                    "lvl6" : "value"})
+
+        self.master_mseg_cost = \
+                self.master_mseg_cost\
+                .drop(columns = ["mseg", "lvl2", "lvl8"])\
+                .rename(columns = {
+                    "lvl4" : "total_or_competed",
+                    "lvl6" : "year",
+                    "lvl7" : "value"})
+
+
+        self.mseg_out_break = \
+                self.mseg_out_break\
+                .drop(columns = ["mseg"])\
+                .rename(columns = {
+                    "lvl2" : "impact",
+                    "lvl3" : "lvl3",
+                    "lvl4" : "region",
+                    "lvl5" : "building_class",
+                    "lvl6" : "end_use",
+                    "lvl7" : "year",
+                    "lvl8" : "value"})
+
+
     # }}}
 
     def info(self): #{{{
