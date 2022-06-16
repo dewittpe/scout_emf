@@ -72,12 +72,14 @@ class ecm_prep:                                                            # {{{
                 self.lifetime_baseline\
                 .drop(columns = ["lvl2", "lvl3", "lvl6", "lvl7", "lvl8"])\
                 .rename(columns = {"lvl4" : "year", "lvl5" : "value"})
+        self.lifetime_baseline.reset_index(drop = True, inplace = True)
 
         # clean up lifetime_measure
         self.lifetime_measure =\
                 self.lifetime_measure\
                 .drop(columns = ["lvl2", "lvl3", "lvl5", "lvl6", "lvl7", "lvl8"])\
                 .rename(columns = {"lvl4" : "value"})
+        self.lifetime_measure.reset_index(drop = True, inplace = True)
 
         # clean up stock
         self.stock = \
@@ -88,6 +90,7 @@ class ecm_prep:                                                            # {{{
                     "lvl4" : "measure_or_all",
                     "lvl5" : "year",
                     "lvl6" : "value"})
+        self.stock.reset_index(drop = True, inplace = True)
 
         # Clean up markets
 
@@ -98,6 +101,8 @@ class ecm_prep:                                                            # {{{
                     "lvl3" : "total_or_competed",
                     "lvl5" : "year",
                     "lvl6" : "value"})
+        self.master_mseg.reset_index(drop = True, inplace = True)
+
 
         self.master_mseg_cost = \
                 self.master_mseg_cost\
@@ -106,7 +111,7 @@ class ecm_prep:                                                            # {{{
                     "lvl4" : "total_or_competed",
                     "lvl6" : "year",
                     "lvl7" : "value"})
-
+        self.master_mseg_cost.reset_index(drop = True, inplace = True)
 
         self.mseg_out_break = \
                 self.mseg_out_break\
@@ -119,7 +124,7 @@ class ecm_prep:                                                            # {{{
                     "lvl6" : "end_use",
                     "lvl7" : "year",
                     "lvl8" : "value"})
-
+        self.mseg_out_break.reset_index(drop = True, inplace = True)
 
     # }}}
 
