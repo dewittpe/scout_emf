@@ -70,21 +70,21 @@ class ecm_prep:                                                            # {{{
         # clean up lifetime_baseline
         self.lifetime_baseline =\
                 self.lifetime_baseline\
-                .drop(columns = ["lvl2", "lvl3", "lvl6", "lvl7", "lvl8"])\
+                .drop(columns = ["lvl2", "lvl3", "lvl6", "lvl7", "lvl8", "lvl9"])\
                 .rename(columns = {"lvl4" : "year", "lvl5" : "value"})
         self.lifetime_baseline.reset_index(drop = True, inplace = True)
 
         # clean up lifetime_measure
         self.lifetime_measure =\
                 self.lifetime_measure\
-                .drop(columns = ["lvl2", "lvl3", "lvl5", "lvl6", "lvl7", "lvl8"])\
+                .drop(columns = ["lvl2", "lvl3", "lvl5", "lvl6", "lvl7", "lvl8", "lvl9"])\
                 .rename(columns = {"lvl4" : "value"})
         self.lifetime_measure.reset_index(drop = True, inplace = True)
 
         # clean up stock
         self.stock = \
                 self.stock\
-                .drop(columns = ["lvl2", "lvl7", "lvl8"])\
+                .drop(columns = ["lvl2", "lvl7", "lvl8", "lvl9"])\
                 .rename(columns = {
                     "lvl3" : "total_or_competed",
                     "lvl4" : "measure_or_all",
@@ -96,7 +96,7 @@ class ecm_prep:                                                            # {{{
 
         self.master_mseg = \
                 self.master_mseg\
-                .drop(columns = ["mseg", "lvl7", "lvl8"])\
+                .drop(columns = ["mseg", "lvl7", "lvl8", "lvl9"])\
                 .rename(columns = {
                     "lvl3" : "total_or_competed",
                     "lvl5" : "year",
@@ -106,7 +106,7 @@ class ecm_prep:                                                            # {{{
 
         self.master_mseg_cost = \
                 self.master_mseg_cost\
-                .drop(columns = ["mseg", "lvl2", "lvl8"])\
+                .drop(columns = ["mseg", "lvl2", "lvl8", "lvl9"])\
                 .rename(columns = {
                     "lvl4" : "total_or_competed",
                     "lvl6" : "year",
@@ -122,8 +122,9 @@ class ecm_prep:                                                            # {{{
                     "lvl4" : "region",
                     "lvl5" : "building_class",
                     "lvl6" : "end_use",
-                    "lvl7" : "year",
-                    "lvl8" : "value"})
+                    "lvl7" : "fuel",
+                    "lvl8" : "year",
+                    "lvl9" : "value"})
         self.mseg_out_break.reset_index(drop = True, inplace = True)
 
     # }}}
