@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+import sys, getopt
 import scout
 import pandas as pd
 import plotly.express as px
@@ -12,7 +15,6 @@ def unique_strings(l):
     list_set = set(l)
     ul = (list(list_set))
     return '; '.join(ul)
-
 
 ################################################################################
 # import data
@@ -473,6 +475,31 @@ def show_hide_totals_ecm_dropdown(value):
 
 
 if __name__ == "__main__":
+
+    ecm_results = ''
+    ecm_prep    = ''
+
+    try:
+        opts, args = getopt.getopt(sys.argv, "hr:p:", ["help", "ecm_results=", "ecm_prep="])
+    except getopt.GetoptError:
+        print("dash-test -r <ecm_results file> -p <ecm_prep file>")
+        sys.exit(2)
+    for opt, args in opts:
+        if opt in ("-h", "--help"):
+            print("dash-test -r <ecm_results file> -p <ecm_prep file>")
+            print("Options:")
+            print("  -h --help         Print this help and exit")
+            print("  -r --ecm_results  Path to a ecm_results file, the results of run.py")
+            print("  -p --ecm_prep     Path to a ecm_prep file, the results of ecm_prep.py")
+            sys.exit()
+        elif opt in ("-r", "--ecm_results"):
+            ecm_results = agr
+        elif opt in ("-p", "--ecm_prep"):
+            ecm_prep = agr
+
+    print("Result file is:" + ecm_results)
+    print("Prep file is:" + ecm_prep)
+
     app.run_server(port=8050)
 
 
