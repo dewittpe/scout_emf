@@ -17,14 +17,6 @@ def unique_strings(l):
     return '; '.join(ul)
 
 ################################################################################
-# import data
-results_1 = scout.ecm_results(path = "./Results_Files_3/ecm_results_1-1.json.gz")
-
-################################################################################
-# build useful things for ui
-ecms = [{"label" : l, "value" : l} for l in set(results_1.financial_metrics.ecm)]
-years = [y for y in set(results_1.mas_by_category.year)]
-years.sort()
 
 ################################################################################
 # dash application
@@ -75,130 +67,135 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 
-home = html.Div([ # {{{
-    html.P("This is the content of the home page!  A overview of what this application does goes here."),
-    dcc.Upload(
-        id = "prep_upload",
-        children = html.Div(["Drag and drop or click to select ecm_prep file to upload"]),
-        style={
-                "width": "100%",
-                "height": "60px",
-                "lineHeight": "60px",
-                "borderWidth": "1px",
-                "borderStyle": "dashed",
-                "borderRadius": "5px",
-                "textAlign": "center",
-                "margin": "10px",
-            }
-        ),
-    dcc.Upload(
-        id = "results_upload",
-        children = html.Div(["Drag and drop or click to select ecm_results file to upload"]),
-        style={
-                "width": "100%",
-                "height": "60px",
-                "lineHeight": "60px",
-                "borderWidth": "1px",
-                "borderStyle": "dashed",
-                "borderRadius": "5px",
-                "textAlign": "center",
-                "margin": "10px",
-            }
-        )
+def home(): #{{{
+    return html.Div([
+        html.P("This is the content of the home page!  A overview of what this application does goes here."),
+        dcc.Upload(
+            id = "prep_upload",
+            children = html.Div(["Drag and drop or click to select ecm_prep file to upload"]),
+            style={
+                    "width": "100%",
+                    "height": "60px",
+                    "lineHeight": "60px",
+                    "borderWidth": "1px",
+                    "borderStyle": "dashed",
+                    "borderRadius": "5px",
+                    "textAlign": "center",
+                    "margin": "10px",
+                }
+            ),
+        dcc.Upload(
+            id = "results_upload",
+            children = html.Div(["Drag and drop or click to select ecm_results file to upload"]),
+            style={
+                    "width": "100%",
+                    "height": "60px",
+                    "lineHeight": "60px",
+                    "borderWidth": "1px",
+                    "borderStyle": "dashed",
+                    "borderRadius": "5px",
+                    "textAlign": "center",
+                    "margin": "10px",
+                }
+            )
+        ])
+# }}}
+
+def fm(): 
+    return html.Div([ # {{{
+        html.H1("Financial Metrics"),
+        html.Div([
+            dcc.Dropdown(id = "fm_dropdown",
+                options = [
+                    {"label" : "Aggregated by Year", "value" : "agg_year"},
+                    {"label" : "All ECMS", "value" : "all_ecms"},
+                    {"label" : "Select an ECM:", "value" : "each_ecm"}
+                    ],
+                value = "agg_year",
+                clearable = False
+                )],
+            style = {"width" : "25%", "display" : "inline-block"}
+            ),
+        html.Div([
+            html.Label("ECM:"),
+            dcc.Dropdown(id = "ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "none"}),
+        html.Div(id = "fm-output-container", style = {'width' : '90%', 'height': '900px'})
+        ])
+# }}}
+
+def ces():
+    return html.Div([ # {{{
+        html.H1("Cost Effective Savings"),
+        html.Div([
+            html.Label("Metric:"),
+            dcc.Dropdown(id = "ces_cce_dropdown",
+                options = [
+                    {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
+                    {"label" : "Energy Cost Savings (USD)",           "value" : "cost"},
+                    {"label" : "Energy Savings (MMBtu)",              "value" : "energy"}
+                    ],
+                value = "carbon",
+                clearable = False
+                )],
+            style = {"width" : "25%", "display" : "inline-block"}
+            ),
+        html.Div([
+            html.Label("Year:"),
+            dcc.Dropdown(id = "year_dropdown", options = years, value = years[0], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "inline-block"}),
+        html.Div(id = "ces-output-container", style = {'width' : '90%', 'height': '900px'})
     ])
 # }}}
 
-fm = html.Div([ # {{{
-    html.H1("Financial Metrics"),
-    html.Div([
-        dcc.Dropdown(id = "fm_dropdown",
+def savings():
+    return html.Div([  # {{{
+        html.H1("Total Savings"),
+        html.Div([
+            html.Label("Metric:"),
+            dcc.Dropdown(id = "savings_dropdown",
+                options = [
+                    {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
+                    {"label" : "Energy Cost Savings (USD)",           "value" : "cost"},
+                    {"label" : "Energy Savings (MMBtu)",              "value" : "energy"}
+                    ],
+                value = "carbon",
+                clearable = False
+                )],
+            style = {"width" : "25%", "display" : "inline-block"}
+            ),
+        html.Div([
+            html.Label("Aggregate by:"),
+            dcc.Dropdown(id = "savings_by_dropdown",
             options = [
-                {"label" : "Aggregated by Year", "value" : "agg_year"},
-                {"label" : "All ECMS", "value" : "all_ecms"},
-                {"label" : "Select an ECM:", "value" : "each_ecm"}
+                {"label" : "Overall",           "value" : "overall"},
+                {"label" : "By Region ",        "value" : "region"},
+                {"label" : "By Building Class", "value" : "building_class"},
+                {"label" : "By End Use",        "value" : "end_use"}
                 ],
-            value = "agg_year",
+            value = "overall",
             clearable = False
             )],
-        style = {"width" : "25%", "display" : "inline-block"}
-        ),
-    html.Div([
-        html.Label("ECM:"),
-        dcc.Dropdown(id = "ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "none"}),
-    html.Div(id = "fm-output-container", style = {'width' : '90%', 'height': '900px'})
-])
-# }}}
-
-ces = html.Div([ # {{{
-    html.H1("Cost Effective Savings"),
-    html.Div([
-        html.Label("Metric:"),
-        dcc.Dropdown(id = "ces_cce_dropdown",
+            id = "savings_by_dropdown_div",
+            style = {"min-width" : "400px", "display" : "inline-block"}
+            ),
+        html.Div([
+            html.Label("Annual or Cumulative Totals?"),
+            dcc.Dropdown(id = "savings_annual_cumulative_dropdown",
             options = [
-                {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
-                {"label" : "Energy Cost Savings (USD)",           "value" : "cost"},
-                {"label" : "Energy Savings (MMBtu)",              "value" : "energy"}
+                {"label" : "Annual Totals",           "value" : "annual"},
+                {"label" : "Cumulative Totals",        "value" : "cumulative"}
                 ],
-            value = "carbon",
+            value = "annual",
             clearable = False
             )],
-        style = {"width" : "25%", "display" : "inline-block"}
-        ),
-    html.Div([
-        html.Label("Year:"),
-        dcc.Dropdown(id = "year_dropdown", options = years, value = years[0], clearable = False)], id = "ecm_dropdown_div", style = {"min-width" : "500px", "display" : "inline-block"}),
-    html.Div(id = "ces-output-container", style = {'width' : '90%', 'height': '900px'})
-])
+            id = "savings_annual_cumulative_dropdown_div",
+            style = {"min-width" : "400px", "display" : "inline-block"}
+            ),
+        html.Div(id = "savings-output-container", style = {'width' : '90%', 'height': '900px'})
+    ])
 # }}}
 
-savings = html.Div([  # {{{
-    html.H1("Total Savings"),
-    html.Div([
-        html.Label("Metric:"),
-        dcc.Dropdown(id = "savings_dropdown",
-            options = [
-                {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
-                {"label" : "Energy Cost Savings (USD)",           "value" : "cost"},
-                {"label" : "Energy Savings (MMBtu)",              "value" : "energy"}
-                ],
-            value = "carbon",
-            clearable = False
-            )],
-        style = {"width" : "25%", "display" : "inline-block"}
-        ),
-    html.Div([
-        html.Label("Aggregate by:"),
-        dcc.Dropdown(id = "savings_by_dropdown",
-        options = [
-            {"label" : "Overall",           "value" : "overall"},
-            {"label" : "By Region ",        "value" : "region"},
-            {"label" : "By Building Class", "value" : "building_class"},
-            {"label" : "By End Use",        "value" : "end_use"}
-            ],
-        value = "overall",
-        clearable = False
-        )],
-        id = "savings_by_dropdown_div",
-        style = {"min-width" : "400px", "display" : "inline-block"}
-        ),
-    html.Div([
-        html.Label("Annual or Cumulative Totals?"),
-        dcc.Dropdown(id = "savings_annual_cumulative_dropdown",
-        options = [
-            {"label" : "Annual Totals",           "value" : "annual"},
-            {"label" : "Cumulative Totals",        "value" : "cumulative"}
-            ],
-        value = "annual",
-        clearable = False
-        )],
-        id = "savings_annual_cumulative_dropdown_div",
-        style = {"min-width" : "400px", "display" : "inline-block"}
-        ),
-    html.Div(id = "savings-output-container", style = {'width' : '90%', 'height': '900px'})
-])
-# }}}
-
-totals = html.Div([ # {{{
+def totals():
+    return html.Div([ # {{{
     html.H1("Competed and Uncompeted Totals"),
     html.Div([
         html.Label("By ECM or Adoption Scenario?:"),
@@ -222,15 +219,15 @@ totals = html.Div([ # {{{
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
-        return home 
+        return home()
     elif pathname == "/fm":
-        return fm
+        return fm()
     elif pathname == "/ces":
-        return ces
+        return ces()
     elif pathname == "/savings":
-        return savings
+        return savings()
     elif pathname == "/totals":
-        return totals
+        return totals()
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -262,7 +259,7 @@ def show_hide_ecm_dropdown(value):
 def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
     if fm_dropdown_value == "agg_year":
         fig = px.line(
-                data_frame = results_1.financial_metrics\
+                data_frame = ecm_results.financial_metrics\
                         .groupby(["metric", "year"])\
                         .value\
                         .agg(["mean"])
@@ -280,7 +277,7 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
         return dcc.Graph(figure = fig)
     elif fm_dropdown_value == "all_ecms":
         fig = px.line(
-                data_frame = results_1.financial_metrics
+                data_frame = ecm_results.financial_metrics
                 , x = "year"
                 , y = "value"
                 , color = "ecm"
@@ -294,7 +291,7 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
         return dcc.Graph(figure = fig)
     elif fm_dropdown_value == "each_ecm":
         fig = px.line(
-                data_frame = results_1.financial_metrics[results_1.financial_metrics.ecm == ecm_dropdown_value]
+                data_frame = ecm_results.financial_metrics[ecm_results.financial_metrics.ecm == ecm_dropdown_value]
                 , x = "year"
                 , y = "value"
                 #, color = "ecm"
@@ -334,7 +331,7 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
         m = None
 
     ces_plot_data =\
-        results_1.mas_by_category\
+        ecm_results.mas_by_category\
                 .groupby(["scenario", "ecm", "metric", "year"])\
                 .agg({
                     "value" : "sum",
@@ -350,7 +347,7 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
                     columns = ["metric"]
                     )\
             .reset_index()\
-            .merge(results_1.financial_metrics,
+            .merge(ecm_results.financial_metrics,
                     how = "left",
                     on = ["ecm", "year"])
 
@@ -401,14 +398,14 @@ def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, sav
     if savings_by_dropdown_value == "overall":
         savings_by_dropdown_value = None
 
-    a_data = results_1.mas_by_category\
+    a_data = ecm_results.mas_by_category\
         .sort_values(by = ["scenario", "metric", "year"])\
         .groupby([j for j in ["scenario", "metric", "year", savings_by_dropdown_value] if j is not None])\
         .agg({"value" : "sum"})\
         .reset_index()
 
 
-    c_data = results_1.mas_by_category\
+    c_data = ecm_results.mas_by_category\
         .sort_values(by = ["scenario", "metric", "year"])\
         .groupby([j for j in ["scenario", "metric", "year", savings_by_dropdown_value] if j is not None])\
         .agg({"value" : "sum"})\
@@ -480,11 +477,12 @@ if __name__ == "__main__":
     ecm_prep    = ''
 
     try:
-        opts, args = getopt.getopt(sys.argv, "hr:p:", ["help", "ecm_results=", "ecm_prep="])
+        opts, args = getopt.getopt(sys.argv[1:], "hr:p:", ["help", "ecm_results=", "ecm_prep="])
     except getopt.GetoptError:
         print("dash-test -r <ecm_results file> -p <ecm_prep file>")
         sys.exit(2)
-    for opt, args in opts:
+
+    for opt, arg in opts:
         if opt in ("-h", "--help"):
             print("dash-test -r <ecm_results file> -p <ecm_prep file>")
             print("Options:")
@@ -493,13 +491,34 @@ if __name__ == "__main__":
             print("  -p --ecm_prep     Path to a ecm_prep file, the results of ecm_prep.py")
             sys.exit()
         elif opt in ("-r", "--ecm_results"):
-            ecm_results = agr
+            ecm_results = arg
         elif opt in ("-p", "--ecm_prep"):
-            ecm_prep = agr
+            ecm_prep = arg
 
-    print("Result file is:" + ecm_results)
-    print("Prep file is:" + ecm_prep)
 
+    if (ecm_results == ''):
+        print("path to ecm_results must be provided")
+        sys.exit(1)
+
+    if (ecm_prep == ''):
+        print("path to ecm_prep must be provided")
+        sys.exit(1)
+
+    ################################################################################
+    # Data Import
+    print("Importing Results file" + ecm_results) 
+    ecm_results = scout.ecm_results(path = ecm_results)
+
+    print("Importing ECM prep file" + ecm_prep) 
+    ecm_prep = scout.ecm_prep(path = ecm_prep)
+
+    ################################################################################
+    # build useful things for ui
+    ecms = [{"label" : l, "value" : l} for l in set(ecm_results.financial_metrics.ecm)]
+    years = [y for y in set(ecm_results.mas_by_category.year)]
+    years.sort()
+
+    print("Launching dash app")
     app.run_server(port=8050)
 
 
