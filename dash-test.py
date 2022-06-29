@@ -25,30 +25,6 @@ years = [y for y in set(results_1.mas_by_category.year)]
 years.sort()
 
 ################################################################################
-# plotting data sets
-ces_plot_data =\
-    results_1.mas_by_category\
-            .groupby(["scenario", "ecm", "metric", "year"])\
-            .agg({
-                "value" : "sum",
-                "building_class" : unique_strings,
-                "region" : unique_strings,
-                "end_use" : unique_strings
-                })\
-            .reset_index()
-ces_plot_data = \
-        pd.pivot_table(ces_plot_data,
-                values = "value",
-                index = ["scenario", "ecm", "building_class", "end_use", "year"],
-                columns = ["metric"]
-                )\
-        .reset_index()\
-        .merge(results_1.financial_metrics,
-                how = "left",
-                on = ["ecm", "year"])
-
-
-################################################################################
 # dash application
 
 app = dash.Dash(external_stylesheets = [dbc.themes.BOOTSTRAP])
@@ -97,9 +73,38 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 
-home = html.Div([
-    html.P("This is the content of the home page!  A overview of what this application does goes here.")
+home = html.Div([ # {{{
+    html.P("This is the content of the home page!  A overview of what this application does goes here."),
+    dcc.Upload(
+        id = "prep_upload",
+        children = html.Div(["Drag and drop or click to select ecm_prep file to upload"]),
+        style={
+                "width": "100%",
+                "height": "60px",
+                "lineHeight": "60px",
+                "borderWidth": "1px",
+                "borderStyle": "dashed",
+                "borderRadius": "5px",
+                "textAlign": "center",
+                "margin": "10px",
+            }
+        ),
+    dcc.Upload(
+        id = "results_upload",
+        children = html.Div(["Drag and drop or click to select ecm_results file to upload"]),
+        style={
+                "width": "100%",
+                "height": "60px",
+                "lineHeight": "60px",
+                "borderWidth": "1px",
+                "borderStyle": "dashed",
+                "borderRadius": "5px",
+                "textAlign": "center",
+                "margin": "10px",
+            }
+        )
     ])
+# }}}
 
 fm = html.Div([ # {{{
     html.H1("Financial Metrics"),
@@ -325,6 +330,27 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
         m = "Energy Savings (MMBtu)"
     else: 
         m = None
+
+    ces_plot_data =\
+        results_1.mas_by_category\
+                .groupby(["scenario", "ecm", "metric", "year"])\
+                .agg({
+                    "value" : "sum",
+                    "building_class" : unique_strings,
+                    "region" : unique_strings,
+                    "end_use" : unique_strings
+                    })\
+                .reset_index()
+    ces_plot_data = \
+            pd.pivot_table(ces_plot_data,
+                    values = "value",
+                    index = ["scenario", "ecm", "building_class", "end_use", "year"],
+                    columns = ["metric"]
+                    )\
+            .reset_index()\
+            .merge(results_1.financial_metrics,
+                    how = "left",
+                    on = ["ecm", "year"])
 
     fig = px.scatter(
                 ces_plot_data[(ces_plot_data.year == year_dropdown_value)]
