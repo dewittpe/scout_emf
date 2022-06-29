@@ -50,7 +50,7 @@ sidebar = html.Div(
         ),
         dbc.Nav(
             [
-                dbc.NavLink("Home (source data upload)", href="/", active="exact"),
+                dbc.NavLink("Home", href="/", active="exact"),
                 dbc.NavLink("Financial Metrics", href="/fm", active="exact"),
                 dbc.NavLink("Cost Effective Savings", href="/ces", active="exact"),
                 dbc.NavLink("Total Savings", href="/savings", active="exact"),
@@ -70,34 +70,6 @@ app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
 def home(): #{{{
     return html.Div([
         html.P("This is the content of the home page!  A overview of what this application does goes here."),
-        dcc.Upload(
-            id = "prep_upload",
-            children = html.Div(["Drag and drop or click to select ecm_prep file to upload"]),
-            style={
-                    "width": "100%",
-                    "height": "60px",
-                    "lineHeight": "60px",
-                    "borderWidth": "1px",
-                    "borderStyle": "dashed",
-                    "borderRadius": "5px",
-                    "textAlign": "center",
-                    "margin": "10px",
-                }
-            ),
-        dcc.Upload(
-            id = "results_upload",
-            children = html.Div(["Drag and drop or click to select ecm_results file to upload"]),
-            style={
-                    "width": "100%",
-                    "height": "60px",
-                    "lineHeight": "60px",
-                    "borderWidth": "1px",
-                    "borderStyle": "dashed",
-                    "borderRadius": "5px",
-                    "textAlign": "center",
-                    "margin": "10px",
-                }
-            )
         ])
 # }}}
 
