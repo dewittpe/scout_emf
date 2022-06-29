@@ -80,7 +80,7 @@ sidebar = html.Div(
         ),
         dbc.Nav(
             [
-                dbc.NavLink("Home", href="/", active="exact"),
+                dbc.NavLink("Home (source data upload)", href="/", active="exact"),
                 dbc.NavLink("Financial Metrics", href="/fm", active="exact"),
                 dbc.NavLink("Cost Effective Savings", href="/ces", active="exact"),
                 dbc.NavLink("Total Savings", href="/savings", active="exact"),
@@ -96,6 +96,10 @@ sidebar = html.Div(
 content = html.Div(id="page-content", style=CONTENT_STYLE)
 
 app.layout = html.Div([dcc.Location(id="url"), sidebar, content])
+
+home = html.Div([
+    html.P("This is the content of the home page!  A overview of what this application does goes here.")
+    ])
 
 fm = html.Div([ # {{{
     html.H1("Financial Metrics"),
@@ -211,7 +215,7 @@ totals = html.Div([ # {{{
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname == "/":
-        return html.P("This is the content of the home page!  A overview of what this application does goes here.")
+        return home 
     elif pathname == "/fm":
         return fm
     elif pathname == "/ces":
