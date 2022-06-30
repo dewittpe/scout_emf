@@ -54,7 +54,7 @@ sidebar = html.Div(
                 dbc.NavLink("Financial Metrics", href="/fm", active="exact"),
                 dbc.NavLink("Cost Effective Savings", href="/ces", active="exact"),
                 dbc.NavLink("Total Savings", href="/savings", active="exact"),
-                dbc.NavLink("(Un)Competed Totals", href="/cms_v_ums", active="exact"),
+                dbc.NavLink("Competed vs Uncompeted", href="/cms_v_ums", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -433,15 +433,23 @@ def update_cms_v_ums_output(cms_v_ums_dropdown_value, cms_v_ums_by_ecm_dropdown_
         cms.loc[cms.impact.str.startswith("Baseline"), "baseline_efficient"] = "baseline"
         cms = cms[["ecm", "scenario", "impact", "region", "building_class", "end_use", "fuel_type", "year", "value", "baseline_efficient", "competed"]]
 
+        for s in ["CO\u2082 Cost (USD)", "CO\u2082 Emissions (MMTons)", "Energy Cost (USD)", "Energy Use (MMBtu)"]:
+            cms.loc[cms.impact.str.endswith(s), "impact"] = s
+
+
+
         if (ums.shape[0] > 0):
             ums = ums.rename(columns = {"lvl3" : "baseline_efficient"})
             ums.loc[:, "competed"] = "Uncompeted"
             ums = cms[["ecm", "scenario", "impact", "region", "building_class", "end_use", "fuel_type", "year", "value", "baseline_efficient", "competed"]]
+            ums.loc[ums.impact == "carbon", "impact"] = "CO\u2082 Emissions (MMTons)"
+            ums.loc[ums.impact == "cost", "impact"] = "Energy Cost (USD)"
+            ums.loc[ums.impact == "energy", "impact"] = "Energy Use (MMBtu)"
             ms = cms.append(ums, sort = True)
         else:
             ms = cms
 
-        ms = ms.groupby(["scenario", "ecm", "competed", "baseline_efficient", "year"])\
+        ms = ms.groupby(["scenario", "ecm", "impact", "competed", "baseline_efficient", "year"])\
                 .agg({
                     "value": "sum",
                     "building_class" : unique_strings,
@@ -457,27 +465,26 @@ def update_cms_v_ums_output(cms_v_ums_dropdown_value, cms_v_ums_by_ecm_dropdown_
                 color = "baseline_efficient",
                 symbol = "competed",
                 facet_col = "scenario",
+                facet_row = "impact",
                 labels = {
                     "year": "Year",
-                    #"value": VOI,
                     "baseline_efficient": "baseline_efficient",
                     "competed": "Competed"
                     }
-                #,
-                #title = ecm + "<br><sup>Building Class: " +\
-                #        unique_strings(ms.loc[ms["ecm"] == ecm, "building_class"]) +\
-                #        " | Region: " +\
-                #        unique_strings(ms.loc[ms["ecm"] == ecm, "region"]) +\
-                #        " | End Use: " +\
-                #        unique_strings(ms.loc[ms["ecm"] == ecm, "end_use"]) +\
-                #        "</sup>"
                 )
-        fig.update_yaxes(exponentformat = "e")
+        fig.update_yaxes(exponentformat = "e", matches = None)
         fig.update_traces(mode = "lines+markers")
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-
+        fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
         
-        return dcc.Graph(figure = fig)
+        return html.Div([
+                    html.Hr(),
+                    html.P("ECM:" + unique_strings(ms["ecm"])),
+                    html.P("Building Class: " + unique_strings(ms["building_class"])),
+                    html.P("Region(s): " + unique_strings(ms["region"])),
+                    html.P("End Use(s): " + unique_strings(ms["end_use"])),
+                    dcc.Graph(figure = fig, style = {'width': '95vh', 'height': '95vh'})
+            ])
     else:
         return cms_v_ums_dropdown_value
 
