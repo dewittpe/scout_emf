@@ -29,21 +29,16 @@ and packages for working on scout and this possible emf extension.
     # activate the environment
     conda activate scout
 
-    # export an active environment (do this if you add or update packages)
-    # __NOTE:__  The following will include a `prefix:` line that should be
-    # manually removed from environment.yml
-    # versions should be set to >= or removed from the file so that the
-    # environment will build on mutlple platforms.
-    # 
-    # It would be best to just list the packages you explicitly need in the
-    # environment.yml file.
-    conda env export --no-builds
-
-    # updating requirements.txt, if needed/wanted, the conda env export is
-    # sufficient.
-    pip freeze > requirements.txt
-
 ## Example Use
 
-See `example_use.py`
+### Dash App
+
+An interactive [Dash](https://plotly.com/dash/) application is being developed
+to allow end users to explore results of the `ecm_prep` and `ecm_results` files
+graphically.
+
+```bash
+./dash-test.py -r <path to a ecm_result file> -p <path to ecm_prep file>
+```
+
 
