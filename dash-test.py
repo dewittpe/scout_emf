@@ -205,7 +205,7 @@ def render_page_content(pathname):
         [
             html.H1("404: Not found", className="text-danger"),
             html.Hr(),
-            html.P(f"The pathname {pathname} was not recognised..."),
+            html.P(f"The pathname {pathname} was not recognised."),
         ]
     )
 
@@ -413,12 +413,68 @@ def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, sav
 
 @app.callback(
         Output('cms_v_ums-output-container', 'children'),
-        Input('cms_v_ums_dropdown', 'value')
+        Input('cms_v_ums_dropdown', 'value'),
+        Input('cms_v_ums_by_ecm_dropdown', 'value')
         )
-def update_cms_v_ums_output(cms_v_ums_dropdown_value):
+def update_cms_v_ums_output(cms_v_ums_dropdown_value, cms_v_ums_by_ecm_dropdown_value):
     if cms_v_ums_dropdown_value == "ecm":
 
-        ecm_results.mas_by_category
+        cms = ecm_results.mas_by_category[ecm_results.mas_by_category.ecm == cms_v_ums_by_ecm_dropdown_value]
+        ums = ecm_prep.mseg_out_break[ecm_prep.mseg_out_break.ecm == cms_v_ums_by_ecm_dropdown_value]
+        ums = ums[(ums.lvl3 == "baseline") | (ums.lvl3 == "efficient")]
+
+        cms = cms.copy(deep = True)
+        ums = ums.copy(deep = True)
+        cms = cms.reset_index(drop = True)
+        ums = ums.reset_index(drop = True)
+
+        cms.loc[:, "competed"] = "Competed"
+        cms.loc[:, "baseline_efficient"] = "efficient"
+        cms.loc[cms.impact.str.startswith("Baseline"), "baseline_efficient"] = "baseline"
+        cms = cms[["ecm", "scenario", "impact", "region", "building_class", "end_use", "fuel_type", "year", "value", "baseline_efficient", "competed"]]
+
+        if (ums.shape[0] > 0):
+            ums = ums.rename(columns = {"lvl3" : "baseline_efficient"})
+            ums.loc[:, "competed"] = "Uncompeted"
+            ums = cms[["ecm", "scenario", "impact", "region", "building_class", "end_use", "fuel_type", "year", "value", "baseline_efficient", "competed"]]
+            ms = cms.append(ums, sort = True)
+        else:
+            ms = cms
+
+        ms = ms.groupby(["scenario", "ecm", "competed", "baseline_efficient", "year"])\
+                .agg({
+                    "value": "sum",
+                    "building_class" : unique_strings,
+                    "region" : unique_strings,
+                    "end_use" : unique_strings
+                    })
+        ms.reset_index(inplace = True)
+
+        fig = px.scatter(
+                ms,
+                x = "year",
+                y = "value",
+                color = "baseline_efficient",
+                symbol = "competed",
+                facet_col = "scenario",
+                labels = {
+                    "year": "Year",
+                    #"value": VOI,
+                    "baseline_efficient": "baseline_efficient",
+                    "competed": "Competed"
+                    }
+                #,
+                #title = ecm + "<br><sup>Building Class: " +\
+                #        unique_strings(ms.loc[ms["ecm"] == ecm, "building_class"]) +\
+                #        " | Region: " +\
+                #        unique_strings(ms.loc[ms["ecm"] == ecm, "region"]) +\
+                #        " | End Use: " +\
+                #        unique_strings(ms.loc[ms["ecm"] == ecm, "end_use"]) +\
+                #        "</sup>"
+                )
+        fig.update_yaxes(exponentformat = "e")
+        fig.update_traces(mode = "lines+markers")
+        fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
 
         
         return dcc.Graph(figure = fig)
@@ -495,7 +551,7 @@ if __name__ == "__main__":
     years.sort()
 
     print("Launching dash app")
-    app.run_server(port=8050)
+    app.run_server(port=8050, debug = True)
 
 
 ################################################################################
