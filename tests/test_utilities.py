@@ -135,7 +135,7 @@ class TestUtilities(unittest.TestCase):
             "Avoided CO\u2082 Emissions (MMTons)" : "*Emissions|CO2|Energy|Demand|Buildings",
             "Energy Savings (MMBtu)" : "*Final Energy|Buildings"
             }.items(),
-            columns = ["metric", "emf_base_string"]
+            columns = ["impact", "emf_base_string"]
             )
         df = scout.mapping_variables()
         self.assertTrue(all(df.emf_base_string == expected))

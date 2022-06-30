@@ -53,7 +53,7 @@ class ecm_results:                                                         # {{{
 
         # rename columns in the osg frame for human ease of use
         osg.rename(columns = {
-            "lvl1" : "metric",
+            "lvl1" : "impact",
             # "lvl2" : "version" ---- "By Category" or "Overall"; will be dropped
             "lvl3" : "region",
             "lvl4" : "building_type",
@@ -92,7 +92,7 @@ class ecm_results:                                                         # {{{
         mas = mas.rename(columns = {
             # "lvl1" : "version", -- by Category or Overall; will be dropped
             "lvl2" : "scenario",
-            "lvl3" : "metric",
+            "lvl3" : "impact",
             "lvl4" : "region",
             "lvl5" : "building_class",
             "lvl6" : "end_use",
@@ -137,7 +137,7 @@ class ecm_results:                                                         # {{{
         # clean up financial_metrics  # {{{
         financial_metrics = financial_metrics[["ecm", "lvl2", "lvl3", "lvl4"]]
         financial_metrics = financial_metrics.rename(columns =
-                {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
+                {"lvl2" : "impact", "lvl3" : "year", "lvl4" : "value"})
 
         # set data types
         assert all(financial_metrics.value.apply(isfloat))
@@ -147,7 +147,7 @@ class ecm_results:                                                         # {{{
         financial_metrics.year = financial_metrics.year.apply(int)
 
         self.financial_metrics =\
-                financial_metrics.sort_values(by = ["ecm", "metric", "year"])
+                financial_metrics.sort_values(by = ["ecm", "impact", "year"])
         # }}}
 
     # }}}
@@ -155,24 +155,24 @@ class ecm_results:                                                         # {{{
     def by_category_vs_overall(self, tol = 1e-8): # {{{
 
         mas = self.mas_by_category\
-                .groupby(["ecm", "scenario", "metric", "year"])\
+                .groupby(["ecm", "scenario", "impact", "year"])\
                 .agg({"value" : "sum"})\
                 .reset_index()\
                 .merge(self.mas_overall,
                         how = "outer",
-                        on = ["ecm", "scenario", "metric", "year"],
+                        on = ["ecm", "scenario", "impact", "year"],
                         suffixes = ("_aggregated", "_overall")
                         )
         mas["delta"] = mas.value_aggregated - mas.value_overall
         mas = mas[mas.delta > tol]
 
         osg = self.osg_by_category\
-                .groupby(["metric", "year"])\
+                .groupby(["impact", "year"])\
                 .agg({"value" : "sum"})\
                 .reset_index()\
                 .merge(self.osg_overall,
                         how = "outer",
-                        on = ["metric", "year"],
+                        on = ["impact", "year"],
                         suffixes = ("_aggregated", "_overall")
                         )
         osg["delta"] = osg.value_aggregated - osg.value_overall
@@ -188,7 +188,7 @@ class ecm_results:                                                         # {{{
             maps = mapping_variables()
 
             df = self.mas_by_category\
-                    .merge(maps.emf_base_string, how = "inner", on = "metric")
+                    .merge(maps.emf_base_string, how = "inner", on = "impact")
             df = df.merge(maps.building_class_construction,
                     how = "left",
                     left_on = "building_class",
@@ -220,9 +220,9 @@ class ecm_results:                                                         # {{{
                 warnings.warn(f"Unmapped end uses: " + msg)
 
             # Convert MMBtu to Exajoules
-            idx = df.metric.str.contains("MMBtu")
+            idx = df.impact.str.contains("MMBtu")
             df.loc[idx, "value"] *= 1.05505585262e-9
-            df.metric = df.metric.str.replace("MMBtu", "EJ")
+            df.impact = df.impact.str.replace("MMBtu", "EJ")
 
             # Aggregations
             # NOTE: units for the value column are unique between the
@@ -326,14 +326,14 @@ class ecm_results:                                                         # {{{
         # plot 1: aggregated for the year
         fig = px.line(
                 data_frame = self.financial_metrics\
-                        .groupby(["metric", "year"])\
+                        .groupby(["impact", "year"])\
                         .value\
                         .agg(["mean"])
                         .reset_index()
                 , x = "year"
                 , y = "mean"
                 , title = "Mean Financial Metrics by Year"
-                , facet_row = "metric")
+                , facet_row = "impact")
         fig.update_yaxes(matches = None, exponentformat = "e")
         fig.for_each_annotation(lambda a: a.update(text = a.text.split("=")[-1]))
         fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
@@ -345,7 +345,7 @@ class ecm_results:                                                         # {{{
                 , x = "year"
                 , y = "value"
                 , color = "ecm"
-                , facet_row = "metric")
+                , facet_row = "impact")
         fig.update_yaxes(matches = None, exponentformat = "e")
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
         fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
@@ -358,7 +358,7 @@ class ecm_results:                                                         # {{{
                     , x = "year"
                     , y = "value"
                     , color = "ecm"
-                    , facet_row = "metric")
+                    , facet_row = "impact")
             fig.update_yaxes(matches = None, exponentformat = "e")
             fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
             fig.for_each_annotation(lambda a: a.update(text = a.text.replace(" (", "<br>(")))
@@ -388,7 +388,7 @@ class ecm_results:                                                         # {{{
         # build one data set for plotting
         plot_data =\
                 self.mas_by_category\
-                .groupby(["scenario", "ecm", "metric", "year"])\
+                .groupby(["scenario", "ecm", "impact", "year"])\
                 .agg({
                     "value" : "sum",
                     "building_class" : unique_strings,
@@ -399,7 +399,7 @@ class ecm_results:                                                         # {{{
                 .pivot_table(
                         values = "value",
                         index = ["scenario", "ecm", "building_class", "end_use", "year"],
-                        columns = ["metric"]
+                        columns = ["impact"]
                 )\
                 .reset_index()\
                 .merge(self.financial_metrics,
@@ -425,7 +425,7 @@ class ecm_results:                                                         # {{{
                         , symbol = "building_class"
                         , color = "end_use"
                         , facet_col = "scenario"
-                        , facet_row = "metric"
+                        , facet_row = "impact"
                         , title = "Calendar Year " + str(yr)
                         , hover_data = {
                             "ecm": True,
@@ -461,13 +461,13 @@ class ecm_results:                                                         # {{{
 
         # Total Savings Plots # {{{
         total_savings = self.mas_by_category\
-                .groupby(["scenario", "metric", "year"])\
+                .groupby(["scenario", "impact", "year"])\
                 .agg({"value" : "sum"})\
                 .reset_index()
         total_savings2 = self.mas_by_category\
-                .groupby(["scenario", "metric", "year"])\
+                .groupby(["scenario", "impact", "year"])\
                 .agg({"value" : "sum"})\
-                .groupby(level = ["scenario", "metric"])\
+                .groupby(level = ["scenario", "impact"])\
                 .cumsum()\
                 .reset_index()
 

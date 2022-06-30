@@ -47,7 +47,7 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
     """
 
     # add emf_base_string and subset to only the rows with an emf_base_string
-    df = pd.merge(df, map_emf_base_string(), how = "inner", on = "metric")
+    df = pd.merge(df, map_emf_base_string(), how = "inner", on = "impact")
 
     # map building classes
     df = pd.merge(df, map_building_class(),
@@ -80,9 +80,9 @@ def ecm_results_to_emf_aggregation(df):                                    # {{{
         warnings.warn(f"Unmapped end uses: " + msg)
 
     # Convert MMBtu to Exajoules
-    idx = df.metric.str.contains("MMBtu")
+    idx = df.impact.str.contains("MMBtu")
     df.loc[idx, "value"] *= 1.05505585262e-9
-    df.metric = df.metric.str.replace("MMBtu", "EJ")
+    df.impact = df.impact.str.replace("MMBtu", "EJ")
 
     # Aggregations
     # NOTE: units for the value column are unique between the emf_base_strings.

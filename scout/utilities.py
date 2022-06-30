@@ -133,7 +133,7 @@ class mapping_variables: # {{{
                     "Avoided CO\u2082 Emissions (MMTons)" : "*Emissions|CO2|Energy|Demand|Buildings",
                     "Energy Savings (MMBtu)"              : "*Final Energy|Buildings"
                     }.items(),
-                    columns = ["metric", "emf_base_string"]
+                    columns = ["impact", "emf_base_string"]
                     )
 
         self.fuel_types =\
@@ -181,7 +181,7 @@ class conversion_data: # {{{
         self.data.loc[idx, "lvl5"] = self.data.loc[idx, "lvl4"]
         self.data.loc[idx, "lvl4"] = self.data.loc[idx, "lvl3"]
         self.data.loc[idx, "lvl3"] = np.nan
-        self.data.columns = ["fuel", "metric", "rescom", "year", "value"]
+        self.data.columns = ["fuel", "impact", "rescom", "year", "value"]
         self.data.value = self.data.value.apply(float)
         self.data.year  = self.data.year.apply(int)
     # }}}

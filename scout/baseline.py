@@ -67,7 +67,7 @@ def import_baseline(path): # {{{
     # clean up metadata
     bt_metadata = bt_metadata[["region", "building_type", "building_class", "lvl2", "lvl3", "lvl4"]]
     bt_metadata = bt_metadata.rename(columns =
-            {"lvl2" : "metric", "lvl3" : "year", "lvl4" : "value"})
+            {"lvl2" : "impact", "lvl3" : "year", "lvl4" : "value"})
 
     assert all(bt_metadata.year.str.contains(r"^\d{4}$"))
     bt_metadata.year = bt_metadata.year.apply(int)

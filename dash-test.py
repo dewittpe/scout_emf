@@ -232,14 +232,14 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
     if fm_dropdown_value == "agg_year":
         fig = px.line(
                 data_frame = ecm_results.financial_metrics\
-                        .groupby(["metric", "year"])\
+                        .groupby(["impact", "year"])\
                         .value\
                         .agg(["mean"])
                         .reset_index()
                 , x = "year"
                 , y = "mean"
                 , title = "Mean Financial Metrics by Year"
-                , facet_col = "metric"
+                , facet_col = "impact"
                 , facet_col_wrap = 2
                 )
         fig.update_yaxes(matches = None, exponentformat = "e")
@@ -253,7 +253,7 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
                 , x = "year"
                 , y = "value"
                 , color = "ecm"
-                , facet_col = "metric"
+                , facet_col = "impact"
                 , facet_col_wrap = 2
                 )
         fig.update_yaxes(matches = None, exponentformat = "e")
@@ -267,7 +267,7 @@ def update_fm_output(fm_dropdown_value, ecm_dropdown_value):
                 , x = "year"
                 , y = "value"
                 #, color = "ecm"
-                , facet_col = "metric"
+                , facet_col = "impact"
                 , facet_col_wrap = 2
                 )
         fig.update_yaxes(matches = None, exponentformat = "e")
@@ -304,7 +304,7 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
 
     ces_plot_data =\
         ecm_results.mas_by_category\
-                .groupby(["scenario", "ecm", "metric", "year"])\
+                .groupby(["scenario", "ecm", "impact", "year"])\
                 .agg({
                     "value" : "sum",
                     "building_class" : unique_strings,
@@ -316,7 +316,7 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
             pd.pivot_table(ces_plot_data,
                     values = "value",
                     index = ["scenario", "ecm", "building_class", "end_use", "year"],
-                    columns = ["metric"]
+                    columns = ["impact"]
                     )\
             .reset_index()\
             .merge(ecm_results.financial_metrics,
@@ -330,7 +330,7 @@ def update_ces_output(ces_dropdown_value, year_dropdown_value):
             , symbol = "building_class"
             , color = "end_use"
             , facet_col = "scenario"
-            , facet_row = "metric"
+            , facet_row = "impact"
             , hover_data = {
                 "ecm": True,
                 m : True,
@@ -371,17 +371,17 @@ def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, sav
         savings_by_dropdown_value = None
 
     a_data = ecm_results.mas_by_category\
-        .sort_values(by = ["scenario", "metric", "year"])\
-        .groupby([j for j in ["scenario", "metric", "year", savings_by_dropdown_value] if j is not None])\
+        .sort_values(by = ["scenario", "impact", "year"])\
+        .groupby([j for j in ["scenario", "impact", "year", savings_by_dropdown_value] if j is not None])\
         .agg({"value" : "sum"})\
         .reset_index()
 
 
     c_data = ecm_results.mas_by_category\
-        .sort_values(by = ["scenario", "metric", "year"])\
-        .groupby([j for j in ["scenario", "metric", "year", savings_by_dropdown_value] if j is not None])\
+        .sort_values(by = ["scenario", "impact", "year"])\
+        .groupby([j for j in ["scenario", "impact", "year", savings_by_dropdown_value] if j is not None])\
         .agg({"value" : "sum"})\
-        .groupby(level = [j for j in ["scenario", "metric", savings_by_dropdown_value] if j is not None])\
+        .groupby(level = [j for j in ["scenario", "impact", savings_by_dropdown_value] if j is not None])\
         .cumsum()\
         .reset_index()
 
@@ -390,7 +390,7 @@ def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, sav
     plot_data = pd.concat([a_data, c_data])
 
     fig = px.line(
-              plot_data[((plot_data.metric == m) & (plot_data.total == savings_annual_cumulative_dropdown))]
+              plot_data[((plot_data.impact == m) & (plot_data.total == savings_annual_cumulative_dropdown))]
             , x = "year"
             , y = "value"
             , color = savings_by_dropdown_value
