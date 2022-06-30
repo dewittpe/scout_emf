@@ -99,7 +99,7 @@ def ces():
     return html.Div([ # {{{
         html.H1("Cost Effective Savings"),
         html.Div([
-            html.Label("Metric:"),
+            html.Label("Impact:"),
             dcc.Dropdown(id = "ces_cce_dropdown",
                 options = [
                     {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
@@ -122,7 +122,7 @@ def savings():
     return html.Div([  # {{{
         html.H1("Total Savings"),
         html.Div([
-            html.Label("Metric:"),
+            html.Label("Impact:"),
             dcc.Dropdown(id = "savings_dropdown",
                 options = [
                     {"label" : "Avoided CO\u2082 Emissions (MMTons)", "value" : "carbon"},
