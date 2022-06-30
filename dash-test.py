@@ -54,7 +54,7 @@ sidebar = html.Div(
                 dbc.NavLink("Financial Metrics", href="/fm", active="exact"),
                 dbc.NavLink("Cost Effective Savings", href="/ces", active="exact"),
                 dbc.NavLink("Total Savings", href="/savings", active="exact"),
-                dbc.NavLink("(Un)Competed Totals", href="/totals", active="exact"),
+                dbc.NavLink("(Un)Competed Totals", href="/cms_v_ums", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -166,12 +166,12 @@ def savings():
     ])
 # }}}
 
-def totals():
+def cms_v_ums():
     return html.Div([ # {{{
-    html.H1("Competed and Uncompeted Totals"),
+    html.H1("Competed vs. Uncompeted Totals"),
     html.Div([
         html.Label("By ECM or Adoption Scenario?:"),
-        dcc.Dropdown(id = "totals_dropdown",
+        dcc.Dropdown(id = "cms_v_ums_dropdown",
             options = [
                 {"label" : "ECM", "value" : "ecm"},
                 {"label" : "Adoption Scenario", "value" : "scenario"},
@@ -179,12 +179,12 @@ def totals():
             value = "ecm",
             clearable = False
             )],
-        style = {"width" : "15%", "display" : "block"}
+        style = {"width" : "25%", "display" : "block"}
         ),
     html.Div([
         html.Label("Select an ECM to plot:"),
-        dcc.Dropdown(id = "totals_by_ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "totals_ecm_dropdown_div", style = {"width" : "600px", "display" : "none"}),
-    html.Div(id = "totals-output-container", style = {'width' : '90%', 'height': '900px'})
+        dcc.Dropdown(id = "cms_v_ums_by_ecm_dropdown", options = ecms, value = ecms[0]["value"], clearable = False)], id = "cms_v_ums_ecm_dropdown_div", style = {"width" : "600px", "display" : "none"}),
+    html.Div(id = "cms_v_ums-output-container", style = {'width' : '90%', 'height': '900px'})
 ])
 # }}}
 
@@ -198,8 +198,8 @@ def render_page_content(pathname):
         return ces()
     elif pathname == "/savings":
         return savings()
-    elif pathname == "/totals":
-        return totals()
+    elif pathname == "/cms_v_ums":
+        return cms_v_ums()
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [
@@ -408,25 +408,29 @@ def update_savings_output(savings_dropdown_value, savings_by_dropdown_value, sav
 # }}}
 
 ###
-### (un)competed totals # {{{
+### competed vs uncompeted totals # {{{
 ###
 
 @app.callback(
-        Output('totals-output-container', 'children'),
-        Input('totals_dropdown', 'value')
+        Output('cms_v_ums-output-container', 'children'),
+        Input('cms_v_ums_dropdown', 'value')
         )
-def update_totals_output(totals_dropdown_value):
-    if totals_dropdown_value == "ecm":
-        return totals_dropdown_value
+def update_cms_v_ums_output(cms_v_ums_dropdown_value):
+    if cms_v_ums_dropdown_value == "ecm":
+
+        ecm_results.mas_by_category
+
+        
+        return dcc.Graph(figure = fig)
     else:
-        return totals_dropdown_value
+        return cms_v_ums_dropdown_value
 
 
 @app.callback(
-        Output(component_id = 'totals_ecm_dropdown_div', component_property = "style"),
-        Input(component_id = 'totals_dropdown', component_property = 'value')
+        Output(component_id = 'cms_v_ums_ecm_dropdown_div', component_property = "style"),
+        Input(component_id = 'cms_v_ums_dropdown', component_property = 'value')
         )
-def show_hide_totals_ecm_dropdown(value):
+def show_hide_cms_v_ums_ecm_dropdown(value):
     if value == "ecm":
         return {"display" : "block"}
     else:

@@ -122,7 +122,7 @@ class ecm_prep:                                                            # {{{
                     "lvl4" : "region",
                     "lvl5" : "building_class",
                     "lvl6" : "end_use",
-                    "lvl7" : "fuel",
+                    "lvl7" : "fuel_type",
                     "lvl8" : "year",
                     "lvl9" : "value"})
         self.mseg_out_break.reset_index(drop = True, inplace = True)
