@@ -146,7 +146,7 @@ ecm_results.loc[idx, "year"]  = ecm_results.loc[idx, "fuel_type"]
 ecm_results.loc[idx, "fuel_type"] = "Not Applicable (all fuels)"
 
 # some spot checks
-print(ecm_results))
+print(ecm_results)
 print(set(ecm_results.ecm))
 print(set(ecm_results.adoption_scenario))
 print(set(ecm_results.impact))
@@ -326,21 +326,140 @@ not_mapped = set(
 
 if len(not_mapped):
     warnings.warn("ecm_results.end_use values not mapped to a emf_end_use value exist:\n" + ", ".join(not_mapped))
-        
-ecm_results.info()
-emf_base_string
+
+# }}}
+
+################################################################################
+# ecm_result unit and type conversions {{{
+
+# set column types
+ecm_results.value = ecm_results.value.apply(float)
+ecm_results.year  = ecm_results.year.apply(int)
+
+baseline.value = baseline.value.apply(float)
+baseline.year  = baseline.year.apply(int)
+
+# Convert MMBtu to Exajoules
+idx = ecm_results.impact.str.contains("MMBtu")
+ecm_results.loc[idx, "value"] *= 1.05505585262e-9
+ecm_results.impact = ecm_results.impact.str.replace("MMBtu", "EJ")
+# }}}
+
+################################################################################
+# ecm_results aggregation {{{
+
+a0 = ecm_results\
+        .groupby(["region", "emf_base_string", "year"])\
+        .agg(value = ("value", "sum"))
+
+a1 = ecm_results\
+        .groupby(["region", "emf_base_string", "building_class", "year"])\
+        .agg(value = ("value", "sum"))
+
+a2 = ecm_results\
+        .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "year"])\
+        .agg(value = ("value", "sum"))
+
+a3_0 = ecm_results\
+        [ecm_results.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+        .groupby(["region", "emf_base_string", "direct_indirect_fuel", "year"])\
+        .agg(value = ("value", "sum"))
+a3_1 = ecm_results\
+        [ecm_results.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+        .groupby(["region", "emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
+        .agg(value = ("value", "sum"))
+a3_2 = ecm_results\
+        [ecm_results.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
+        .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
+        .agg(value = ("value", "sum"))
+
+a4_0 = ecm_results\
+        [ecm_results.emf_base_string == "*Final Energy|Buildings"]\
+        .groupby(["region", "emf_base_string", "emf_fuel_type", "year"])\
+        .agg(value = ("value", "sum"))
+a4_1 = ecm_results\
+        [ecm_results.emf_base_string == "*Final Energy|Buildings"]\
+        .groupby(["region", "emf_base_string", "building_class", "emf_fuel_type", "year"])\
+        .agg(value = ("value", "sum"))
+a4_2 = ecm_results\
+        [ecm_results.emf_base_string == "*Final Energy|Buildings"]\
+        .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
+        .agg(value = ("value", "sum"))
+
+# Aggregation clean up
+a0.reset_index(inplace = True)
+a1.reset_index(inplace = True)
+a2.reset_index(inplace = True)
+a3_0.reset_index(inplace = True)
+a3_1.reset_index(inplace = True)
+a3_2.reset_index(inplace = True)
+a4_0.reset_index(inplace = True)
+a4_1.reset_index(inplace = True)
+a4_2.reset_index(inplace = True)
+
+# build the full emf_string
+a0["emf_string"] = a0.region + a0.emf_base_string
+a1["emf_string"] = a0.region + a1.emf_base_string + "|" + a1.building_class
+a2["emf_string"] = a0.region + a2.emf_base_string + "|" + a2.building_class + "|" + a2.emf_end_use
+
+a3_0["emf_string"] = a3_0.region + a3_0.emf_base_string + "|" + a3_0.direct_indirect_fuel
+a3_1["emf_string"] = a3_1.region + a3_1.emf_base_string + "|" + a3_1.building_class + "|" + a3_1.direct_indirect_fuel
+a3_2["emf_string"] = a3_2.region + a3_2.emf_base_string + "|" + a3_2.building_class + "|" + a3_2.emf_end_use + "|" + a3_2.direct_indirect_fuel
+
+a4_0["emf_string"] = a4_0.region + a4_0.emf_base_string + "|" + a4_0.emf_fuel_type
+a4_1["emf_string"] = a4_1.region + a4_1.emf_base_string + "|" + a4_1.building_class + "|" + a4_1.emf_fuel_type
+a4_2["emf_string"] = a4_2.region + a4_2.emf_base_string + "|" + a4_2.building_class + "|" + a4_2.emf_end_use + "|" + a4_2.emf_fuel_type
+
+# build one data frame with all the aggregations
+ecm_results_emf_aggregation = pd.concat([
+    a0[["emf_string", "year", "value"]],
+    a1[["emf_string", "year", "value"]],
+    a2[["emf_string", "year", "value"]],
+    a3_0[["emf_string", "year", "value"]],
+    a3_1[["emf_string", "year", "value"]],
+    a3_2[["emf_string", "year", "value"]],
+    a4_0[["emf_string", "year", "value"]],
+    a4_1[["emf_string", "year", "value"]],
+    a4_2[["emf_string", "year", "value"]]
+    ])
+
+ecm_results_emf_aggregation.year =\
+        ecm_results_emf_aggregation.year.apply(str) # this is needed so the column names post pivot are strings
+
+ecm_results_emf_aggregation_wide =\
+        ecm_results_emf_aggregation.pivot_table(
+                index = ["emf_string"],
+                columns = ["year"],
+                values = ["value"]
+                )
+
+ecm_results_emf_aggregation_wide.columns = ecm_results_emf_aggregation_wide.columns.droplevel(0)
+
+ecm_results_emf_aggregation.reset_index(inplace = True, drop = True)
+ecm_results_emf_aggregation_wide.reset_index(inplace = True, drop = False)
+
+print(ecm_results_emf_aggregation)
+print(ecm_results_emf_aggregation_wide)
 
 # }}}
 
 ################################################################################
 # Add emf_columns to baseline {{{
 
-# baseline  values are a mess and might require some additional logic, a simple
+# baseline values are a mess and might require some additional logic, a simple
 # merge isn't going to be sufficient at this moment. (at least for the
 # emf_base_string)
 
+baseline = baseline\
+        .merge(
+                building_type_to_class,
+                how = "left",
+                on = "building_type"
+                )
+
 baseline
-emf_base_string
+
+
 
 # }}}
 
