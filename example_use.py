@@ -41,9 +41,14 @@ results_1.info()
 # aggregated "By Category" values differs from the "Overall" by more than a
 # given tol(erance), the default is tol = 1e-8
 with Timer("compare aggrgated 'By Category' to 'Overall' values"):
-    d1 = results_1.by_category_vs_overall()
-    d2 = results_2.by_category_vs_overall()
-    d3 = results_3.by_category_vs_overall()
+    results_1.by_category_vs_overall()
+    results_2.by_category_vs_overall()
+    results_3.by_category_vs_overall()
+
+
+d1 = results_1.by_category_aggreation_vs_overall
+d2 = results_2.by_category_aggreation_vs_overall
+d3 = results_3.by_category_aggreation_vs_overall
 
 print("For results_1")
 print("  - Markets and Savings")
@@ -93,24 +98,28 @@ print(results_3.emf_aggregation)
 
 
 ################################################################################
-# import baseline
+from scout import import_baseline
+from scout.utilities import json_to_df
+
 bldg_metadata, baseline =\
         import_baseline("./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 
+
 bldg_metadata
 baseline.info()
+baseline
+
+# emf_aggregation of ecm_results
+results_1.aggregate_for_emf()
+results_2.aggregate_for_emf()
+results_3.aggregate_for_emf()
+
+# view aggregations
+results_1.emf_aggregation
+results_2.emf_aggregation
+results_3.emf_aggregation
 
 
-# import results
-df = json_to_df("./Results_Files_3/ecm_results_1-1.json")
-df
-
-ecm_mas_1, finanical_metrics_1, filter_variables_1, on_site_generation_1 =\
-        import_ecm_results("./Results_Files_3/ecm_results_1-1.json")
-ecm_mas_2, finanical_metrics_2, filter_variables_2, on_site_generation_2 =\
-        import_ecm_results("./Results_Files_3/ecm_results_2.json")
-ecm_mas_3, finanical_metrics_3, filter_variables_3, on_site_generation_3 =\
-        import_ecm_results("./Results_Files_3/ecm_results_3-1.json")
 
 ################################################################################
 # Aggregate ECM Results to EMF summaries

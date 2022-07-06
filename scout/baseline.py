@@ -51,8 +51,8 @@ def import_baseline(path): # {{{
 
     maps = mapping_variables()#scout.utilities.maps()
 
-    df = json_to_df(path)
-    df = df.rename(columns = {"lvl0" : "region", "lvl1" : "building_type"})
+    df = json_to_df(path = path)
+    tdf = df.rename(columns = {"lvl0" : "region", "lvl1" : "building_type"})
     df = pd.merge(df, maps.building_type_to_class,
             how = "left",
             on = "building_type")
