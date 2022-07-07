@@ -125,6 +125,10 @@ emf_base_string =\
 # NOTE: Mapping to EMF fuel types _might_ require a mapping that uses both fuel
 # type and end use.  In the example script the combination of fuel_type = "distillate" and
 # end_use = "secondary heating (kerosene)" maps to "Oil_kerosene".
+# 
+# Other possible end uses that will need to be accounted for,
+#   * stove (wood)
+#   * secondary heater (wood)
 emf_fuel_types =\
         pd.DataFrame(data = {
               "Natural Gas"      : "Gas"              # ecm_results
@@ -504,6 +508,10 @@ baseline
 
 ################################################################################
 # Aggregation of energy use within baseline {{{
+
+
+# TODO: when are the supply_demand flags to be used?  Stock/energy flags?
+
 b0 = baseline\
         .groupby(["region", "emf_base_string", "year"])\
         .agg(value = ("value", "sum"))
@@ -533,7 +541,54 @@ b3["emf_string"] = b3.region + b3.emf_base_string + "|" + b3.building_class + "|
 baseline_emf_aggregation = pd.concat( [b0, b1, b2, b3])
 baseline_emf_aggregation
 
+# Unit conversions.
+# The value column is in MMBtu and needs to be in EJ (extajuls)
+MMBtu_to_EJ           = 1.05505585262e-9
+EJ_to_quad            = 0.9478
+pound_to_mt           = 0.000453592
+EJ_to_twh             = 277.778
+EJ_to_mt_co2_propane  = ej_to_quad * 62.88
+EJ_to_mt_co2_kerosene = ej_to_quad * 73.38
+EJ_to_mt_co2_gas      = ej_to_quad * 53.056
+EJ_to_mt_co2_oil      = ej_to_quad * 74.14
+EJ_to_mt_co2_bio      = ej_to_quad * 96.88
+
+# TODO: define coeffs_emm
+
+baseline_emf_aggregation["EJ"] = baseline_emf_aggregation["value"] * MMBtu_to_EJ
+baseline_emf_aggregation["CO2"] = np.nan # define the column for CO2
+
+set(baseline_emf_aggregation.emf_string)
+
+# TODO: rewrite as a for loop over a dict
+baseline_emf_aggregation\
+        .loc[baseline_emf_aggregation.emf_string.str.endswith("Electricity"), "CO2"] =\
+        baseline_emf_aggregation.EJ * coeffs_emm * EJ_to_twh
+
+baseline_emf_aggregation\
+        .loc[baseline_emf_aggregation.emf_string.str.endswith("Gas_lpg"), "CO2"] =\
+        baseline_emf_aggregation.EJ * EJ_to_mt_co2_propane
+
+baseline_emf_aggregation\
+        .loc[baseline_emf_aggregation.emf_string.str.endswith("Gas"), "CO2"] =\
+        baseline_emf_aggregation.EJ * EJ_to_mt_co2_gas
+
+baseline_emf_aggregation\
+        .loc[baseline_emf_aggregation.emf_string.str.endswith("Oil_kerosene"), "CO2"] =\
+        baseline_emf_aggregation.EJ * EJ_to_mt_co2_kerosene
+
+baseline_emf_aggregation\
+        .loc[baseline_emf_aggregation.emf_string.str.endswith("Oil"), "CO2"] =\
+        baseline_emf_aggregation.EJ * EJ_to_mt_co2_oil
+
+baseline_emf_aggregation\
+        .loc[baseline_emf_aggregation.emf_string.str.endswith("Biomass Solids"), "CO2"] =\
+        baseline_emf_aggregation.EJ * EJ_to_mt_co2_bio
+
+
 # }}}
+
+################################################################################
 
 ################################################################################
 #                                 End of file                                  #
