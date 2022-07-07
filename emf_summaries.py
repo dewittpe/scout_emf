@@ -15,9 +15,9 @@ from scout.utilities import json_to_df
 ################################################################################
 # import ecm_results and baseline data                                     # {{{
 
-# ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_1-1.json.gz")
+ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_1-1.json.gz")
 # ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_2.json.gz")
-ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_3-1.json.gz")
+# ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_3-1.json.gz")
 
 baseline = json_to_df(path = "./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
 # }}}
@@ -46,17 +46,35 @@ building_type_to_class =\
 
 emf_end_uses =\
         pd.DataFrame(data = {
-              "Cooking"                   : "Appliances"
-            , "Cooling (Env.)"            : np.nan
-            , "Cooling (Equip.)"          : "Cooling"
-            , "Computers and Electronics" : "Other"
-            , "Heating (Env.)"            : np.nan
-            , "Heating (Equip.)"          : "Heating"
-            , "Lighting"                  : "Lighting"
-            , "Other"                     : "Other"
-            , "Refrigeration"             : "Appliances"
-            , "Ventilation"               : np.nan
-            , "Water Heating"             : "Appliances"
+              "Cooking"                   : "Appliances"  # ecm_results
+            , "Cooling (Env.)"            : np.nan        # ecm_results
+            , "Cooling (Equip.)"          : "Cooling"     # ecm_results
+            , "Computers and Electronics" : "Other"       # ecm_results
+            , "Heating (Env.)"            : np.nan        # ecm_results
+            , "Heating (Equip.)"          : "Heating"     # ecm_results
+            , "Lighting"                  : "Lighting"    # ecm_results
+            , "Other"                     : "Other"       # ecm_results
+            , "Refrigeration"             : "Appliances"  # ecm_results
+            , "Ventilation"               : np.nan        # ecm_results
+            , "Water Heating"             : "Appliances"  # ecm_results
+            , 'ceiling fan'               : "Appliances"  # baseline
+            , "cooking"                   : "Appliances"  # baseline
+            , 'cooling'                   : "Cooling"     # baseline
+            , 'computers'                 : "Other"       # baseline
+            , 'drying'                    : "Appliances"  # baseline
+            , 'fans and pumps'            : "Heating"     # baseline
+            , 'heating'                   : "Heating"     # baseline
+            , 'lighting'                  : "Lighting"    # baseline
+            , 'MELs'                      : "Other"       # baseline
+            , 'non-PC office equipment'   : "Other"       # baseline
+            , 'other'                     : "Other"       # baseline
+            , 'onsite generation'         : np.nan        # baseline
+            , 'PCs'                       : "Other"       # baseline
+            , 'refrigeration'             : "Appliances"  # baseline
+            , 'secondary heating'         : "Heating"     # baseline
+            , 'TVs'                       : "Other"       # baseline
+            , 'ventilation'               : "Heating"     # baseline
+            , 'water heating'             : "Appliances"  # baseline
             }.items(),
             columns = ["end_use", "emf_end_use"]
             )
@@ -103,14 +121,23 @@ emf_base_string =\
         columns = ["impact", "emf_base_string"]
         )
 
+
+# NOTE: Mapping to EMF fuel types _might_ require a mapping that uses both fuel
+# type and end use.  In the example script the combination of fuel_type = "distillate" and
+# end_use = "secondary heating (kerosene)" maps to "Oil_kerosene".
 emf_fuel_types =\
         pd.DataFrame(data = {
-            "Natural Gas"      : "Gas",
-            "Propane"          : "Gas",
-            "Distillate/Other" : "Oil",
-            "Biomass"          : "Biomass Solids",
-            "Electric"         : "Electricity",
-            "Electricity"      : "Electricity"
+              "Natural Gas"      : "Gas"              # ecm_results
+            , "natural gas"      : "Gas"              # baseline
+            , "Propane"          : "Gas"
+            , "Distillate/Other" : "Oil"
+            , "distillate"       : "Oil"
+            , "Biomass"          : "Biomass Solids"  # ecm_results
+            , "other fuel"       : "Biomass Solids"  # baseline
+            , "Electric"         : "Electricity"
+            , "Electricity"      : "Electricity"
+            , "electricity"      : "Electricity"       # baseline
+            # , "???"              : "Oil_kerosene"      # baseline
             }.items(),
             columns = ["fuel_type", "emf_fuel_type"]
             )
@@ -146,19 +173,19 @@ ecm_results.loc[idx, "year"]  = ecm_results.loc[idx, "fuel_type"]
 ecm_results.loc[idx, "fuel_type"] = "Not Applicable (all fuels)"
 
 # some spot checks
-print(ecm_results)
-print(set(ecm_results.ecm))
-print(set(ecm_results.adoption_scenario))
-print(set(ecm_results.impact))
-print(set(ecm_results.region))
-print(set(ecm_results.building_class_construction))
-print(set(ecm_results.fuel_type))
-print(set(ecm_results.year))
+ecm_results
+set(ecm_results.ecm)
+set(ecm_results.adoption_scenario)
+set(ecm_results.impact)
+set(ecm_results.region)
+set(ecm_results.building_class_construction)
+set(ecm_results.fuel_type)
+set(ecm_results.year)
 
 # }}}
 
 ################################################################################
-# collect the needed rows form the base line data                          # {{{
+# collect the needed rows form the baseline data                           # {{{
 
 # omit some rows with data on number of buildings
 keep = ~baseline.lvl2.isin(["new homes", "total square footage",
@@ -423,11 +450,15 @@ ecm_results_emf_aggregation = pd.concat([
     a4_2[["emf_string", "year", "value"]]
     ])
 
-ecm_results_emf_aggregation.year =\
-        ecm_results_emf_aggregation.year.apply(str) # this is needed so the column names post pivot are strings
+
+# create a wide version of the ecm_results_emf_aggregation
+ecm_results_emf_aggregation_wide = ecm_results_emf_aggregation.copy(deep = True)
+
+ecm_results_emf_aggregation_wide.year =\
+        ecm_results_emf_aggregation_wide.year.apply(str) # this is needed so the column names post pivot are strings
 
 ecm_results_emf_aggregation_wide =\
-        ecm_results_emf_aggregation.pivot_table(
+        ecm_results_emf_aggregation_wide.pivot_table(
                 index = ["emf_string"],
                 columns = ["year"],
                 values = ["value"]
@@ -446,20 +477,61 @@ print(ecm_results_emf_aggregation_wide)
 ################################################################################
 # Add emf_columns to baseline {{{
 
-# baseline values are a mess and might require some additional logic, a simple
-# merge isn't going to be sufficient at this moment. (at least for the
-# emf_base_string)
+# emf_base_string for the baseline data is the same for all rows, Final Energy.
+# Conversion to CO2 will occur after aggregation of the energy use
+
+baseline["emf_base_string"] = "*Final Energy|Buildings"
 
 baseline = baseline\
         .merge(
                 building_type_to_class,
                 how = "left",
                 on = "building_type"
+                )\
+        .merge(
+                emf_end_uses,
+                how = "left",
+                on = "end_use")\
+        .merge(
+                emf_fuel_types,
+                how = "left",
+                on = "fuel_type"
                 )
 
 baseline
 
+# }}}
 
+################################################################################
+# Aggregation of energy use within baseline {{{
+b0 = baseline\
+        .groupby(["region", "emf_base_string", "year"])\
+        .agg(value = ("value", "sum"))
+
+b1 = baseline\
+        .groupby(["region", "emf_base_string", "emf_fuel_type", "year"])\
+        .agg(value = ("value", "sum"))
+
+b2 = baseline\
+        .groupby(["region", "emf_base_string", "building_class", "emf_fuel_type", "year"])\
+        .agg(value = ("value", "sum"))
+
+b3 = baseline\
+        .groupby(["region", "emf_base_string", "building_class", "end_use", "emf_fuel_type", "year"])\
+        .agg(value = ("value", "sum"))
+
+b0.reset_index(inplace = True)
+b1.reset_index(inplace = True)
+b2.reset_index(inplace = True)
+b3.reset_index(inplace = True)
+
+b0["emf_string"] = b0.region + b0.emf_base_string
+b1["emf_string"] = b1.region + b1.emf_base_string + "|" + b1.emf_fuel_type
+b2["emf_string"] = b2.region + b2.emf_base_string + "|" + b2.building_class + "|" + b2.emf_fuel_type
+b3["emf_string"] = b3.region + b3.emf_base_string + "|" + b3.building_class + "|" + b3.end_use + "|" + b3.emf_fuel_type
+
+baseline_emf_aggregation = pd.concat( [b0, b1, b2, b3])
+baseline_emf_aggregation
 
 # }}}
 
