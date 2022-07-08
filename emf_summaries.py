@@ -13,17 +13,47 @@ import warnings
 from scout.utilities import json_to_df
 
 ################################################################################
-# import ecm_results and baseline data                                     # {{{
+# import data                                                              # {{{
 
-ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_1-1.json.gz")
-# ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_2.json.gz")
-# ecm_results = json_to_df(path = "./Results_Files_3/ecm_results_3-1.json.gz")
+# ECM results
+ecm_result_paths = [
+          "./Results_Files_3/ecm_results_1-1.json.gz"
+        , "./Results_Files_3/ecm_results_2.json.gz"
+        , "./Results_Files_3/ecm_results_3-1.json.gz"]
 
+ecm_results =\
+        pd.concat(
+                [json_to_df(path = p) for p in ecm_result_paths]
+                , keys = [os.path.basename(str(p)).split(".", 1)[0] for p in ecm_result_paths]
+                )
+
+# baseline values
 baseline = json_to_df(path = "./supporting_data/stock_energy_tech_data/mseg_res_com_emm")
+
+# conversion coefficients
+conversion_coefficients = \
+        json_to_df(path = './supporting_data/convert_data/emm_region_emissions_prices.json')
+
 # }}}
 
 ################################################################################
 # Define maps form one variable set to another                             # {{{
+
+# needed conversation coefficients # {{{
+conversion_coefficients = \
+    conversion_coefficients[(conversion_coefficients.lvl0 == "CO2 intensity of electricity") &
+                            (conversion_coefficients.lvl1 == "data")]
+
+conversion_coefficients.drop(columns = ["lvl1", "lvl5"], inplace = True)
+conversion_coefficients.rename(columns = {
+      "lvl0" : "conversion"
+    , "lvl2" : "region"
+    , "lvl3" : "year"
+    , "lvl4" : "value"
+    },
+    inplace = True)
+# }}}
+
 building_type_to_class =\
         pd.DataFrame(data = {
               "assembly"           : "Commercial"
@@ -43,6 +73,28 @@ building_type_to_class =\
             }.items(),
             columns = ["building_type", "building_class"]
             )
+
+building_class_construction =\
+        pd.DataFrame.from_dict(data = {
+            "Commercial (Existing)"  : {
+                "building_class" : "Commercial",
+                "building_construction" : "Existing"
+                },
+            "Commercial (New)": {
+                "building_class" : "Commercial",
+                "building_construction" : "New"
+                },
+            "Residential (Existing)" : {
+                "building_class" : "Residential",
+                "building_construction" : "Existing"
+                },
+            "Residential (New)": {
+                "building_class" : "Residential",
+                "building_construction" : "New"
+                }
+            }, orient = "index")\
+                    .reset_index()\
+                    .rename(columns = {"index" : "building_class0"})
 
 emf_end_uses =\
         pd.DataFrame(data = {
@@ -79,27 +131,6 @@ emf_end_uses =\
             columns = ["end_use", "emf_end_use"]
             )
 
-building_class_construction =\
-        pd.DataFrame.from_dict(data = {
-            "Commercial (Existing)"  : {
-                "building_class" : "Commercial",
-                "building_construction" : "Existing"
-                },
-            "Commercial (New)": {
-                "building_class" : "Commercial",
-                "building_construction" : "New"
-                },
-            "Residential (Existing)" : {
-                "building_class" : "Residential",
-                "building_construction" : "Existing"
-                },
-            "Residential (New)": {
-                "building_class" : "Residential",
-                "building_construction" : "New"
-                }
-            }, orient = "index")\
-                    .reset_index()\
-                    .rename(columns = {"index" : "building_class0"})
 
 emf_direct_indirect_fuel =\
         pd.DataFrame(data = {
@@ -152,7 +183,8 @@ emf_fuel_types =\
 # Collect the needed rows from ecm_results                                 # {{{
 ecm_results = ecm_results.loc[ecm_results.lvl1 == "Markets and Savings (by Category)",:]
 ecm_results.drop(columns = ["lvl1"], inplace = True)
-ecm_results.reset_index(inplace = True, drop = True)
+
+#ecm_results.reset_index(inplace = True, drop = True)
 
 # rename columns
 ecm_results.rename(
@@ -176,6 +208,11 @@ ecm_results.loc[idx, "value"] = ecm_results.loc[idx, "year"]
 ecm_results.loc[idx, "year"]  = ecm_results.loc[idx, "fuel_type"]
 ecm_results.loc[idx, "fuel_type"] = "Not Applicable (all fuels)"
 
+# clean up
+ecm_results.reset_index(inplace = True, drop = False)
+ecm_results.rename(columns = {"level_0" : "file"}, inplace = True)
+ecm_results.drop(columns = ["level_1"], inplace = True)
+
 # some spot checks
 ecm_results
 set(ecm_results.ecm)
@@ -185,6 +222,70 @@ set(ecm_results.region)
 set(ecm_results.building_class_construction)
 set(ecm_results.fuel_type)
 set(ecm_results.year)
+
+# }}}
+
+################################################################################
+# Add emf_columns to ecm_results {{{
+
+ecm_results =\
+    ecm_results\
+    .merge(
+            emf_base_string,
+            how = "inner", # inner join so only the needed rows are retained
+            on = "impact"
+            )\
+    .merge(
+            building_class_construction,
+            how = "left",
+            left_on = "building_class_construction",
+            right_on = "building_class0",
+            suffixes = ("_x", "")
+            )\
+    .merge(
+            emf_fuel_types,
+            how = "left",
+            on = "fuel_type"
+            )\
+    .merge(
+            emf_direct_indirect_fuel,
+            how = "left",
+            on = "fuel_type"
+            )\
+    .merge(
+            emf_end_uses,
+            how = "left",
+            on = "end_use"
+            )
+
+# report any unmapped fuels, end uses, ...
+not_mapped = set(
+        ecm_results.loc[
+            (ecm_results.fuel_type.notna()) & (ecm_results.emf_fuel_type.isna())
+            , "fuel_type"
+            ])
+
+if len(not_mapped):
+    warnings.warn("ecm_results.fuel_type values not mapped to a emf_fuel_type value exist:\n" + ", ".join(not_mapped))
+
+
+not_mapped = set(
+        ecm_results.loc[
+            (ecm_results.fuel_type.notna()) & (ecm_results.direct_indirect_fuel.isna())
+            , "fuel_type"
+            ])
+
+if len(not_mapped):
+    warnings.warn("ecm_results.fuel_type values not mapped to a direct/indirect value exist:\n" + ", ".join(not_mapped))
+
+not_mapped = set(
+        ecm_results.loc[
+            (ecm_results.end_use.notna()) & (ecm_results.emf_end_use.isna())
+            , "end_use"
+            ])
+
+if len(not_mapped):
+    warnings.warn("ecm_results.end_use values not mapped to a emf_end_use value exist:\n" + ", ".join(not_mapped))
 
 # }}}
 
@@ -297,78 +398,11 @@ baseline.rename(
 # }}}
 
 ################################################################################
-# Add emf_columns to ecm_results {{{
-
-ecm_results =\
-    ecm_results\
-    .merge(
-            emf_base_string,
-            how = "inner", # inner join so only the needed rows are retained
-            on = "impact"
-            )\
-    .merge(
-            building_class_construction,
-            how = "left",
-            left_on = "building_class_construction",
-            right_on = "building_class0",
-            suffixes = ("_x", "")
-            )\
-    .merge(
-            emf_fuel_types,
-            how = "left",
-            on = "fuel_type"
-            )\
-    .merge(
-            emf_direct_indirect_fuel,
-            how = "left",
-            on = "fuel_type"
-            )\
-    .merge(
-            emf_end_uses,
-            how = "left",
-            on = "end_use"
-            )
-
-# report any unmapped fuels, end uses, ...
-not_mapped = set(
-        ecm_results.loc[
-            (ecm_results.fuel_type.notna()) & (ecm_results.emf_fuel_type.isna())
-            , "fuel_type"
-            ])
-
-if len(not_mapped):
-    warnings.warn("ecm_results.fuel_type values not mapped to a emf_fuel_type value exist:\n" + ", ".join(not_mapped))
-
-
-not_mapped = set(
-        ecm_results.loc[
-            (ecm_results.fuel_type.notna()) & (ecm_results.direct_indirect_fuel.isna())
-            , "fuel_type"
-            ])
-
-if len(not_mapped):
-    warnings.warn("ecm_results.fuel_type values not mapped to a direct/indirect value exist:\n" + ", ".join(not_mapped))
-
-not_mapped = set(
-        ecm_results.loc[
-            (ecm_results.end_use.notna()) & (ecm_results.emf_end_use.isna())
-            , "end_use"
-            ])
-
-if len(not_mapped):
-    warnings.warn("ecm_results.end_use values not mapped to a emf_end_use value exist:\n" + ", ".join(not_mapped))
-
-# }}}
-
-################################################################################
-# ecm_result unit and type conversions {{{
+# ecm_results: unit and type conversions {{{
 
 # set column types
 ecm_results.value = ecm_results.value.apply(float)
 ecm_results.year  = ecm_results.year.apply(int)
-
-baseline.value = baseline.value.apply(float)
-baseline.year  = baseline.year.apply(int)
 
 # Convert MMBtu to Exajoules
 idx = ecm_results.impact.str.contains("MMBtu")
@@ -380,41 +414,41 @@ ecm_results.impact = ecm_results.impact.str.replace("MMBtu", "EJ")
 # ecm_results aggregation {{{
 
 a0 = ecm_results\
-        .groupby(["region", "emf_base_string", "year"])\
+        .groupby(["file", "region", "emf_base_string", "year"])\
         .agg(value = ("value", "sum"))
 
 a1 = ecm_results\
-        .groupby(["region", "emf_base_string", "building_class", "year"])\
+        .groupby(["file", "region", "emf_base_string", "building_class", "year"])\
         .agg(value = ("value", "sum"))
 
 a2 = ecm_results\
-        .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "year"])\
+        .groupby(["file", "region", "emf_base_string", "building_class", "emf_end_use", "year"])\
         .agg(value = ("value", "sum"))
 
 a3_0 = ecm_results\
         [ecm_results.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
-        .groupby(["region", "emf_base_string", "direct_indirect_fuel", "year"])\
+        .groupby(["file", "region", "emf_base_string", "direct_indirect_fuel", "year"])\
         .agg(value = ("value", "sum"))
 a3_1 = ecm_results\
         [ecm_results.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
-        .groupby(["region", "emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
+        .groupby(["file", "region", "emf_base_string", "building_class", "direct_indirect_fuel", "year"])\
         .agg(value = ("value", "sum"))
 a3_2 = ecm_results\
         [ecm_results.emf_base_string == "*Emissions|CO2|Energy|Demand|Buildings"]\
-        .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
+        .groupby(["file", "region", "emf_base_string", "building_class", "emf_end_use", "direct_indirect_fuel", "year"])\
         .agg(value = ("value", "sum"))
 
 a4_0 = ecm_results\
         [ecm_results.emf_base_string == "*Final Energy|Buildings"]\
-        .groupby(["region", "emf_base_string", "emf_fuel_type", "year"])\
+        .groupby(["file", "region", "emf_base_string", "emf_fuel_type", "year"])\
         .agg(value = ("value", "sum"))
 a4_1 = ecm_results\
         [ecm_results.emf_base_string == "*Final Energy|Buildings"]\
-        .groupby(["region", "emf_base_string", "building_class", "emf_fuel_type", "year"])\
+        .groupby(["file", "region", "emf_base_string", "building_class", "emf_fuel_type", "year"])\
         .agg(value = ("value", "sum"))
 a4_2 = ecm_results\
         [ecm_results.emf_base_string == "*Final Energy|Buildings"]\
-        .groupby(["region", "emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
+        .groupby(["file", "region", "emf_base_string", "building_class", "emf_end_use", "emf_fuel_type", "year"])\
         .agg(value = ("value", "sum"))
 
 # Aggregation clean up
@@ -443,17 +477,16 @@ a4_2["emf_string"] = a4_2.region + a4_2.emf_base_string + "|" + a4_2.building_cl
 
 # build one data frame with all the aggregations
 ecm_results_emf_aggregation = pd.concat([
-    a0[["emf_string", "year", "value"]],
-    a1[["emf_string", "year", "value"]],
-    a2[["emf_string", "year", "value"]],
-    a3_0[["emf_string", "year", "value"]],
-    a3_1[["emf_string", "year", "value"]],
-    a3_2[["emf_string", "year", "value"]],
-    a4_0[["emf_string", "year", "value"]],
-    a4_1[["emf_string", "year", "value"]],
-    a4_2[["emf_string", "year", "value"]]
+    a0[["file", "emf_string", "year", "value"]],
+    a1[["file", "emf_string", "year", "value"]],
+    a2[["file", "emf_string", "year", "value"]],
+    a3_0[["file", "emf_string", "year", "value"]],
+    a3_1[["file", "emf_string", "year", "value"]],
+    a3_2[["file", "emf_string", "year", "value"]],
+    a4_0[["file", "emf_string", "year", "value"]],
+    a4_1[["file", "emf_string", "year", "value"]],
+    a4_2[["file", "emf_string", "year", "value"]]
     ])
-
 
 # create a wide version of the ecm_results_emf_aggregation
 ecm_results_emf_aggregation_wide = ecm_results_emf_aggregation.copy(deep = True)
@@ -463,7 +496,7 @@ ecm_results_emf_aggregation_wide.year =\
 
 ecm_results_emf_aggregation_wide =\
         ecm_results_emf_aggregation_wide.pivot_table(
-                index = ["emf_string"],
+                index = ["file", "emf_string"],
                 columns = ["year"],
                 values = ["value"]
                 )
@@ -477,6 +510,12 @@ print(ecm_results_emf_aggregation)
 print(ecm_results_emf_aggregation_wide)
 
 # }}}
+
+
+
+
+
+
 
 ################################################################################
 # Add emf_columns to baseline {{{
@@ -507,8 +546,54 @@ baseline
 # }}}
 
 ################################################################################
+# unit conversions and structure
+#
+# after building out the aggregation for the values there was a lot of unit
+# conversion taking place with a lot of logic to get the work done right.  I
+# think it would be easier to build out the needed unit conversions first and
+# then do the aggregations.
+#
+# To the best of my knowledge the units for the value column in the baseline
+# DataFrame are in MMBtu
+baseline.rename(columns = {"value" : "MMBtu"}, inplace = True)
+
+# Unit conversions.
+# The value column is in MMBtu and needs to be in EJ (extajuls)
+MMBtu_to_EJ           = 1.05505585262e-9
+EJ_to_quad            = 0.9478
+pound_to_mt           = 0.000453592
+EJ_to_twh             = 277.778
+EJ_to_mt_co2_propane  = EJ_to_quad * 62.88
+EJ_to_mt_co2_kerosene = EJ_to_quad * 73.38
+EJ_to_mt_co2_gas      = EJ_to_quad * 53.056
+EJ_to_mt_co2_oil      = EJ_to_quad * 74.14
+EJ_to_mt_co2_bio      = EJ_to_quad * 96.88
+
+{
+        "other fuel" : {
+              "secondary heater (LPG)" : EJ_to_mt_co2_propane,
+            , "furnace (LPG)" : EJ_to_mt_co2_propane
+            }
+        ,
+        "natural gas" : {
+              "water heating" : EJ_to_mt_co2_gas
+
+
+
+
+        # "electricity" requires the conversion_coefficients data.frame
+
+
+# create a EJ (extajuls) column
+baseline["EJ"] = baseline.MMBtu * MMBtu_to_EJ
+
+baseline
+
+################################################################################
 # Aggregation of energy use within baseline {{{
 
+baseline.value = baseline.value.apply(float)
+baseline.year  = baseline.year.apply(int)
 
 # TODO: when are the supply_demand flags to be used?  Stock/energy flags?
 
@@ -547,11 +632,11 @@ MMBtu_to_EJ           = 1.05505585262e-9
 EJ_to_quad            = 0.9478
 pound_to_mt           = 0.000453592
 EJ_to_twh             = 277.778
-EJ_to_mt_co2_propane  = ej_to_quad * 62.88
-EJ_to_mt_co2_kerosene = ej_to_quad * 73.38
-EJ_to_mt_co2_gas      = ej_to_quad * 53.056
-EJ_to_mt_co2_oil      = ej_to_quad * 74.14
-EJ_to_mt_co2_bio      = ej_to_quad * 96.88
+EJ_to_mt_co2_propane  = EJ_to_quad * 62.88
+EJ_to_mt_co2_kerosene = EJ_to_quad * 73.38
+EJ_to_mt_co2_gas      = EJ_to_quad * 53.056
+EJ_to_mt_co2_oil      = EJ_to_quad * 74.14
+EJ_to_mt_co2_bio      = EJ_to_quad * 96.88
 
 # TODO: define coeffs_emm
 
