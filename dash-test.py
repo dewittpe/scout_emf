@@ -201,11 +201,11 @@ def render_page_content(pathname):
     elif pathname == "/cms_v_ums":
         return cms_v_ums()
     # If the user tries to reach a different page, return a 404 message
-    return dbc.Jumbotron(
+    return dbc.Div(
         [
             html.H1("404: Not found", className="text-danger"),
             html.Hr(),
-            html.P(f"The pathname {pathname} was not recognised."),
+            html.P(f"The pathname {pathname} was not recognised.")
         ]
     )
 
