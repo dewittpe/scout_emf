@@ -34,11 +34,16 @@ and packages for working on scout and this possible emf extension.
 ### Dash App
 
 An interactive [Dash](https://plotly.com/dash/) application is being developed
-to allow end users to explore results of the `ecm_prep` and `ecm_results` files
-graphically.
+to allow end users to explore results of the `ecm_prep` and `ecm_results` json
+files graphically.
 
 ```bash
 ./dash-test.py -r <path to a ecm_result file> -p <path to ecm_prep file>
+```
+
+More details can be found the help:
+```bash
+./dash-test.py -h
 ```
 
 
