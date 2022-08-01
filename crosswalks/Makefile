@@ -1,7 +1,4 @@
-CSVS  = regions.csv
-CSVS += building_types.csv
-CSVS += structure_types.csv
-CSVS += fuel_types.csv
+CSVS := $(addsuffix .csv, $(basename $(shell find . -type f -name "*.py")))
 
 all : $(CSVS)
 

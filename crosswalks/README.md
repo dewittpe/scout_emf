@@ -27,6 +27,7 @@ to define a linkage.
 | Table                               | Columns                           |
 | :-----                              | :-------                          |
 | [Building Types](#building-types)   | `building_class`, `building_type` |
+| [End Uses](#end-uses)               | `building_class`, `ecm_definition_fuel_type`, `ecm_definition_end_use` |
 | [Fuel Types](#fuel-types)           | `building_class`, `ecm_definition_fuel_type` |
 | [Regions](#regions)                 | `region_set`, `region`            |
 | [Structure Types](#structure-types) | `building_class`, `structure_type`, `ecm_prep_building` |
@@ -38,6 +39,13 @@ to define a linkage.
 
 Mapping of `building_class`, e.g., residential or commerical, to specific
 `building_type`, e.g., "single family home", "food service", etc.
+
+### End Uses
+
+* Definition file: `end_uses.py`
+* Output file: `end_uses.csv`
+
+Mapping of the documented `end_uses` within the ECM definition.
 
 ### Fuel Types
 
