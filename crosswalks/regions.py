@@ -15,6 +15,5 @@ x = list(
 
 scout_regions = pd.DataFrame(data = x, columns = ["region_set", "region"])
 
-scout_regions.to_markdown('regions.md', index = False)
 scout_regions.to_csv('regions.csv', index = False)
 
