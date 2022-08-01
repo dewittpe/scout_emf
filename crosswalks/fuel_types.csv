@@ -1,0 +1,8 @@
+building_class,ecm_definition_fuel_type
+Residential,electricity
+Residential,natural gas
+Residential,distillate
+Residential,other fuel
+Commercial,electricity
+Commercial,natural gas
+Commercial,distillate
