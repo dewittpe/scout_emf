@@ -27,10 +27,13 @@ to define a linkage.
 | Table                               | Columns                           |
 | :-----                              | :-------                          |
 | [Building Types](#building-types)   | `building_class`, `building_type` |
-| [End Uses](#end-uses)               | `building_class`, `ecm_definition_fuel_type`, `ecm_definition_end_use` |
+| [EMM to Avert](#emm-to-avert)       | `emm_region`, `avert_region` |
+| [End Uses](#end-uses)               | `building_class`, `ecm_definition_fuel_type`, `ecm_definition_end_use`, `ecm_results_end_use`, `emf_end_use` |
 | [Fuel Types](#fuel-types)           | `building_class`, `ecm_definition_fuel_type` |
 | [Regions](#regions)                 | `region_set`, `region`            |
+| [State to Census Reion](#state-to-census-region) | `state`, `census_region`|
 | [Structure Types](#structure-types) | `building_class`, `structure_type`, `ecm_prep_building` |
+| [Technologies](#technologies)       | `building_class`, `ecm_definition_supply_demand`, `ecm_definition_end_use`, `ecm_definition_fuel_type`, `ecm_definition_technology` |
 
 ### Building Types
 
@@ -39,6 +42,14 @@ to define a linkage.
 
 Mapping of `building_class`, e.g., residential or commerical, to specific
 `building_type`, e.g., "single family home", "food service", etc.
+
+### EMM to Avert
+
+* Definition file: `emm_to_avert.py`
+* Output file: `emm_to_avert.csv`
+
+Mapping from emm regions to AVERT regions
+
 
 ### End Uses
 
@@ -63,6 +74,13 @@ A small table noting the valid fuel types within the ECM definiton for each
 Define two coloumns, `region_set` and `region`, denoting the different regions
 which could be in the ECM definitions and used in the EMF summaries.  The
 following is an example of the structure.
+
+### State to Census Region
+
+* Definition file: `state_to_census_region.py`
+* Output file: `state_to_census_region.csv`
+
+A mapping for the 50 United States to Census Regions.
 
 ### Structure Types
 
