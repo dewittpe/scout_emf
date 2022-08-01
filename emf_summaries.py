@@ -10,6 +10,7 @@
 import pandas as pd
 import numpy as np
 import warnings
+import os
 from scout.utilities import json_to_df
 
 ################################################################################
@@ -128,20 +129,24 @@ emf_end_uses =\
             , 'ventilation'               : "Heating"     # baseline
             , 'water heating'             : "Appliances"  # baseline
             }.items(),
-            columns = ["end_use", "emf_end_use"]
+            columns = ["scout_end_use", "emf_end_use"]
             )
 
 
 emf_direct_indirect_fuel =\
         pd.DataFrame(data = {
             "Natural Gas"      : "Direct",
+            "natural gas"      : "Direct",
             "Distillate/Other" : "Direct",
+            "distillate"       : "Direct",
             "Biomass"          : "Direct",
             "Propane"          : "Direct",
             "Electric"         : "Indirect",
-            "Non-Electric"     : "Indirect"
+            "electricity"      : "Indirect",
+            "Non-Electric"     : "Direct",
+            "other fuel"       : "Direct"
             }.items(),
-            columns = ["fuel_type", "direct_indirect_fuel"]
+            columns = ["scout_fuel_type", "emf_direct_indirect_fuel"]
             )
 
 emf_base_string =\
@@ -174,7 +179,7 @@ emf_fuel_types =\
             , "electricity"      : "Electricity"       # baseline
             # , "???"              : "Oil_kerosene"      # baseline
             }.items(),
-            columns = ["fuel_type", "emf_fuel_type"]
+            columns = ["scout_fuel_type", "emf_fuel_type"]
             )
 
 # }}}
@@ -200,6 +205,7 @@ ecm_results.rename(
             "lvl9" : "value"
             },
         inplace = True)
+
 
 # if fuel_type is missing then lvl9 will be empty
 # move data over a colum and set a
@@ -569,15 +575,33 @@ EJ_to_mt_co2_gas      = EJ_to_quad * 53.056
 EJ_to_mt_co2_oil      = EJ_to_quad * 74.14
 EJ_to_mt_co2_bio      = EJ_to_quad * 96.88
 
-{
-        "other fuel" : {
-              "secondary heater (LPG)" : EJ_to_mt_co2_propane,
-            , "furnace (LPG)" : EJ_to_mt_co2_propane
-            }
-        ,
-        "natural gas" : {
-              "water heating" : EJ_to_mt_co2_gas
 
+# CROSS WALK
+crosswalk =\
+    pd.concat([
+        ecm_results[["fuel_type", "end_use"]].drop_duplicates(),
+        baseline[["fuel_type", "end_use"]].drop_duplicates()]
+        ).reset_index(drop = True)
+
+crosswalk.rename(columns = {
+    "fuel_type" : "scout_fuel_type",
+    "end_use"   : "scout_end_use"
+    },
+    inplace = True)
+
+#
+emf_direct_indirect_fuel
+
+
+#{
+#        "other fuel" : {
+#              "secondary heater (LPG)" : EJ_to_mt_co2_propane,
+#            , "furnace (LPG)" : EJ_to_mt_co2_propane
+#            }
+#        ,
+#        "natural gas" : {
+#              "water heating" : EJ_to_mt_co2_gas
+#
 
 
 
