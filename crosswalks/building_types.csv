@@ -1,15 +1,15 @@
-building_class,building_type
-Residential,single family home
-Residential,multi family home
-Residential,mobile home
-Commercial,assembly
-Commercial,education
-Commercial,food sales
-Commercial,food service
-Commercial,health care
-Commercial,lodging
-Commercial,large office
-Commercial,small office
-Commercial,mercantile/service
-Commercial,warehouse
-Commercial,other
+building_class,building_type,out_break_building_type
+Residential,single family home,Single Family Homes
+Residential,multi family home,Multi Family Homes
+Residential,mobile home,Single Family Homes
+Commercial,assembly,Assembly/Other
+Commercial,education,Education
+Commercial,food sales,Retail
+Commercial,food service,Hospitality
+Commercial,health care,Hospitals
+Commercial,lodging,Hospitality
+Commercial,large office,Large Offices
+Commercial,small office,Small/Medium Offices
+Commercial,mercantile/service,Retail
+Commercial,warehouse,Warehouse
+Commercial,other,Assembly/Other

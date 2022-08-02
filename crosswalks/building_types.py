@@ -40,4 +40,4 @@ out_break =\
 
 building = pd.merge(building, out_break, on = "building_type")
 
-building.to_csv("building_type.csv", index = False)
+building.to_csv("building_types.csv", index = False)
