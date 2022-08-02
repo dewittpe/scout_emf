@@ -1,0 +1,52 @@
+census_region,state
+New England,CT
+New England,MA
+New England,ME
+New England,NH
+New England,RI
+New England,VT
+Mid Atlantic,NJ
+Mid Atlantic,NY
+Mid Atlantic,PA
+East North Central,IL
+East North Central,IN
+East North Central,MI
+East North Central,OH
+East North Central,WI
+West North Central,IA
+West North Central,KS
+West North Central,MN
+West North Central,MO
+West North Central,ND
+West North Central,NE
+West North Central,SD
+South Atlantic,DC
+South Atlantic,DE
+South Atlantic,FL
+South Atlantic,GA
+South Atlantic,MD
+South Atlantic,NC
+South Atlantic,SC
+South Atlantic,VA
+South Atlantic,WV
+East South Central,AL
+East South Central,KY
+East South Central,MS
+East South Central,TN
+West South Central,AR
+West South Central,LA
+West South Central,OK
+West South Central,TX
+Mountain,AZ
+Mountain,CO
+Mountain,ID
+Mountain,MT
+Mountain,NM
+Mountain,NV
+Mountain,UT
+Mountain,WY
+Pacific,AK
+Pacific,CA
+Pacific,HI
+Pacific,OR
+Pacific,WA

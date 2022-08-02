@@ -24,6 +24,32 @@ end_uses = \
                 , columns = ["building_class", "ecm_definition_fuel_type", "ecm_definition_end_use"]
                 )
 
+out_break =\
+        pd.DataFrame(data = [
+            ("Heating (Equip.)", "heating"),
+            ("Heating (Equip.)", "secondary heating"),
+            ("Cooling (Equip.)", "cooling"),
+            ("Heating (Env.)", "heating"),
+            ("Heating (Env.)", "secondary heating"),
+            ("Cooling (Env.)", "cooling"),
+            ("Ventilation", "ventilation"),
+            ("Lighting", "lighting"),
+            ("Water Heating", "water heating"),
+            ("Refrigeration", "refrigeration"),
+            ("Refrigeration", "other"),
+            ("Cooking", "cooking"),
+            ("Computers and Electronics", "PCs"),
+            ("Computers and Electronics", "non-PC office equipment"),
+            ("Computers and Electronics", "TVs"),
+            ("Computers and Electronics", "computers"),
+            ("Other", "drying"),
+            ("Other", "ceiling fan"),
+            ("Other", "fans and pumps"),
+            ("Other", "MELs"),
+            ("Other", "other")],
+            columns = ["out_break_end_use", "ecm_definition_end_use"]
+            )
+
 
 # ecm_definition, ecm_prep, ecm_results, emf
 

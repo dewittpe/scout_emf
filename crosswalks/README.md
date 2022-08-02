@@ -11,6 +11,7 @@ Column naming will have one of several prefixes:
 * `ecm_prep`
 * `ecm_results`
 * `emf_`
+* `out_break_`
 
 No prefix, as seen with `building_class` implies that the `building_class`
 values are consistent between the ECM defintions, (as taken from the
@@ -26,10 +27,10 @@ to define a linkage.
 
 | Table                               | Columns                           |
 | :-----                              | :-------                          |
-| [Building Types](#building-types)   | `building_class`, `building_type` |
+| [Building Types](#building-types)   | `building_class`, `building_type`, `out_break_building_type` |
 | [EMM to Avert](#emm-to-avert)       | `emm_region`, `avert_region` |
-| [End Uses](#end-uses)               | `building_class`, `ecm_definition_fuel_type`, `ecm_definition_end_use`, `ecm_results_end_use`, `emf_end_use` |
-| [Fuel Types](#fuel-types)           | `building_class`, `ecm_definition_fuel_type` |
+| [End Uses](#end-uses)               | `building_class`, `ecm_definition_fuel_type`, `ecm_definition_end_use`, `ecm_results_end_use`, `emf_end_use`, `out_break_enduses` |
+| [Fuel Types](#fuel-types)           | `building_class`, `ecm_definition_fuel_type`, `out_break_fuel_type` |
 | [Regions](#regions)                 | `region_set`, `region`            |
 | [State to Census Reion](#state-to-census-region) | `state`, `census_region`|
 | [Structure Types](#structure-types) | `building_class`, `structure_type`, `ecm_prep_building` |

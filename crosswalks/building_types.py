@@ -17,4 +17,27 @@ building =\
                 , columns = ["building_class", "building_type"]
 )
 
+out_break =\
+        pd.DataFrame(data = [
+            ("Single Family Homes"  , "single family home") , 
+            ("Single Family Homes"  , "mobile home")        , 
+            ("Multi Family Homes"   , "multi family home")  , 
+            ("Hospitals"            , "health care")        , 
+            ("Large Offices"        , "large office")       , 
+            ("Small/Medium Offices" , "small office")       , 
+            ("Retail"               , "food sales")         , 
+            ("Retail"               , "mercantile/service") , 
+            ("Hospitality"          , "lodging")            , 
+            ("Hospitality"          , "food service")       , 
+            ("Education"            , "education")          , 
+            ("Assembly/Other"       , "assembly")           , 
+            ("Assembly/Other"       , "other")              , 
+            ("Warehouse"            , "warehouse")
+            ],
+            columns = ["out_break_building_type", "building_type"]
+            )
+
+
+building = pd.merge(building, out_break, on = "building_type")
+
 building.to_csv("building_type.csv", index = False)

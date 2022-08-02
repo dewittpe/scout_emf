@@ -1,0 +1,15 @@
+building_class,building_type
+Residential,single family home
+Residential,multi family home
+Residential,mobile home
+Commercial,assembly
+Commercial,education
+Commercial,food sales
+Commercial,food service
+Commercial,health care
+Commercial,lodging
+Commercial,large office
+Commercial,small office
+Commercial,mercantile/service
+Commercial,warehouse
+Commercial,other
