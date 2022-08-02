@@ -201,11 +201,11 @@ def render_page_content(pathname):
     elif pathname == "/cms_v_ums":
         return cms_v_ums()
     # If the user tries to reach a different page, return a 404 message
-    return dbc.Jumbotron(
+    return dbc.Div(
         [
             html.H1("404: Not found", className="text-danger"),
             html.Hr(),
-            html.P(f"The pathname {pathname} was not recognised."),
+            html.P(f"The pathname {pathname} was not recognised.")
         ]
     )
 
@@ -512,11 +512,13 @@ def show_hide_cms_v_ums_ecm_dropdown(value):
 
 if __name__ == "__main__":
 
+    # default arg values
     ecm_results = ''
     ecm_prep    = ''
+    debug       = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hr:p:", ["help", "ecm_results=", "ecm_prep="])
+        opts, args = getopt.getopt(sys.argv[1:], "hr:p:d", ["help", "ecm_results=", "ecm_prep=", "debug"])
     except getopt.GetoptError:
         print("dash-test -r <ecm_results file> -p <ecm_prep file>")
         sys.exit(2)
@@ -528,11 +530,15 @@ if __name__ == "__main__":
             print("  -h --help         Print this help and exit")
             print("  -r --ecm_results  Path to a ecm_results file, the results of run.py")
             print("  -p --ecm_prep     Path to a ecm_prep file, the results of ecm_prep.py")
+            print("  -d --debug        If present, run the app with debug = True")
             sys.exit()
         elif opt in ("-r", "--ecm_results"):
             ecm_results = arg
         elif opt in ("-p", "--ecm_prep"):
             ecm_prep = arg
+        elif opt in ("-d", "--debug"):
+            debug = True
+            
 
 
     if (ecm_results == ''):
@@ -545,10 +551,10 @@ if __name__ == "__main__":
 
     ################################################################################
     # Data Import
-    print("Importing Results file" + ecm_results) 
+    print("Importing Results file " + ecm_results) 
     ecm_results = scout.ecm_results(path = ecm_results)
 
-    print("Importing ECM prep file" + ecm_prep) 
+    print("Importing ECM prep file " + ecm_prep) 
     ecm_prep = scout.ecm_prep(path = ecm_prep)
 
     ################################################################################
@@ -558,7 +564,7 @@ if __name__ == "__main__":
     years.sort()
 
     print("Launching dash app")
-    app.run_server(port=8050, debug = True)
+    app.run_server(port=8050, debug = debug)
 
 
 ################################################################################
